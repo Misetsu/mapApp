@@ -4,7 +4,9 @@ import {
   StyleSheet,
   Pressable,
   TouchableOpacity,
+  Text,
   Image,
+  
 } from "react-native";
 import { Stack, useFocusEffect } from "expo-router";
 import {
@@ -23,7 +25,7 @@ export default function CameraScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const [isActive, setIsActive] = useState(false);
   const [image, setImage] = useState(""); // 修正: 初期値を設定
-  const [photo, setPhoto] = useState(null); // 修正: 型アノテーションを削除
+  const [photo, setPhoto] = useState(''); // 修正: 型アノテーションを削除
 
   useFocusEffect(
     useCallback(() => {
@@ -48,9 +50,10 @@ export default function CameraScreen() {
         console.log("null");
         return;
       }
-      const photo = await cameraRef.current.takePhoto();
-      console.log(photo);
-      setPhoto(photo);
+      var photos = await cameraRef.current.takePhoto();
+      console.log(`file:/${photos.path}`);
+      setPhoto(photos.path);
+      console.log(`mmmmmmmm${photo}`)
     } catch (error) {
       console.log(error.message);
     }
@@ -60,8 +63,7 @@ export default function CameraScreen() {
     if (!photo) {
       return;
     }
-
-    const result = await fetch(`file://${photo.path}`); // 修正: photo.path を使用
+    const result = await fetch(`file://${photo}`); // 修正: photo.path を使用
     const data = await result.blob();
     console.log(data);
   };
@@ -82,6 +84,7 @@ export default function CameraScreen() {
     <View style={{ flex: 1 }}>
       <Stack.Screen options={{ headerShown: false }} />
 
+      
       <Camera
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
@@ -89,16 +92,20 @@ export default function CameraScreen() {
         photo={true}
         isActive={isActive && !photo}
       />
+      
 
       {photo && (
         <>
+          <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} />
           <FontAwesome5
             onPress={() => setPhoto(undefined)}
             name="arrow-left"
             size={25}
             color="red"
             style={{ position: "absolute", top: 50, left: 30 }}
+          
           />
+          
           <View
             style={{
               position: "absolute",
@@ -109,7 +116,21 @@ export default function CameraScreen() {
               backgroundColor: "rgba(0,0,0,0.40)",
             }}
           >
+            <Pressable
+            onPress={uploadPhoto}
+            style={{
+              position: "absolute",
+              alignSelf: "center",
+              bottom: 50,
+              width: 75,
+              height: 75,
+              backgroundColor: "red",
+              borderRadius: 75,
+            }}
+          ></Pressable>
+            {/*
             <Button title="Upload" onPress={uploadPhoto} />
+            */}
           </View>
         </>
       )}
@@ -127,7 +148,8 @@ export default function CameraScreen() {
               backgroundColor: "white",
               borderRadius: 75,
             }}
-          />
+          >
+          </Pressable>
           <Pressable
             onPress={pickImage}
             style={{
@@ -142,9 +164,14 @@ export default function CameraScreen() {
               justifyContent: "center",
               alignItems: "center",
             }}
-          />
+          >
+           
+          </Pressable>
         </>
       )}
+      <View>
+            <Text>{photo}</Text>
+            </View>
     </View>
   );
 }
