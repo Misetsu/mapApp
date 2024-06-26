@@ -92,7 +92,6 @@ export default function CameraScreen() {
 
       {photo && (
         <>
-          <Image source={{ uri: photo.path }} style={StyleSheet.absoluteFill} />
           <FontAwesome5
             onPress={() => setPhoto(undefined)}
             name="arrow-left"
