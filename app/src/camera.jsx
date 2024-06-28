@@ -11,7 +11,7 @@ import {
   useCameraPermission,
   useCameraDevice,
   Camera,
-  PhotoFile,
+  useCameraFormat,
 } from "react-native-vision-camera";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -25,6 +25,7 @@ export default function CameraScreen() {
   const [image, setImage] = useState("");
   const [photo, setPhoto] = useState(null);
   const reference = storage();
+  const format = useCameraFormat(device, [{ photoAspectRatio: 9 / 16 }]);
 
   useFocusEffect(
     useCallback(() => {
@@ -56,15 +57,15 @@ export default function CameraScreen() {
   };
 
   const uploadPhoto = async () => {
-    console.log(photo.path)
+    console.log(photo.path);
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath =
       "photo/image-" + new Date().getTime().toString() + randomNumber;
     await reference.ref(imagePath).putFile(photo.path);
-    console.log(imagePath)
+    console.log(imagePath);
   };
 
-  async function pickImage() {
+  const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -78,7 +79,7 @@ export default function CameraScreen() {
         "photo/image-" + new Date().getTime().toString() + randomNumber;
       await reference.ref(imagePath).putFile(result.assets[0].uri);
     }
-  }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -88,6 +89,7 @@ export default function CameraScreen() {
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
         device={device}
+        format={format}
         photo={true}
         isActive={isActive && !photo}
       />
@@ -124,9 +126,6 @@ export default function CameraScreen() {
                 borderRadius: 75,
               }}
             />
-            {/*
-            <Button title="Upload" onPress={uploadPhoto} />
-            */}
           </View>
         </>
       )}
