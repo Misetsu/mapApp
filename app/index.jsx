@@ -36,6 +36,15 @@ const TrackUserMapView = () => {
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
   const [distance, setDistance] = useState(0);
 
+  const YourComponent = () => {
+    useEffect(() => {
+      // コンポーネントがマウントされたときに実行する処理
+      handleMarkerPress(34.69455, 135.1907); // 適切な値を渡す
+  
+      // 他の初期化処理もここに書くことができます
+    }, []);
+  }
+
   const handleMarkerPress = (latitude, longitude) => {
     const distance = calculateDistance(
       position.latitude,
@@ -43,8 +52,9 @@ const TrackUserMapView = () => {
       latitude,
       longitude
     );
+    console.log("A")
     setDistance(distance); // 距離を状態として更新
-    setModalVisible(true); // モーダルを表示
+    console.log(distance)
   };
 
   function toRadians(degrees) {
@@ -149,7 +159,14 @@ const TrackUserMapView = () => {
             title="東遊園地"
             description="冬にはルミナリエが開催されています。"
           ></Marker>
+          <YourComponent
+          initialRegion={initialRegion}
+          position={position}
+          LATITUDE_DELTA={LATITUDE_DELTA}
+          LONGITUDE_DELTA={LONGITUDE_DELTA}
+        />
         </MapView>
+        
       )}
 
       <Modal
