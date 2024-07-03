@@ -3,6 +3,8 @@ import { SafeAreaView, View, Text, Dimensions, StyleSheet, TouchableOpacity, Ima
 import * as ImagePicker from 'expo-image-picker';
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from './firebaseConfig'; // インポート
 
 const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
@@ -18,10 +20,7 @@ const TrackUserMapView = () => {
     altitudeAccuracy: 0,
     heading: 0,
     speed: 0,
-    
   });
-  
-
   const [error, setError] = useState(null);
   const [initialRegion, setInitialRegion] = useState(null);
   const [markerPositions, setMarkerPositions] = useState([]);
@@ -68,6 +67,16 @@ const TrackUserMapView = () => {
         imageUri: result.uri, // 画像のURIを保存
       };
       setMarkerPositions((prevMarkers) => [...prevMarkers, newMarker]);
+
+      // 画像をFirebase Storageにアップロード
+      const response = await fetch(result.uri);
+      const blob = await response.blob();
+      const storageRef = ref(storage, `images/${Date.now()}_${result.uri.split('/').pop()}`);
+      await uploadBytes(storageRef, blob);
+
+      // アップロードした画像のダウンロードURLを取得
+      const downloadURL = await getDownloadURL(storageRef);
+      console.log('Image URL:', downloadURL);
     }
   };
 
