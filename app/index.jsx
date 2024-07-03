@@ -20,6 +20,7 @@ const TrackUserMapView = () => {
     speed: 0,
     
   });
+  
 
   const [error, setError] = useState(null);
   const [initialRegion, setInitialRegion] = useState(null);
