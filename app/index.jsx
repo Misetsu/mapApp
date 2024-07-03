@@ -3,13 +3,29 @@ import { SafeAreaView, View, Text, Dimensions, StyleSheet, TouchableOpacity, Ima
 import * as ImagePicker from 'expo-image-picker';
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
+import { initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from './firebaseConfig'; // インポート
+import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
 
 const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+
+// Firebaseの設定
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+
+// Firebaseの初期化
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+const db = getFirestore(app);
 
 const TrackUserMapView = () => {
   const [position, setPosition] = useState({
@@ -22,21 +38,12 @@ const TrackUserMapView = () => {
     speed: 0,
   });
   const [error, setError] = useState(null);
-  const [initialRegion, setInitialRegion] = useState(null);
   const [markerPositions, setMarkerPositions] = useState([]);
 
   useEffect(() => {
     const watchId = Geolocation.watchPosition(
       (position) => {
         setPosition(position.coords);
-        if (!initialRegion) {
-          setInitialRegion({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          });
-        }
       },
       (err) => {
         setError(err.message);
@@ -44,41 +51,75 @@ const TrackUserMapView = () => {
       { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
     );
     return () => Geolocation.clearWatch(watchId);
-  }, [initialRegion]);
+  }, []);
 
   const handlePost = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('写真ライブラリにアクセスするためには、許可が必要です。');
-      return;
-    }
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('写真ライブラリにアクセスするためには、許可が必要です。');
+        return;
+      }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-    if (!result.cancelled) {
-      const newMarker = {
-        latitude: position.latitude,
-        longitude: position.longitude,
-        imageUri: result.uri, // 画像のURIを保存
-      };
-      setMarkerPositions((prevMarkers) => [...prevMarkers, newMarker]);
+      if (!result.cancelled) {
+        const newMarker = {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          imageUri: result.uri,
+        };
+        setMarkerPositions((prevMarkers) => [...prevMarkers, newMarker]);
 
-      // 画像をFirebase Storageにアップロード
-      const response = await fetch(result.uri);
-      const blob = await response.blob();
-      const storageRef = ref(storage, `images/${Date.now()}_${result.uri.split('/').pop()}`);
-      await uploadBytes(storageRef, blob);
+        // 画像をFirebase Storageにアップロード
+        const response = await fetch(result.uri);
+        const blob = await response.blob();
+        const storageRef = ref(storage, `images/${Date.now()}_${result.uri.split('/').pop()}`);
+        await uploadBytes(storageRef, blob);
 
-      // アップロードした画像のダウンロードURLを取得
-      const downloadURL = await getDownloadURL(storageRef);
-      console.log('Image URL:', downloadURL);
+        // アップロードした画像のメタデータをFirebase Firestoreに保存
+        const downloadURL = await getDownloadURL(storageRef);
+        await addDoc(collection(db, 'images'), {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          storagePath: storageRef.fullPath,
+          createdAt: new Date(),
+        });
+        console.log('画像がFirebase Storageにアップロードされ、Firestoreにメタデータが保存されました');
+      }
+    } catch (error) {
+      console.error('画像のアップロード中にエラーが発生しました:', error);
     }
   };
+
+  const fetchMarkers = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'images'));
+      const markers = [];
+      querySnapshot.forEach(async (doc) => {
+        const data = doc.data();
+        const storageRef = ref(storage, data.storagePath);
+        const downloadURL = await getDownloadURL(storageRef);
+        markers.push({
+          latitude: data.latitude,
+          longitude: data.longitude,
+          imageUri: downloadURL,
+        });
+      });
+      setMarkerPositions(markers);
+    } catch (error) {
+      console.error('マーカーの取得中にエラーが発生しました:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarkers();
+  }, []);
 
   const handleMarkerPress = (marker) => {
     if (marker.imageUri) {
@@ -89,40 +130,31 @@ const TrackUserMapView = () => {
   };
 
   return (
-    <SafeAreaView style={StyleSheet.absoluteFillObject}>
+    <SafeAreaView style={styles.container}>
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
-      {initialRegion && (
-        <MapView
-          key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          style={StyleSheet.absoluteFillObject}
-          region={{
-            latitude: position.latitude,
-            longitude: position.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          }}
-        >
-          <Marker coordinate={position}>
-            <View style={styles.radius}>
-              <View style={styles.marker} />
-            </View>
+      <MapView style={styles.map} region={{
+        latitude: position.latitude,
+        longitude: position.longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      }}>
+        {markerPositions.map((marker, index) => (
+          <Marker
+            key={index}
+            coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
+            onPress={() => handleMarkerPress(marker)}
+          >
+            <Image
+              source={{ uri: marker.imageUri }}
+              style={styles.markerImage}
+            />
           </Marker>
-          {markerPositions.map((marker, index) => (
-            <Marker key={index} coordinate={marker} onPress={() => handleMarkerPress(marker)}>
-              {marker.imageUri ? (
-                <Image
-                  source={{ uri: marker.imageUri }} // URIから画像を表示
-                  style={styles.customMarkerImage}
-                />
-              ) : null}
-            </Marker>
-          ))}
-        </MapView>
-      )}
+        ))}
+      </MapView>
       <TouchableOpacity style={styles.postButton} onPress={handlePost}>
         <Text style={styles.postButtonText}>投稿</Text>
       </TouchableOpacity>
@@ -131,27 +163,13 @@ const TrackUserMapView = () => {
 };
 
 const styles = StyleSheet.create({
-  radius: {
-    width: 50,
-    height: 50,
-    borderRadius: 50 / 2,
-    overflow: "hidden",
-    backgroundColor: "rgba(0, 112, 255, 0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(0, 112, 255, 0.3)",
-    alignItems: "center",
-    justifyContent: "center",
+  container: {
+    flex: 1,
   },
-  marker: {
-    width: 20,
-    height: 20,
-    borderWidth: 3,
-    borderColor: "white",
-    borderRadius: 20 / 2,
-    overflow: "hidden",
-    backgroundColor: "#007AFF",
+  map: {
+    flex: 1,
   },
-  customMarkerImage: {
+  markerImage: {
     width: 40,
     height: 40,
     borderRadius: 20,

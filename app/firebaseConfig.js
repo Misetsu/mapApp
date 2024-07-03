@@ -12,7 +12,12 @@ const firebaseConfig = {
 };
 
 // Firebaseの初期化
-const app = initializeApp(firebaseConfig);
+let app;
+if (!initializeApp.apps.length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = initializeApp(); // すでに初期化されている場合は既存のアプリを取得
+}
 const storage = getStorage(app);
 
-export { storage };
+export { app, storage };
