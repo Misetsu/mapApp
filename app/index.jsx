@@ -1,31 +1,15 @@
+// index.jsx
 import React, { useState, useEffect } from "react";
 import { SafeAreaView, View, Text, Dimensions, StyleSheet, TouchableOpacity, Image } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
-import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import { app, storage, db } from "./firebaseConfig"; 
 
 const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-
-// Firebaseの設定
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-};
-
-// Firebaseの初期化
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
-const db = getFirestore(app);
 
 const TrackUserMapView = () => {
   const [position, setPosition] = useState({
@@ -50,7 +34,9 @@ const TrackUserMapView = () => {
       },
       { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
     );
-    return () => Geolocation.clearWatch(watchId);
+    return () => {
+      Geolocation.clearWatch(watchId);
+    };
   }, []);
 
   const handlePost = async () => {
