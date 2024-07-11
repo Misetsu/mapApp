@@ -272,6 +272,15 @@ const TrackUserMapView = () => {
           }}
         ></Pressable>
       </Link>
+
+      <View style={styles.loignBtnContainer}>
+        <Link href={{ pathname: "/loginForm" }} asChild>
+          <Button
+            title="ログイン"
+            onPress={() => navigation.navigate("login_Form")}
+          />
+        </Link>
+      </View>
     </SafeAreaView>
   );
 };
@@ -360,6 +369,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  loignBtnContainer: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    borderRadius: 5,
+    padding: 10,
   },
 });
 
