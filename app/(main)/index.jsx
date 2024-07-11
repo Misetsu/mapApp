@@ -135,7 +135,7 @@ const TrackUserMapView = () => {
 
   const fetchAllMarkerCord = async () => {
     const fetchResult = [];
-
+    setLoading(true);
     try {
       const querySnapshot = await firestore()
         .collection("spot")
@@ -154,6 +154,7 @@ const TrackUserMapView = () => {
       console.error("Error fetching documents: ", error);
     } finally {
       console.log(markerCords);
+      setLoading(false);
     }
   };
 
@@ -232,7 +233,7 @@ const TrackUserMapView = () => {
             }}
             title="神戸電子学生会館"
             description="ここでアプリは作られた。"
-            onPress={() => fetchAllMarkerCord()}
+            onPress={() => handleMarkerPress2()}
           >
             <Image source={image} style={styles.markerImage} />
           </Marker>
