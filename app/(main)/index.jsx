@@ -74,6 +74,8 @@ const TrackUserMapView = () => {
     if (distance < 50) {
       //距離が50m以上離れているかのチェック
       setModalVisible(true);
+      fetchImageUri();
+      fetchTextData();
     } else {
       setModalVisible(false);
     }
@@ -100,7 +102,20 @@ const TrackUserMapView = () => {
   }
 
   const [imageUri, setImageUri] = useState("");
+  // 変更
+  const [textData, setTextData] = useState('');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAndSetData = async () => {
+      const data = await fetchTextData();
+      setTextData(data);
+      setLoading(false);
+    };
+
+    fetchAndSetData();
+  }, []);
+  
 
   const fetchImageUri = async () => {
     try {
@@ -130,6 +145,35 @@ const TrackUserMapView = () => {
     }
   };
 
+  // 変更
+  const fetchTextData = async () => {
+    try {
+      const querySnapshot = await firestore()
+        .collection('post')
+        .where('userid', '==', 1) // 特定の条件を指定
+        .get();
+  
+      if (!querySnapshot.empty) {
+        const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
+        const data = documentSnapshot.data();
+        console.log('Document data:', data);
+  
+        if (data) {
+          return data; // ドキュメントからテキストデータを取得
+        } else {
+          console.log('No textData field in document');
+          return ''; // デフォルト値またはエラー処理を追加することもできます
+        }
+      } else {
+        console.log('No documents found with the specified condition');
+        return ''; // デフォルト値またはエラー処理を追加することもできます
+      }
+    } catch (error) {
+      console.error('Error fetching documents: ', error);
+      return ''; // デフォルト値またはエラー処理を追加することもできます
+    }
+  };
+
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
@@ -154,9 +198,9 @@ const TrackUserMapView = () => {
     return () => Geolocation.clearWatch(watchId);
   }, [initialRegion]);
 
-  useEffect(() => {
-    fetchImageUri();
-  }, []);
+  // useEffect(() => {
+  //   fetchImageUri();
+  // }, []);
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
@@ -225,6 +269,7 @@ const TrackUserMapView = () => {
       <MyModal
         visible={modalVisible}
         imageUri={imageUri}
+        textData={textData}
         onClose={() => setModalVisible(false)}
       />
 
@@ -341,7 +386,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const MyModal = ({ visible, imageUri, onClose }) => {
+const MyModal = ({ visible, imageUri, textData, onClose }) => {
   return (
     <Modal
       animationType="fade"
@@ -351,7 +396,7 @@ const MyModal = ({ visible, imageUri, onClose }) => {
     >
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <View style={{ backgroundColor: "white", padding: 20 }}>
-        <Text>ユーザーID</Text>
+          <Text>{textData.userId}</Text>
           {imageUri ? (
             <Image
               source={{ uri: imageUri }}
@@ -361,7 +406,7 @@ const MyModal = ({ visible, imageUri, onClose }) => {
             <ActivityIndicator size="large" color="#0000ff" />
           )}
           <TouchableOpacity onPress={onClose}>
-            <Text>投稿テキスト</Text>
+            <Text>{textData.postTxt}</Text>
             <Text>Close</Text>
           </TouchableOpacity>
         </View>
