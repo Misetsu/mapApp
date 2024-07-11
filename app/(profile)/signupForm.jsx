@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { Link } from "expo-router";
+import { setTextRange } from "typescript";
 
-const LoginScreen = () => {
+const SignupScreen = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password1, setPassword1] = useState("");
+  const [password2, setPassword2] = useState("");
   const navigation = useNavigation();
   return (
     <View style={styles.container}>
@@ -16,27 +18,28 @@ const LoginScreen = () => {
         autoCapitalize="none"
         placeholder="email"
       />
-
       <TextInput
         style={styles.input}
-        value={password}
-        onChangeText={setPassword}
+        value={password1}
+        onChangeText={setPassword1}
         secureTextEntry
         placeholder="Password"
       />
-
+      <TextInput
+        style={styles.input}
+        value={password2}
+        onChangeText={setPassword2}
+        secureTextEntry
+        placeholder="Confirm Password"
+      />
+      <TextInput style={styles.input} placeholder="Username" />
       <Link href={{ pathname: "/" }} asChild>
-        <Button title="LOGIN" style={styles.button} />
-      </Link>
-
-      <Link href={{ pathname: "/" }} asChild>
-        <Text style={styles.linklabel}>Forgot password?</Text>
-      </Link>
-
-      <Text style={styles.noamllabel}>Dont't have an account?</Text>
-
-      <Link href={{ pathname: "/signupForm" }} asChild>
         <Button title="SIGN UP" style={styles.button} />
+      </Link>
+      <Text style={styles.noamllabel}>Have an account?</Text>
+
+      <Link href={{ pathname: "/loginForm" }} asChild>
+        <Button title="LOGIN" style={styles.button} />
       </Link>
     </View>
   );
@@ -71,4 +74,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default SignupScreen;
