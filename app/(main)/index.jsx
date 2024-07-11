@@ -103,6 +103,7 @@ const TrackUserMapView = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchImageUri = async () => {
+    setLoading(true);
     try {
       const querySnapshot = await firestore()
         .collection("photo")
@@ -127,6 +128,32 @@ const TrackUserMapView = () => {
       console.error("Error fetching documents: ", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [markerCords, setMarkerCords] = useState([]);
+
+  const fetchAllMarkerCord = async () => {
+    const fetchResult = [];
+
+    try {
+      const querySnapshot = await firestore()
+        .collection("spot")
+        .orderBy("id")
+        .get();
+
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach((docs) => {
+          const item = docs.data();
+          fetchResult.push(item);
+        });
+
+        setMarkerCords(fetchResult);
+      }
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    } finally {
+      console.log(markerCords);
     }
   };
 
@@ -156,6 +183,7 @@ const TrackUserMapView = () => {
 
   useEffect(() => {
     fetchImageUri();
+    fetchAllMarkerCord();
   }, []);
 
   return (
@@ -204,7 +232,7 @@ const TrackUserMapView = () => {
             }}
             title="神戸電子学生会館"
             description="ここでアプリは作られた。"
-            onPress={() => handleMarkerPress2()}
+            onPress={() => fetchAllMarkerCord()}
           >
             <Image source={image} style={styles.markerImage} />
           </Marker>
