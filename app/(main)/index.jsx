@@ -26,6 +26,49 @@ const ASPECT_RATIO = width / height; //アスペクト比
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
 
+//データベースからピンのデータをリスト化(現在は仮のデータを用意)
+const blueMapPins = [ //公式のピン
+  {
+    id: 1,
+    latitude: 34.69455,
+    longitude: 135.1907,
+    title: "生田神社",
+    description: "生田神社だヨ"
+  },
+  {
+    id: 2,
+    latitude: 34.69891700747491,
+    longitude: 135.19364647347652,
+    title: "神戸電子学生会館",
+    description: "ここでアプリは作られた。"
+  },
+  {
+    id: 3,
+    latitude: 34.68916215229272,
+    longitude: 135.19632682301685,
+    title: "東遊園地",
+    description: "冬にはルミナリエが開催されています。"
+
+  },
+  {
+    id: 4,
+    latitude: 34.70037585660064,
+    longitude: 135.1970933185527,
+    title: "阪急駅前広場",
+    description: "阪急駅前広場です"
+  }
+]; 
+
+const yellowMapPins = [ //ユーザが追加したピン
+  {
+    id: 1,
+    latitude: 34.700622805433945,
+    longitude: 135.1904940098132,
+    title: "北野異人館街",
+    description: "有名な北野異人館があります"
+  },
+]; 
+
 const TrackUserMapView = () => {
 
   const navigation = useNavigation();
@@ -191,37 +234,40 @@ const TrackUserMapView = () => {
               <View style={styles.marker} />
             </View>
           </Marker>
+          
+          {blueMapPins.map(blueMapPins => ( //公式のピンをリストの最後まで表示
           <Marker
+          key={blueMapPins.id}
             coordinate={{
-              latitude: 34.69455,
-              longitude: 135.1907,
+              latitude: blueMapPins.latitude,
+              longitude: blueMapPins.longitude,
             }}
-            title="生田神社"
-            description="生田神社だヨ"
+            title={blueMapPins.title}
+            description={blueMapPins.description}
           >
-            <Image source={image} style={styles.markerImage} />
+            <Image 
+            source={image}
+            style={styles.markerImage}  //ピンの色
+            /> 
           </Marker>
+        ))}
+
+        {yellowMapPins.map(yellowMapPins => ( //ユーザーが追加したピンをリストの最後まで表示
           <Marker
+          key={yellowMapPins.id}
             coordinate={{
-              latitude: 34.69891700747491,
-              longitude: 135.19364647347652,
+              latitude: yellowMapPins.latitude,
+              longitude: yellowMapPins.longitude,
             }}
-            title="神戸電子学生会館"
-            description="ここでアプリは作られた。"
-            onPress={() => handleMarkerPress2()}
+            title={yellowMapPins.title}
+            description={yellowMapPins.description}
           >
-            <Image source={image} style={styles.markerImage} />
+            <Image
+            source={image}
+            style={styles.markerImage}  //ピンの色
+            />
           </Marker>
-          <Marker
-            coordinate={{
-              latitude: 34.68916215229272,
-              longitude: 135.19632682301685,
-            }}
-            title="東遊園地"
-            description="冬にはルミナリエが開催されています。"
-          >
-            <Image source={image} style={styles.markerImage} />
-          </Marker>
+        ))}
           <YourComponent />
         </MapView>
       )}
