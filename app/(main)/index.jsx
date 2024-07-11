@@ -43,16 +43,17 @@ const TrackUserMapView = () => {
   const [distance, setDistance] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
 
-  const YourComponent = () => {
+  const YourComponent = ({areaRadius, latitudes,loadings}) => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
-      handleMarkerPress(34.69891700747491, 135.19364647347652); // 適切な値を渡す
+      console.log(`aaaaaaaaaaa==${areaRadius}`)
+      handleMarkerPress( latitudes, loadings,areaRadius); // 適切な値を渡す
 
       // 他の初期化処理もここに書くことができます
     }, []);
   };
 
-  const handleMarkerPress = (latitude, longitude) => {
+  const handleMarkerPress = (latitude, longitude,areaRadius) => {
     const distance = calculateDistance(
       position.latitude,
       position.longitude,
@@ -61,7 +62,7 @@ const TrackUserMapView = () => {
     );
     setDistance(distance); // 距離を状態として更新
     console.log(image);
-    if (distance < 50) {
+    if (distance < areaRadius) {
       //距離が50m以上離れているかのチェック
       setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
     } else {
@@ -232,6 +233,11 @@ const TrackUserMapView = () => {
               }}
               title={marker.name}
             >
+            <YourComponent 
+            areaRadius={marker.areaRadius}
+            latitudes={marker.mapLatitude}
+            loadings={marker.mapLongitude}
+            />
               <Image
                 source={image}
                 style={styles.markerImage} //ピンの色
