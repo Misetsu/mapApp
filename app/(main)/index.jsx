@@ -5,6 +5,7 @@ import {
   Text,
   Image,
   Modal,
+  Button,
   Pressable,
   Dimensions,
   TouchableOpacity,
@@ -275,10 +276,7 @@ const TrackUserMapView = () => {
 
       <View style={styles.loignBtnContainer}>
         <Link href={{ pathname: "/loginForm" }} asChild>
-          <Button
-            title="ログイン"
-            onPress={() => navigation.navigate("login_Form")}
-          />
+          <Button title="ログイン" />
         </Link>
       </View>
     </SafeAreaView>
