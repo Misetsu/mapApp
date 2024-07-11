@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { Link } from "expo-router";
-import { setTextRange } from "typescript";
 
 const SignupScreen = () => {
   const [email, setEmail] = useState("");
   const [password1, setPassword1] = useState("");
   const [password2, setPassword2] = useState("");
-  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       <TextInput

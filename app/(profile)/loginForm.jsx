@@ -5,7 +5,7 @@ import { Link } from "expo-router";
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       <TextInput
