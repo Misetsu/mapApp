@@ -109,7 +109,7 @@ const TrackUserMapView = () => {
     );
     setDistance(distance); // 距離を状態として更新
     console.log(image);
-    if (distance < 50) {
+    if (distance < 18) {
       //距離が50m以上離れているかのチェック
       setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
       setimage2(require("../image/pin_orange.png"));
