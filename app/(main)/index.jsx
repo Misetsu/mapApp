@@ -148,7 +148,12 @@ const TrackUserMapView = () => {
           fetchResult.push(item);
         });
 
+        // const item = querySnapshot.docs[0].data();
+        // fetchResult.push(item);
+
         setMarkerCords(fetchResult);
+      } else {
+        console.log("empty");
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -211,42 +216,29 @@ const TrackUserMapView = () => {
               latitude: position.latitude,
               longitude: position.longitude,
             }}
+            onPress={() => console.log(typeof markerCords[0].mapLatitude)}
           >
             <View style={styles.radius}>
               <View style={styles.marker} />
             </View>
           </Marker>
-          <Marker
-            coordinate={{
-              latitude: 34.69455,
-              longitude: 135.1907,
-            }}
-            title="生田神社"
-            description="生田神社だヨ"
-          >
-            <Image source={image} style={styles.markerImage} />
-          </Marker>
-          <Marker
-            coordinate={{
-              latitude: 34.69891700747491,
-              longitude: 135.19364647347652,
-            }}
-            title="神戸電子学生会館"
-            description="ここでアプリは作られた。"
-            onPress={() => handleMarkerPress2()}
-          >
-            <Image source={image} style={styles.markerImage} />
-          </Marker>
-          <Marker
-            coordinate={{
-              latitude: 34.68916215229272,
-              longitude: 135.19632682301685,
-            }}
-            title="東遊園地"
-            description="冬にはルミナリエが開催されています。"
-          >
-            <Image source={image} style={styles.markerImage} />
-          </Marker>
+
+          {markerCords.map((marker) => (
+            <Marker
+              key={marker.id}
+              coordinate={{
+                latitude: parseFloat(marker.mapLatitude),
+                longitude: parseFloat(marker.mapLongitude),
+              }}
+              title={marker.name}
+            >
+              <Image
+                source={image}
+                style={styles.markerImage} //ピンの色
+              />
+            </Marker>
+          ))}
+
           <YourComponent />
         </MapView>
       )}
