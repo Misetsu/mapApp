@@ -34,7 +34,7 @@ export default function CameraScreen() {
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
-  const { latitude, longitude } = params;
+  const { latitude, longitude, spotId } = params;
 
   Reanimated.addWhitelistedNativeProps({
     zoom: true,
@@ -97,6 +97,7 @@ export default function CameraScreen() {
           imageUri: "file://" + photo.path,
           latitude: latitude,
           longitude: longitude,
+          spotId: spotId,
         },
       });
     } catch (error) {
@@ -132,6 +133,7 @@ export default function CameraScreen() {
           imageUri: result.assets[0].uri,
           latitude: latitude,
           longitude: longitude,
+          spotId: spotId,
         },
       });
     }
