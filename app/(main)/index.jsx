@@ -70,8 +70,14 @@ const TrackUserMapView = () => {
     console.log(distance);
   };
 
-  const setmodal = () => {
-    if (distance < 50) {
+  const setmodal = (marker) => {
+    const distance = calculateDistance(
+      position.latitude,
+      position.longitude,
+      marker.mapLatitude,
+      marker.mapLongitude
+    );
+    if (distance < marker.areaRadius) {
       //距離が50m以上離れているかのチェック
       setModalVisible(true);
     } else {
@@ -242,6 +248,7 @@ const TrackUserMapView = () => {
                 longitude: parseFloat(marker.mapLongitude),
               }}
               title={marker.name}
+              onPress={setmodal(marker)}
             >
               <Image
                 source={getPinColor(marker)}
