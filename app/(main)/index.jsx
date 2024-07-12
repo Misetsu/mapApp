@@ -409,6 +409,28 @@ const MyModal = ({ visible, imageUri, textData, onClose }) => {
             <Text>{textData.postTxt}</Text>
             <Text>Close</Text>
           </TouchableOpacity>
+          <Link
+        href={{
+          pathname: "/camera",
+          params: {
+            latitude: 0,
+            longitude: 0,
+          },
+        }}
+        asChild
+      >
+        <Pressable
+          style={{
+            position: "absolute",
+            // alignSelf: "center",
+            bottom: 5,
+            right:20,
+            width: 75,
+            height: 45,
+            backgroundColor: "blue",
+          }}
+        ></Pressable>
+      </Link>
         </View>
       </View>
     </Modal>
