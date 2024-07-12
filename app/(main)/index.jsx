@@ -43,9 +43,6 @@ const TrackUserMapView = () => {
   const [distance, setDistance] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
 
-  const [nearlatitude, setnearlatitude] = useState(0);
-  const [nearlongitude, setnearlongitude] = useState(0);
-  const [neardistance,setneardistance] = useState(100000);
   const YourComponent = () => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
@@ -73,22 +70,12 @@ const TrackUserMapView = () => {
     console.log(distance);
   };
 
-  const handleMarkerPress2 = () => {
-    if (distance < 50) {
-      //距離が50m以上離れているかのチェック
-      setModalVisible(true);
-    } else {
-      setModalVisible(false);
-    }
-  };
-
   function toRadians(degrees) {
     return (degrees * Math.PI) / 180;
   }
 
   // 2点間の距離を計算する関数
   function calculateDistance(lat1, lon1, lat2, lon2) {
-    console.log("AAAABBB")
     const R = 6371; // 地球の半径（単位: km）
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
@@ -100,7 +87,6 @@ const TrackUserMapView = () => {
         Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
-    console.log(`WWWWWWWWW==========${lat2}`)
     return distance;
   }
 
@@ -139,15 +125,12 @@ const TrackUserMapView = () => {
   const [markerCords, setMarkerCords] = useState([]);
 
   const getPinColor = (marker) => {
-    console.log("AAAAAA")
     const distance = calculateDistance(
       position.latitude,
       position.longitude,
       marker.mapLatitude,
       marker.mapLongitude
     );
-    console.log(`aaaaaaaaa======${distance}`)
-    
     return distance < marker.areaRadius ? require('../image/pin_orange.png') : require('../image/pin_blue.png');
   };
 
