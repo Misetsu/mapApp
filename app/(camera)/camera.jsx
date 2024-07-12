@@ -152,18 +152,19 @@ export default function CameraScreen() {
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
 
-        <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
-          <ReanimatedCamera
-            ref={cameraRef}
-            style={styles.camera}
-            device={device}
-            photo={true}
-            format={format}
-            isActive={isActive}
-            animatedProps={animatedProps}
-          />
-        </GestureDetector>
-
+        <View style={styles.cameraContainer}>
+          <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
+            <ReanimatedCamera
+              ref={cameraRef}
+              style={styles.camera}
+              device={device}
+              photo={true}
+              format={format}
+              isActive={isActive}
+              animatedProps={animatedProps}
+            />
+          </GestureDetector>
+        </View>
         {showSlider && (
           <View style={styles.sliderContainer}>
             <Slider
@@ -202,13 +203,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  cameraContainer: {
+    // height: "auto",
+    width: "auto",
+  },
   camera: {
-    flex: 0.65,
+    flex: 0.788,
     aspectRatio: 3 / 4,
   },
   sliderContainer: {
     position: "absolute",
-    bottom: 120,
+    bottom: 150,
     left: 20,
     right: 20,
     alignItems: "stretch",
@@ -241,7 +246,7 @@ const styles = StyleSheet.create({
   },
   exposureButton: {
     position: "absolute",
-    top: 50,
+    top: 30,
     right: 20,
     width: 50,
     height: 40,
