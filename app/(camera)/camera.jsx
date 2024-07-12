@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, useRef } from "react";
-import { View, StyleSheet, Pressable, Image } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { View, StyleSheet, Pressable, Text } from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -19,28 +19,31 @@ import Reanimated, {
   interpolate,
   Extrapolation,
   runOnJS,
+  useDerivedValue,
 } from "react-native-reanimated";
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
+import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
+
+const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
   const cameraRef = useRef(null);
   const device = useCameraDevice("back");
   const { hasPermission, requestPermission } = useCameraPermission();
   const [isActive, setIsActive] = useState(false);
+  const [showSlider, setShowSlider] = useState(false); // スライダーの表示状態を管理するステート
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
-  const { latitude, longitude, spotId } = params;
+  const { latitude, longitude } = params;
 
-  Reanimated.addWhitelistedNativeProps({
-    zoom: true,
-  });
-  const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
-  const zoom = useSharedValue(device.neutralZoom);
+  const zoom = useSharedValue(device?.neutralZoom ?? 1);
+  const exposureSlider = useSharedValue(0);
+
   const zoomOffset = useSharedValue(0);
   const pinchGesture = Gesture.Pinch()
     .onBegin(() => {
@@ -55,13 +58,21 @@ export default function CameraScreen() {
         Extrapolation.CLAMP
       );
     });
-  const animatedProps = useAnimatedProps(() => ({ zoom: zoom.value }), [zoom]);
+
+  const animatedProps = useAnimatedProps(
+    () => ({
+      zoom: zoom.value,
+      exposure: exposureSlider.value,
+    }),
+    [zoom, exposureSlider]
+  );
 
   const focus = useCallback((point) => {
     const c = cameraRef.current;
     if (c == null) return;
     c.focus(point);
   }, []);
+
   const tapGesture = Gesture.Tap().onEnd(({ x, y }) => {
     runOnJS(focus)({ x, y });
   });
@@ -89,15 +100,12 @@ export default function CameraScreen() {
       }
       const photo = await cameraRef.current.takePhoto();
       console.log(photo);
-      // setPhoto(photo);
-      console.log(photo.path);
       router.navigate({
         pathname: "/edit",
         params: {
           imageUri: "file://" + photo.path,
           latitude: latitude,
           longitude: longitude,
-          spotId: spotId,
         },
       });
     } catch (error) {
@@ -105,27 +113,14 @@ export default function CameraScreen() {
     }
   };
 
-  // const uploadPhoto = async () => {
-  //   console.log(photo.Path);
-  //   router.navigate({
-  //     pathname: "/edit",
-  //     params: { imageUri: photo.Path },
-  //   });
-  // };
-
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
-      // aspect: [3, 4],
       quality: 1,
     });
 
     if (!result.canceled) {
-      // const randomNumber = Math.floor(Math.random() * 100) + 1;
-      // const imagePath =
-      //   "photo/image-" + new Date().getTime().toString() + randomNumber;
-      // await reference.ref(imagePath).putFile(result.assets[0].uri);
       console.log(result.assets[0].uri);
       router.navigate({
         pathname: "/edit",
@@ -133,11 +128,22 @@ export default function CameraScreen() {
           imageUri: result.assets[0].uri,
           latitude: latitude,
           longitude: longitude,
-          spotId: spotId,
         },
       });
     }
   }
+  //exposuer slider
+  const exposureValue = useDerivedValue(() => {
+    if (device == null) return 0;
+    return interpolate(
+      exposureSlider.value,
+      [
+        -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+        10,
+      ],
+      [device.minExposure, 0, device.maxExposure]
+    );
+  }, [exposureSlider, device]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -156,90 +162,94 @@ export default function CameraScreen() {
           />
         </GestureDetector>
 
-        {/* {photo && (
-          <>
-            <Image
-              source={{ uri: photo.path }}
-              style={StyleSheet.absoluteFill}
+        {showSlider && (
+          <View style={styles.sliderContainer}>
+            <Slider
+              style={styles.slider}
+              minimumValue={-10}
+              maximumValue={10}
+              value={exposureSlider.value}
+              onValueChange={(value) => (exposureSlider.value = value)}
             />
-            <FontAwesome5
-              onPress={() => setPhoto(undefined)}
-              name="arrow-left"
-              size={25}
-              color="red"
-              style={{ position: "absolute", top: 50, left: 30 }}
-            />
-            <View
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                paddingBottom: 50,
-                backgroundColor: "rgba(0,0,0,0.40)",
-              }}
-            >
-              <Pressable
-                onPress={uploadPhoto}
-                style={{
-                  position: "absolute",
-                  alignSelf: "center",
-                  bottom: 50,
-                  width: 75,
-                  height: 75,
-                  backgroundColor: "red",
-                  borderRadius: 75,
-                }}
-              />
-            </View>
-          </>
-        )} */}
+          </View>
+        )}
 
-        {/* {!photo && ( */}
-        <>
-          <Pressable
-            onPress={onTakePicturePressed}
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              bottom: 50,
-              width: 75,
-              height: 75,
-              backgroundColor: "white",
-              borderRadius: 75,
-            }}
-          ></Pressable>
-          <Pressable
-            onPress={pickImage}
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              bottom: 50,
-              left: 40,
-              width: 45,
-              height: 45,
-              backgroundColor: "black",
-              borderRadius: 25,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          />
-        </>
-        {/* )} */}
+        <Pressable
+          onPress={onTakePicturePressed}
+          style={styles.captureButton}
+        />
+        <Pressable onPress={pickImage} style={styles.pickImageButton} />
+        {/* exposuer exposure */}
+        <Pressable
+          // ボタンを押したときにスライダーの表示/非表示を切り替え
+          onPress={() => setShowSlider(!showSlider)}
+          style={styles.exposureButton}
+        >
+          <Reanimated.Text style={styles.exposureButtonText}>
+            {exposureSlider.value.toFixed(1)} {/* スライダーの値を表示 */}
+          </Reanimated.Text>
+        </Pressable>
       </View>
     </GestureHandlerRootView>
   );
 }
 
-// スタイル
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center", // 垂直方向の中央揃え
-    alignItems: "center", // 水平方向の中央揃え
+    justifyContent: "center",
+    alignItems: "center",
   },
   camera: {
     flex: 0.65,
-    aspectRatio: 3 / 4, // アスペクト比を設定する（例: 3:4）
+    aspectRatio: 3 / 4,
+  },
+  sliderContainer: {
+    position: "absolute",
+    bottom: 120,
+    left: 20,
+    right: 20,
+    alignItems: "stretch",
+  },
+  slider: {
+    width: "100%",
+    height: 40,
+    marginBottom: 20,
+  },
+  captureButton: {
+    position: "absolute",
+    alignSelf: "center",
+    bottom: 50,
+    width: 75,
+    height: 75,
+    backgroundColor: "white",
+    borderRadius: 75,
+  },
+  pickImageButton: {
+    position: "absolute",
+    alignSelf: "center",
+    bottom: 50,
+    left: 40,
+    width: 45,
+    height: 45,
+    backgroundColor: "black",
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  exposureButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    width: 50,
+    height: 40,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+  },
+  exposureButtonText: {
+    color: "white",
+    fontSize: 16,
   },
 });
