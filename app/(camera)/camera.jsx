@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "black",
   },
   cameraContainer: {
     // height: "auto",
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
     left: 40,
     width: 45,
     height: 45,
-    backgroundColor: "black",
+    backgroundColor: "blue",
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
