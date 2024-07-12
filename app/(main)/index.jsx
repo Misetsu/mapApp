@@ -105,6 +105,7 @@ const TrackUserMapView = () => {
 
   const fetchImageUri = async (spotId) => {
     setLoading(true);
+    console.log("Image fetch", spotId);
     try {
       const querySnapshot = await firestore()
         .collection("photo")
@@ -123,10 +124,10 @@ const TrackUserMapView = () => {
           console.log("No imagePath field in document");
         }
       } else {
-        console.log("No documents found with the specified condition");
+        console.log("No image found with the specified condition");
       }
     } catch (error) {
-      console.error("Error fetching documents: ", error);
+      console.error("Error fetching image: ", error);
     } finally {
       setLoading(false);
     }
@@ -145,18 +146,15 @@ const TrackUserMapView = () => {
         console.log("Document data:", data);
 
         if (data) {
-          return data; // ドキュメントからテキストデータを取得
+          setTextData(data);
         } else {
           console.log("No textData field in document");
-          return ""; // デフォルト値またはエラー処理を追加することもできます
         }
       } else {
         console.log("No documents found with the specified condition");
-        return ""; // デフォルト値またはエラー処理を追加することもできます
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
-      return ""; // デフォルト値またはエラー処理を追加することもできます
     }
   };
 
@@ -164,7 +162,7 @@ const TrackUserMapView = () => {
 
   const fetchAllMarkerCord = async () => {
     const fetchResult = [];
-    setLoading(true);
+    // setLoading(true);
     try {
       const querySnapshot = await firestore()
         .collection("spot")
@@ -185,7 +183,7 @@ const TrackUserMapView = () => {
       console.error("Error fetching documents: ", error);
     } finally {
       console.log(markerCords);
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -272,6 +270,7 @@ const TrackUserMapView = () => {
       <MyModal
         visible={modalVisible}
         imageUri={imageUri}
+        textData={textData}
         onClose={() => setModalVisible(false)}
       />
 
@@ -402,7 +401,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const MyModal = ({ visible, imageUri, onClose }) => {
+const MyModal = ({ visible, imageUri, textData, onClose }) => {
   return (
     <Modal
       animationType="fade"
@@ -412,6 +411,7 @@ const MyModal = ({ visible, imageUri, onClose }) => {
     >
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <View style={{ backgroundColor: "white", padding: 20 }}>
+          <Text>{textData.userId}</Text>
           {imageUri ? (
             <Image
               source={{ uri: imageUri }}
@@ -421,8 +421,32 @@ const MyModal = ({ visible, imageUri, onClose }) => {
             <ActivityIndicator size="large" color="#0000ff" />
           )}
           <TouchableOpacity onPress={onClose}>
+            <Text>{textData.postTxt}</Text>
             <Text>Close</Text>
           </TouchableOpacity>
+          <Link
+            href={{
+              pathname: "/camera",
+              params: {
+                latitude: 0,
+                longitude: 0,
+                spotId: textData.spotId,
+              },
+            }}
+            asChild
+          >
+            <Pressable
+              style={{
+                position: "absolute",
+                // alignSelf: "center",
+                bottom: 5,
+                right: 20,
+                width: 75,
+                height: 45,
+                backgroundColor: "blue",
+              }}
+            ></Pressable>
+          </Link>
         </View>
       </View>
     </Modal>
