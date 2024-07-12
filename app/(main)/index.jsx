@@ -79,6 +79,7 @@ const TrackUserMapView = () => {
     );
     if (distance < marker.areaRadius) {
       //距離が50m以上離れているかのチェック
+      fetchImageUri(marker.id);
       setModalVisible(true);
     } else {
       setModalVisible(false);
@@ -108,21 +109,24 @@ const TrackUserMapView = () => {
   const [imageUri, setImageUri] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchImageUri = async () => {
+  const fetchImageUri = async (spotid) => {
     setLoading(true);
     try {
       const querySnapshot = await firestore()
         .collection("photo")
-        .where("spotId", "==", 1) // 特定の条件を指定
+        .where("spotId", "==", spotid) // 特定の条件を指定
         .get();
 
       if (!querySnapshot.empty) {
         const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
         const data = documentSnapshot.data();
-        console.log("Document data:", data);
+        console.log("Document data:", data.imagePath);
 
         if (data.imagePath) {
+          
           const url = await storage().ref(data.imagePath).getDownloadURL();
+          console.log(url)
+          
           setImageUri(url);
         } else {
           console.log("No imagePath field in document");
@@ -138,6 +142,7 @@ const TrackUserMapView = () => {
   };
 
   const [markerCords, setMarkerCords] = useState([]);
+  const [photodata,setphotodata] = useState()
 
   const getPinColor = (marker) => {
     const distance = calculateDistance(
@@ -204,7 +209,6 @@ const TrackUserMapView = () => {
   }, [initialRegion]);
 
   useEffect(() => {
-    fetchImageUri();
     fetchAllMarkerCord();
   }, []);
 
@@ -248,7 +252,10 @@ const TrackUserMapView = () => {
                 longitude: parseFloat(marker.mapLongitude),
               }}
               title={marker.name}
-              onPress={setmodal(marker)}
+              onPress={() => setmodal(marker)}
+              // onPress={() =>
+            //   handleMarkerPress(34.694755595459455, 135.1906974779092)
+            // }
             >
               <Image
                 source={getPinColor(marker)}
