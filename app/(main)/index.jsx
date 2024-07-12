@@ -71,10 +71,9 @@ const TrackUserMapView = () => {
     console.log(distance);
   };
 
-  const handleMarkerPress2 = () => {
+  const handleMarkerPress2 = (spotId) => {
     if (distance < 50) {
-      //距離が50m以上離れているかのチェック
-      setModalVisible(true);
+      fetchImageUri(spotId), fetchTextData(spotId), setModalVisible(true);
     } else {
       setModalVisible(false);
     }
@@ -101,14 +100,15 @@ const TrackUserMapView = () => {
   }
 
   const [imageUri, setImageUri] = useState("");
+  const [textData, setTextData] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchImageUri = async () => {
+  const fetchImageUri = async (spotId) => {
     setLoading(true);
     try {
       const querySnapshot = await firestore()
         .collection("photo")
-        .where("spotId", "==", 1) // 特定の条件を指定
+        .where("spotId", "==", spotId) // 特定の条件を指定
         .get();
 
       if (!querySnapshot.empty) {
@@ -132,6 +132,34 @@ const TrackUserMapView = () => {
     }
   };
 
+  const fetchTextData = async (spotId) => {
+    try {
+      const querySnapshot = await firestore()
+        .collection("post")
+        .where("spotId", "==", spotId) // 特定の条件を指定
+        .get();
+
+      if (!querySnapshot.empty) {
+        const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
+        const data = documentSnapshot.data();
+        console.log("Document data:", data);
+
+        if (data) {
+          return data; // ドキュメントからテキストデータを取得
+        } else {
+          console.log("No textData field in document");
+          return ""; // デフォルト値またはエラー処理を追加することもできます
+        }
+      } else {
+        console.log("No documents found with the specified condition");
+        return ""; // デフォルト値またはエラー処理を追加することもできます
+      }
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+      return ""; // デフォルト値またはエラー処理を追加することもできます
+    }
+  };
+
   const [markerCords, setMarkerCords] = useState([]);
 
   const fetchAllMarkerCord = async () => {
@@ -148,9 +176,6 @@ const TrackUserMapView = () => {
           const item = docs.data();
           fetchResult.push(item);
         });
-
-        // const item = querySnapshot.docs[0].data();
-        // fetchResult.push(item);
 
         setMarkerCords(fetchResult);
       } else {
@@ -189,7 +214,6 @@ const TrackUserMapView = () => {
   }, [initialRegion]);
 
   useEffect(() => {
-    fetchImageUri();
     fetchAllMarkerCord();
   }, []);
 
@@ -232,6 +256,7 @@ const TrackUserMapView = () => {
                 longitude: parseFloat(marker.mapLongitude),
               }}
               title={marker.name}
+              onPress={() => handleMarkerPress2(marker.id)}
             >
               <Image
                 source={image}
