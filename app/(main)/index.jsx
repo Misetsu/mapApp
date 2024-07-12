@@ -46,7 +46,7 @@ const TrackUserMapView = () => {
   const YourComponent = () => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
-      handleMarkerPress(34.69891700747491, 135.19364647347652); // 適切な値を渡す
+      handleMarkerPress(34.67120992, 135.11095439); // 適切な値を渡す
 
       // 他の初期化処理もここに書くことができます
     }, []);
