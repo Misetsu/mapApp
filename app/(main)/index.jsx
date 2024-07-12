@@ -23,7 +23,7 @@ const { width, height } = Dimensions.get("window"); //デバイスの幅と高�
 const ASPECT_RATIO = width / height; //アスペクト比
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
-
+let imagearray = [[0,require("../image/pin_blue.png")]]
 const TrackUserMapView = () => {
   const [position, setPosition] = useState({
     //ユーザーの位置情報を保持
@@ -41,19 +41,21 @@ const TrackUserMapView = () => {
 
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
   const [distance, setDistance] = useState(0);
-  const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
+  const [image, setimage] = useState("../image/pin_orange.png"); //ピンの色を保存する
+  const [defaultimage,setdefaultimage] = useState("../image/pin_blue.png")
+  const [count, setcount] = useState(0); //ピンの色を保存する
 
-  const YourComponent = ({areaRadius, latitudes,loadings}) => {
+  const [items, setItems] = useState([])
+
+  const YourComponent = ({areaRadius, latitudes,loadings,id}) => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
-      console.log(`aaaaaaaaaaa==${areaRadius}`)
-      handleMarkerPress( latitudes, loadings,areaRadius); // 適切な値を渡す
-
+      handleMarkerPress( latitudes, loadings,areaRadius,id); // 適切な値を渡す
       // 他の初期化処理もここに書くことができます
     }, []);
   };
 
-  const handleMarkerPress = (latitude, longitude,areaRadius) => {
+  const handleMarkerPress = (latitude, longitude,areaRadius,id) => {
     const distance = calculateDistance(
       position.latitude,
       position.longitude,
@@ -61,23 +63,33 @@ const TrackUserMapView = () => {
       longitude
     );
     setDistance(distance); // 距離を状態として更新
-    console.log(image);
+    console.log(`距離=${distance}`);
+    console.log(`範囲=${areaRadius}`);
+    console.log(`現在緯度=${position.latitude}、現在経度=${position.longitude}`)
     if (distance < areaRadius) {
-      //距離が50m以上離れているかのチェック
-      setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
-    } else {
-      setimage(require("../image/pin_blue.png")); //離れている(遠い場合)は青のピン
+      const newItem = `Item ${items.length + 1}`;
+      setItems([...items, id]); // 新しい配列を作成し、setItemsで更新する
     }
-    console.log(distance);
   };
 
-  const handleMarkerPress2 = () => {
-    if (distance < 50) {
+  const setpincoler = (areaRadius,id) => {
+    
+    let areaid = 0
+    let coler = require("../image/pin_blue.png")
+    
+    for(areaid of items){
+      console.log(`areaid=${areaid}id=${id}`)
+      console.log(image);
+      if (areaid == id) {
       //距離が50m以上離れているかのチェック
-      setModalVisible(true);
-    } else {
-      setModalVisible(false);
-    }
+      setItems([])
+      console.log("../image/pin_orange.png");
+      coler = require("../image/pin_orange.png");
+      }
+      
+  }
+  return coler;
+  
   };
 
   function toRadians(degrees) {
@@ -148,7 +160,6 @@ const TrackUserMapView = () => {
           const item = docs.data();
           fetchResult.push(item);
         });
-
         // const item = querySnapshot.docs[0].data();
         // fetchResult.push(item);
 
@@ -233,19 +244,16 @@ const TrackUserMapView = () => {
               }}
               title={marker.name}
             >
+              <Image source={setpincoler(marker.areaRadius,marker.id)} style={styles.markerImage}/>
             <YourComponent 
-            areaRadius={marker.areaRadius}
-            latitudes={marker.mapLatitude}
-            loadings={marker.mapLongitude}
-            />
-              <Image
-                source={image}
-                style={styles.markerImage} //ピンの色
-              />
+                  areaRadius={marker.areaRadius}
+                  latitudes={marker.mapLatitude}
+                  loadings={marker.mapLongitude}
+                  id={marker.id}
+                />
+              
             </Marker>
           ))}
-
-          <YourComponent />
         </MapView>
       )}
 
