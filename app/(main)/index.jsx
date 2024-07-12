@@ -70,6 +70,15 @@ const TrackUserMapView = () => {
     console.log(distance);
   };
 
+  const setmodal = () => {
+    if (distance < 50) {
+      //距離が50m以上離れているかのチェック
+      setModalVisible(true);
+    } else {
+      setModalVisible(false);
+    }
+  };
+
   function toRadians(degrees) {
     return (degrees * Math.PI) / 180;
   }
