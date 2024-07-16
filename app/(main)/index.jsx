@@ -79,6 +79,7 @@ const TrackUserMapView = () => {
     if (distance < marker.areaRadius) {
       //距離が50m以上離れているかのチェック
       fetchImageUri(marker.id);
+      fetchTextData(marker.id);
       setModalVisible(true);
     } else {
       setModalVisible(false);
