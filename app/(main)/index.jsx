@@ -47,7 +47,7 @@ const TrackUserMapView = () => {
   const YourComponent = () => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
-      handleMarkerPress(34.69891700747491, 135.19364647347652); // 適切な値を渡す
+      handleMarkerPress(0, 0); // 適切な値を渡す
 
       // 他の初期化処理もここに書くことができます
     }, []);
@@ -71,9 +71,16 @@ const TrackUserMapView = () => {
     console.log(distance);
   };
 
-  const handleMarkerPress2 = () => {
-    if (distance < 50) {
+  const setmodal = (marker) => {
+    const distance = calculateDistance(
+      position.latitude,
+      position.longitude,
+      marker.mapLatitude,
+      marker.mapLongitude
+    );
+    if (distance < marker.areaRadius) {
       //距離が50m以上離れているかのチェック
+      fetchImageUri(marker.id);
       setModalVisible(true);
     } else {
       setModalVisible(false);
@@ -103,21 +110,24 @@ const TrackUserMapView = () => {
   const [imageUri, setImageUri] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchImageUri = async () => {
+  const fetchImageUri = async (spotid) => {
     setLoading(true);
     try {
       const querySnapshot = await firestore()
         .collection("photo")
-        .where("spotId", "==", 1) // 特定の条件を指定
+        .where("spotId", "==", spotid) // 特定の条件を指定
         .get();
 
       if (!querySnapshot.empty) {
         const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
         const data = documentSnapshot.data();
-        console.log("Document data:", data);
+        console.log("Document data:", data.imagePath);
 
         if (data.imagePath) {
+          
           const url = await storage().ref(data.imagePath).getDownloadURL();
+          console.log(url)
+          
           setImageUri(url);
         } else {
           console.log("No imagePath field in document");
@@ -133,6 +143,17 @@ const TrackUserMapView = () => {
   };
 
   const [markerCords, setMarkerCords] = useState([]);
+  const [photodata,setphotodata] = useState()
+
+  const getPinColor = (marker) => {
+    const distance = calculateDistance(
+      position.latitude,
+      position.longitude,
+      marker.mapLatitude,
+      marker.mapLongitude
+    );
+    return distance < marker.areaRadius ? require('../image/pin_orange.png') : require('../image/pin_blue.png');
+  };
 
   const fetchAllMarkerCord = async () => {
     const fetchResult = [];
@@ -189,7 +210,6 @@ const TrackUserMapView = () => {
   }, [initialRegion]);
 
   useEffect(() => {
-    fetchImageUri();
     fetchAllMarkerCord();
   }, []);
 
@@ -224,6 +244,7 @@ const TrackUserMapView = () => {
             </View>
           </Marker>
 
+
           {markerCords.map((marker) => (
             <Marker
               key={marker.id}
@@ -232,15 +253,19 @@ const TrackUserMapView = () => {
                 longitude: parseFloat(marker.mapLongitude),
               }}
               title={marker.name}
+              onPress={() => setmodal(marker)}
+              // onPress={() =>
+            //   handleMarkerPress(34.694755595459455, 135.1906974779092)
+            // }
             >
               <Image
-                source={image}
+                source={getPinColor(marker)}
                 style={styles.markerImage} //ピンの色
               />
             </Marker>
           ))}
 
-          <YourComponent />
+          <YourComponent/>
         </MapView>
       )}
 
