@@ -47,9 +47,7 @@ const TrackUserMapView = () => {
   const YourComponent = () => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
-      handleMarkerPress(0, 0); // 適切な値を渡す
-
-      // 他の初期化処理もここに書くことができます
+      handleMarkerPress(0, 0);
     }, []);
   };
 
@@ -108,6 +106,7 @@ const TrackUserMapView = () => {
   }
 
   const [imageUri, setImageUri] = useState("");
+  const [textData, setTextData] = useState("");
   const [loading, setLoading] = useState(true);
 
   const fetchImageUri = async (spotid) => {
@@ -124,10 +123,9 @@ const TrackUserMapView = () => {
         console.log("Document data:", data.imagePath);
 
         if (data.imagePath) {
-          
           const url = await storage().ref(data.imagePath).getDownloadURL();
-          console.log(url)
-          
+          console.log(url);
+
           setImageUri(url);
         } else {
           console.log("No imagePath field in document");
@@ -142,8 +140,33 @@ const TrackUserMapView = () => {
     }
   };
 
+  const fetchTextData = async (spotId) => {
+    try {
+      const querySnapshot = await firestore()
+        .collection("post")
+        .where("spotId", "==", spotId) // 特定の条件を指定
+        .get();
+
+      if (!querySnapshot.empty) {
+        const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
+        const data = documentSnapshot.data();
+        console.log("Document data:", data);
+
+        if (data) {
+          setTextData(data);
+        } else {
+          console.log("No textData field in document");
+        }
+      } else {
+        console.log("No documents found with the specified condition");
+      }
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
+  };
+
   const [markerCords, setMarkerCords] = useState([]);
-  const [photodata,setphotodata] = useState()
+  const [photodata, setphotodata] = useState();
 
   const getPinColor = (marker) => {
     const distance = calculateDistance(
@@ -152,7 +175,9 @@ const TrackUserMapView = () => {
       marker.mapLatitude,
       marker.mapLongitude
     );
-    return distance < marker.areaRadius ? require('../image/pin_orange.png') : require('../image/pin_blue.png');
+    return distance < marker.areaRadius
+      ? require("../image/pin_orange.png")
+      : require("../image/pin_blue.png");
   };
 
   const fetchAllMarkerCord = async () => {
@@ -237,13 +262,11 @@ const TrackUserMapView = () => {
               latitude: position.latitude,
               longitude: position.longitude,
             }}
-            onPress={() => console.log(typeof markerCords[0].mapLatitude)}
           >
             <View style={styles.radius}>
               <View style={styles.marker} />
             </View>
           </Marker>
-
 
           {markerCords.map((marker) => (
             <Marker
@@ -254,9 +277,6 @@ const TrackUserMapView = () => {
               }}
               title={marker.name}
               onPress={() => setmodal(marker)}
-              // onPress={() =>
-            //   handleMarkerPress(34.694755595459455, 135.1906974779092)
-            // }
             >
               <Image
                 source={getPinColor(marker)}
@@ -265,13 +285,14 @@ const TrackUserMapView = () => {
             </Marker>
           ))}
 
-          <YourComponent/>
+          <YourComponent />
         </MapView>
       )}
 
       <MyModal
         visible={modalVisible}
         imageUri={imageUri}
+        textData={textData}
         onClose={() => setModalVisible(false)}
       />
 
@@ -402,7 +423,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const MyModal = ({ visible, imageUri, onClose }) => {
+const MyModal = ({ visible, imageUri, textData, onClose }) => {
   return (
     <Modal
       animationType="fade"
@@ -412,6 +433,7 @@ const MyModal = ({ visible, imageUri, onClose }) => {
     >
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <View style={{ backgroundColor: "white", padding: 20 }}>
+          <Text>{textData.userId}</Text>
           {imageUri ? (
             <Image
               source={{ uri: imageUri }}
@@ -421,8 +443,32 @@ const MyModal = ({ visible, imageUri, onClose }) => {
             <ActivityIndicator size="large" color="#0000ff" />
           )}
           <TouchableOpacity onPress={onClose}>
+            <Text>{textData.postTxt}</Text>
             <Text>Close</Text>
           </TouchableOpacity>
+          <Link
+            href={{
+              pathname: "/camera",
+              params: {
+                latitude: 0,
+                longitude: 0,
+                spotId: textData.spotId,
+              },
+            }}
+            asChild
+          >
+            <Pressable
+              style={{
+                position: "absolute",
+                // alignSelf: "center",
+                bottom: 5,
+                right: 20,
+                width: 75,
+                height: 45,
+                backgroundColor: "blue",
+              }}
+            ></Pressable>
+          </Link>
         </View>
       </View>
     </Modal>
