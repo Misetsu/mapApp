@@ -42,6 +42,7 @@ const TrackUserMapView = () => {
 
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
   const [distance, setDistance] = useState(0);
+  const [spotId, setSpotId] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
 
   const YourComponent = () => {
@@ -80,6 +81,7 @@ const TrackUserMapView = () => {
       //距離が50m以上離れているかのチェック
       fetchImageUri(marker.id);
       fetchTextData(marker.id);
+      setSpotId(marker.id);
       setModalVisible(true);
     } else {
       setModalVisible(false);
@@ -132,6 +134,7 @@ const TrackUserMapView = () => {
           console.log("No imagePath field in document");
         }
       } else {
+        setImageUri("");
         console.log("No documents found with the specified condition");
       }
     } catch (error) {
@@ -159,6 +162,7 @@ const TrackUserMapView = () => {
           console.log("No textData field in document");
         }
       } else {
+        setTextData("");
         console.log("No documents found with the specified condition");
       }
     } catch (error) {
@@ -294,6 +298,7 @@ const TrackUserMapView = () => {
         visible={modalVisible}
         imageUri={imageUri}
         textData={textData}
+        spotId={spotId}
         onClose={() => setModalVisible(false)}
       />
 
@@ -424,7 +429,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const MyModal = ({ visible, imageUri, textData, onClose }) => {
+const MyModal = ({ visible, imageUri, textData, spotId, onClose }) => {
   return (
     <Modal
       animationType="fade"
@@ -453,7 +458,7 @@ const MyModal = ({ visible, imageUri, textData, onClose }) => {
               params: {
                 latitude: 0,
                 longitude: 0,
-                spotId: textData.spotId,
+                spotId: spotId,
               },
             }}
             asChild
