@@ -134,6 +134,7 @@ const TrackUserMapView = () => {
           console.log("No imagePath field in document");
         }
       } else {
+        setImageUri("");
         console.log("No documents found with the specified condition");
       }
     } catch (error) {
@@ -161,6 +162,7 @@ const TrackUserMapView = () => {
           console.log("No textData field in document");
         }
       } else {
+        setTextData("");
         console.log("No documents found with the specified condition");
       }
     } catch (error) {
