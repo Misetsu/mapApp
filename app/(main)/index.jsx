@@ -4,6 +4,7 @@ import {
   View,
   Text,
   Image,
+  Button,
   Modal,
   Pressable,
   Dimensions,
@@ -16,6 +17,7 @@ import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
+import { useNavigation } from 'expo-router';
 
 // import { customMapStyle } from "../component/mapLayout.jsx";
 
@@ -25,6 +27,8 @@ const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
 
 const TrackUserMapView = () => {
+
+  const navigation = useNavigation();
   const [position, setPosition] = useState({
     //ユーザーの位置情報を保持
     latitude: 0,
@@ -250,6 +254,15 @@ const TrackUserMapView = () => {
           }}
         ></Pressable>
       </Link>
+
+
+      <View style={styles.loignBtnContainer}>
+            <Button
+              title="ログイン"
+        onPress={() => navigation.navigate('login')}
+            />
+          </View>
+
     </SafeAreaView>
   );
 };
@@ -338,6 +351,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  loignBtnContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    borderRadius: 5,
+    padding: 10,
   },
 });
 

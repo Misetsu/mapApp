@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "507760764695",
-    "project_id": "mapapp-23ee8",
-    "storage_bucket": "mapapp-23ee8.appspot.com"
+    "project_number": "224298539879",
+    "project_id": "mapapp-96457",
+    "storage_bucket": "mapapp-96457.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:507760764695:android:2b752b1e7904740af43952",
+        "mobilesdk_app_id": "1:224298539879:android:946b918b773b3c88de6dc2",
         "android_client_info": {
           "package_name": "com.anonymous.mapApp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDG0Z_YMZhjfKlSaBtWPemftzfvuzlaWPg"
+          "current_key": "AIzaSyAebwpT-xHIbohRVVlEdaVNpkgRh5fVQGI"
         }
       ],
       "services": {
