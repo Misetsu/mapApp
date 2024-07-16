@@ -68,6 +68,7 @@ export default function test() {
         .then()
         .catch((error) => console.log(error));
     } else {
+      console.log(imagePath, spotId);
       firestore()
         .collection("photo")
         .add({
@@ -82,7 +83,7 @@ export default function test() {
         .collection("post")
         .add({
           postTxt: post,
-          spotId: maxId,
+          spotId: spotId,
           userId: 1,
         })
         .then()
