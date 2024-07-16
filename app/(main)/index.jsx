@@ -150,7 +150,7 @@ const TrackUserMapView = () => {
     try {
       const querySnapshot = await firestore()
         .collection('post')
-        .where('userid', '==', 1) // 特定の条件を指定
+        .where('userId', '==', 1) // 特定の条件を指定
         .get();
   
       if (!querySnapshot.empty) {
