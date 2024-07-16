@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Text } from "react-native";
+import { View, StyleSheet, Pressable, Dimensions } from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -28,6 +28,7 @@ import {
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
 
+const width = Dimensions.get("window");
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
@@ -206,10 +207,10 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     // height: "auto",
-    width: "auto",
+    width: width * 0.95,
   },
   camera: {
-    flex: 0.788,
+    // flex: 0.788,
     aspectRatio: 3 / 4,
   },
   sliderContainer: {
