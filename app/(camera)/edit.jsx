@@ -73,7 +73,7 @@ export default function test() {
         .collection("photo")
         .add({
           imagePath: imagePath,
-          spotId: spotId,
+          spotId: parseInt(spotId),
           userId: 1,
         })
         .then()
@@ -83,7 +83,7 @@ export default function test() {
         .collection("post")
         .add({
           postTxt: post,
-          spotId: spotId,
+          spotId: parseInt(spotId),
           userId: 1,
         })
         .then()
