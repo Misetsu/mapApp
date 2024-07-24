@@ -90,6 +90,11 @@ const TrackUserMapView = () => {
     return (degrees * Math.PI) / 180;
   }
 
+  function closemodal(){
+    setImageUri("")
+    setModalVisible(false)
+  }
+
   // 2点間の距離を計算する関数
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // 地球の半径（単位: km）
@@ -125,8 +130,7 @@ const TrackUserMapView = () => {
 
         if (data.imagePath) {
           const url = await storage().ref(data.imagePath).getDownloadURL();
-          console.log(url);
-
+          console.log(`awawawawaawaw-----${url}`);
           setImageUri(url);
         } else {
           console.log("No imagePath field in document");
@@ -294,7 +298,7 @@ const TrackUserMapView = () => {
         visible={modalVisible}
         imageUri={imageUri}
         textData={textData}
-        onClose={() => setModalVisible(false)}
+        onClose={() => closemodal()}
       />
 
       <Link
@@ -424,6 +428,8 @@ const styles = StyleSheet.create({
   },
 });
 
+const [defaultimage, setdefaultimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
+
 const MyModal = ({ visible, imageUri, textData, onClose }) => {
   return (
     <Modal
@@ -441,7 +447,7 @@ const MyModal = ({ visible, imageUri, textData, onClose }) => {
               style={{ width: 300, height: 400 }}
             />
           ) : (
-            <ActivityIndicator size="large" color="#0000ff" />
+            <Text>投稿がありません</Text>
           )}
           <TouchableOpacity onPress={onClose}>
             <Text>{textData.postTxt}</Text>
