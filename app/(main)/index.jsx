@@ -45,6 +45,8 @@ const TrackUserMapView = () => {
   const [distance, setDistance] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
 
+
+  
   const YourComponent = () => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
@@ -116,7 +118,10 @@ const TrackUserMapView = () => {
   const [textData, setTextData] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [spotImageList, setspotImageList] = useState([]);
   const fetchImageUri = async (spotid) => {
+    const imagelist = []
+    setspotImageList(imagelist)
     setLoading(true);
     try {
       const querySnapshot = await firestore()
@@ -125,17 +130,23 @@ const TrackUserMapView = () => {
         .get();
 
       if (!querySnapshot.empty) {
-        const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
+        const size = querySnapshot.size
+        let cnt = 0
+        while(cnt < size){
+        const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
         const data = documentSnapshot.data();
         console.log("Document data:", data.imagePath);
 
         if (data.imagePath) {
           const url = await storage().ref(data.imagePath).getDownloadURL();
           console.log(`awawawawaawaw-----${url}`);
-          setImageUri(url);
+          imagelist.push(url);
+          cnt = cnt + 1
         } else {
           console.log("No imagePath field in document");
         }
+        setspotImageList(imagelist)
+      }
       } else {
         console.log("No documents found with the specified condition");
       }
@@ -297,8 +308,9 @@ const TrackUserMapView = () => {
 
       <MyModal
         visible={modalVisible}
-        imageUri={imageUri}
+        imageUri={spotImageList[0]}
         textData={textData}
+        spotImageList={spotImageList}
         onClose={() => closemodal()}
       />
 
@@ -431,7 +443,7 @@ const styles = StyleSheet.create({
 
 const [defaultimage, setdefaultimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
 
-const MyModal = ({ visible, imageUri, textData, onClose }) => {
+const MyModal = ({ visible, imageUri, textData,spotImageList,onClose }) => {
   return (
     
     <Modal
@@ -444,23 +456,24 @@ const MyModal = ({ visible, imageUri, textData, onClose }) => {
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <View style={{ backgroundColor: "white", padding: 20 }}>
         <ScrollView>
-          <Text>{textData.userId}</Text>
-          {imageUri ? (
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: 300, height: 400 }}
-            />
-          ) : (
-            <Text>投稿がありません</Text>
-          )}
-          <Image
-              source={{ uri: imageUri }}
-              style={{ width: 300, height: 400 }}
-            />
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: 300, height: 400 }}
-            />
+        {spotImageList.map((imageUri) => (
+  <React.Fragment key={imageUri}>
+    <Text>{textData.userId}</Text>
+    {imageUri ? (
+      <Image
+        source={{ uri: imageUri }}
+        style={{ width: 300, height: 400 }}
+      />
+    ) : (
+      <Text>投稿がありません</Text>
+    )}
+  </React.Fragment>
+))}
+{imageUri ? (
+<></>
+    ) : (
+      <Text>投稿がありません</Text>
+    )}
           </ScrollView>
           <TouchableOpacity onPress={onClose}>
             <Text>{textData.postTxt}</Text>
