@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  ScrollView
 } from "react-native";
 import { Link } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -432,14 +433,17 @@ const [defaultimage, setdefaultimage] = useState(require("../image/pin_blue.png"
 
 const MyModal = ({ visible, imageUri, textData, onClose }) => {
   return (
+    
     <Modal
       animationType="fade"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
     >
+      
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <View style={{ backgroundColor: "white", padding: 20 }}>
+        <ScrollView>
           <Text>{textData.userId}</Text>
           {imageUri ? (
             <Image
@@ -449,6 +453,15 @@ const MyModal = ({ visible, imageUri, textData, onClose }) => {
           ) : (
             <Text>投稿がありません</Text>
           )}
+          <Image
+              source={{ uri: imageUri }}
+              style={{ width: 300, height: 400 }}
+            />
+            <Image
+              source={{ uri: imageUri }}
+              style={{ width: 300, height: 400 }}
+            />
+          </ScrollView>
           <TouchableOpacity onPress={onClose}>
             <Text>{textData.postTxt}</Text>
             <Text>Close</Text>
@@ -478,6 +491,7 @@ const MyModal = ({ visible, imageUri, textData, onClose }) => {
           </Link>
         </View>
       </View>
+      
     </Modal>
   );
 };
