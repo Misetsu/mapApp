@@ -1,10 +1,53 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Pressable,
+} from "react-native";
 import { Link } from "expo-router";
+import FirebaseAuth from "@react-native-firebase/auth";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+const auth = FirebaseAuth();
+
+GoogleSignin.configure({
+  webClientId:
+    "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
+});
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(() => {
+      if (auth.currentUser) {
+        setEmail(auth.currentUser.email);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const signIn = async () => {
+    // Google のログイン画面を表示して認証用の ID トークンを取得する
+    const user = await GoogleSignin.signIn();
+    const idToken = user.idToken;
+
+    if (idToken === null) {
+      return;
+    }
+
+    // 取得した認証情報 (ID トークン) を元にサインインする
+    const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
+    await auth.signInWithCredential(credential);
+
+    console.log(auth.currentUser.uid);
+    console.log(auth.currentUser.email);
+  };
 
   return (
     <View style={styles.container}>
@@ -38,6 +81,9 @@ const LoginScreen = () => {
       <Link href={{ pathname: "/signupForm" }} asChild>
         <Button title="SIGN UP" style={styles.button} />
       </Link>
+      <Pressable style={styles.button} onPress={signIn}>
+        <Text style={styles.buttonText}>Google でサインイン</Text>
+      </Pressable>
     </View>
   );
 };
@@ -68,6 +114,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
     color: "#1a0dab",
+  },
+  button: {
+    padding: 8,
+    backgroundColor: "black",
+  },
+  buttonText: {
+    color: "white",
   },
 });
 
