@@ -20,7 +20,8 @@ GoogleSignin.configure({
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(() => {
@@ -32,7 +33,7 @@ const LoginScreen = () => {
     return () => unsubscribe();
   }, []);
 
-  const signIn = async () => {
+  const signInWithGoogle = async () => {
     // Google のログイン画面を表示して認証用の ID トークンを取得する
     const user = await GoogleSignin.signIn();
     const idToken = user.idToken;
@@ -47,6 +48,18 @@ const LoginScreen = () => {
 
     console.log(auth.currentUser.uid);
     console.log(auth.currentUser.email);
+    console.log(auth.currentUser.displayName);
+  };
+
+  const signInWithEmail = async () => {
+    const credential = await auth().signInWithEmailAndPassword(
+      userEmail,
+      userPassword
+    );
+
+    console.log(credential.user);
+    console.log(auth.currentUser.uid);
+    console.log(auth.currentUser.email);
   };
 
   return (
@@ -54,7 +67,7 @@ const LoginScreen = () => {
       <TextInput
         style={styles.input}
         value={email}
-        onChangeText={setEmail}
+        onChangeText={setUserEmail}
         keyboardType="email-address"
         autoCapitalize="none"
         placeholder="email"
@@ -63,14 +76,18 @@ const LoginScreen = () => {
       <TextInput
         style={styles.input}
         value={password}
-        onChangeText={setPassword}
+        onChangeText={setUserPassword}
         secureTextEntry
         placeholder="Password"
       />
 
-      <Link href={{ pathname: "/" }} asChild>
-        <Button title="LOGIN" style={styles.button} />
-      </Link>
+      <Button title="LOGIN" style={styles.button} onPress={signInWithEmail} />
+
+      <Button
+        title="Googleでサインイン"
+        style={styles.button}
+        onPress={signInWithGoogle}
+      />
 
       <Link href={{ pathname: "/" }} asChild>
         <Text style={styles.linklabel}>Forgot password?</Text>
@@ -81,9 +98,6 @@ const LoginScreen = () => {
       <Link href={{ pathname: "/signupForm" }} asChild>
         <Button title="SIGN UP" style={styles.button} />
       </Link>
-      <Pressable style={styles.button} onPress={signIn}>
-        <Text style={styles.buttonText}>Google でサインイン</Text>
-      </Pressable>
     </View>
   );
 };
