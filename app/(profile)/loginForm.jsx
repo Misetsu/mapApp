@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -66,7 +66,7 @@ const LoginScreen = () => {
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        value={email}
+        value={userEmail}
         onChangeText={setUserEmail}
         keyboardType="email-address"
         autoCapitalize="none"
@@ -75,7 +75,7 @@ const LoginScreen = () => {
 
       <TextInput
         style={styles.input}
-        value={password}
+        value={userPassword}
         onChangeText={setUserPassword}
         secureTextEntry
         placeholder="Password"

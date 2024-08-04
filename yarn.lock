@@ -2547,6 +2547,13 @@
     opencollective-postinstall "^2.0.3"
     superstruct "^0.6.2"
 
+"@react-native-firebase/auth@^20.2.0":
+  version "20.2.0"
+  resolved "https://registry.npmjs.org/@react-native-firebase/auth/-/auth-20.2.0.tgz"
+  integrity sha512-z8uizpare0roJUEhNQB2g0QnyZj/JfzqrNk1kKgqv1Tw1sBLBz+q5UV3yvcXdtsDDO83Dd/3yeDNujuU9jqunQ==
+  dependencies:
+    plist "^3.1.0"
+
 "@react-native-firebase/firestore@^20.2.0":
   version "20.2.0"
   resolved "https://registry.npmjs.org/@react-native-firebase/firestore/-/firestore-20.2.0.tgz"
@@ -2556,6 +2563,11 @@
   version "20.2.0"
   resolved "https://registry.npmjs.org/@react-native-firebase/storage/-/storage-20.2.0.tgz"
   integrity sha512-VntPX054ukkGhmsfCYFY7Bqras2UxvQUODKx56Ak3sZzzn7HUODnm2pUV7VxZ4SajGxtJtVu30cBdp8Tz7j1Sw==
+
+"@react-native-google-signin/google-signin@^12.2.1":
+  version "12.2.1"
+  resolved "https://registry.npmjs.org/@react-native-google-signin/google-signin/-/google-signin-12.2.1.tgz"
+  integrity sha512-qt2Cb+bN2NS8BBT06M3UbLVS1gaSYTenNh4uZtPNmyJC23xZAynLkuhvsC6gmeEnxcj0wLVUn1Es+LSHw0OhVQ==
 
 "@react-native/assets-registry@0.74.84":
   version "0.74.84"
@@ -4762,7 +4774,7 @@ expo-web-browser@~13.0.3:
   resolved "https://registry.npmjs.org/expo-web-browser/-/expo-web-browser-13.0.3.tgz"
   integrity sha512-HXb7y82ApVJtqk8tManyudtTrCtx8xcUnVzmJECeHCB0SsWSQ+penVLZxJkcyATWoJOsFMnfVSVdrTcpKKGszQ==
 
-expo@*, expo@>=47.0.0, expo@~51.0.14:
+expo@*, expo@>=47.0.0, expo@>=50.0.0, expo@~51.0.14:
   version "51.0.14"
   resolved "https://registry.npmjs.org/expo/-/expo-51.0.14.tgz"
   integrity sha512-99BAMSYBH1aq1TIEJqM03kRpsZjN8OqZXDqYHRq9/PXT67axRUOvRjwMMLprnCmqkAVM7m7FpiECNWN4U0gvLQ==
@@ -7535,7 +7547,7 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-plist@^3.0.5:
+plist@^3.0.5, plist@^3.1.0:
   version "3.1.0"
   resolved "https://registry.npmjs.org/plist/-/plist-3.1.0.tgz"
   integrity sha512-uysumyrvkUX0rX/dEVqt8gC3sTBzd4zoWfLeS29nb53imdaXVvLINYXTI2GNqzaMuvacNx4uJQ8+b3zXR0pkgQ==
@@ -7744,7 +7756,7 @@ react-devtools-core@^5.0.0:
     shell-quote "^1.6.1"
     ws "^7"
 
-react-dom@^18.0.0, react-dom@18.2.0:
+react-dom@*, react-dom@^18.0.0, react-dom@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz"
   integrity sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
