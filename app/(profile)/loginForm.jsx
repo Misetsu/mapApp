@@ -52,7 +52,7 @@ const LoginScreen = () => {
   };
 
   const signInWithEmail = async () => {
-    const credential = await auth().signInWithEmailAndPassword(
+    const credential = await auth.signInWithEmailAndPassword(
       userEmail,
       userPassword
     );

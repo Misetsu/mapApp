@@ -13,9 +13,9 @@ const SignupScreen = () => {
 
   const signUpWithEmail = async () => {
     try {
-      await auth().createUserWithEmailAndPassword(userEmail, userPassword);
+      await auth.createUserWithEmailAndPassword(userEmail, userPassword);
 
-      const credential = await auth().signInWithEmailAndPassword(
+      const credential = await auth.signInWithEmailAndPassword(
         userEmail,
         userPassword
       );
@@ -24,17 +24,16 @@ const SignupScreen = () => {
         displayName: userName,
       };
 
-      await auth().currentUser.updateProfile(update);
+      await auth.currentUser.updateProfile(update);
 
       console.log(credential.user);
       console.log(auth.currentUser.uid);
       console.log(auth.currentUser.email);
       console.log(auth.currentUser.displayName);
 
-      Alert.alert("User registered successfully!");
+      console.log("User registered successfully!");
     } catch (error) {
       console.error("Error signing up:", error);
-      Alert.alert("Error signing up:", error.message);
     }
   };
 
