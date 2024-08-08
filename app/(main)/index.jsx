@@ -9,7 +9,7 @@ import {
   Dimensions,
   StyleSheet,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import firestore from "@react-native-firebase/firestore";
@@ -25,6 +25,7 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
 
 const auth = FirebaseAuth();
 const user = auth.currentUser;
+const router = useRouter();
 
 const TrackUserMapView = () => {
   const [position, setPosition] = useState({
@@ -200,9 +201,6 @@ const TrackUserMapView = () => {
           fetchResult.push(item);
         });
 
-        // const item = querySnapshot.docs[0].data();
-        // fetchResult.push(item);
-
         setMarkerCords(fetchResult);
       } else {
         console.log("empty");
@@ -213,6 +211,11 @@ const TrackUserMapView = () => {
       console.log(markerCords);
       setLoading(false);
     }
+  };
+
+  const signout = async () => {
+    await auth.signout();
+    router.replace({ pathname: "/" });
   };
 
   useEffect(() => {
@@ -334,7 +337,7 @@ const TrackUserMapView = () => {
       ) : (
         <View style={styles.loignBtnContainer}>
           <Link href={{ pathname: "/loginForm" }} asChild>
-            <Button title="ログイン" />
+            <Button title="ログイン" onPress={signout} />
           </Link>
         </View>
       )}
