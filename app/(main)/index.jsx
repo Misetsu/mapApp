@@ -329,13 +329,13 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          <Link href={{ pathname: "/loginForm" }} asChild>
-            <Button title="ログイン" />
-          </Link>
+          <Button title="ログアウト" />
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
-          <Button title="ログアウト" />
+          <Link href={{ pathname: "/loginForm" }} asChild>
+            <Button title="ログイン" />
+          </Link>
         </View>
       )}
     </SafeAreaView>
