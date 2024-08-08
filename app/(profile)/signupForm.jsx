@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 
 const auth = FirebaseAuth();
+const router = useRouter();
 
 const SignupScreen = () => {
   const [userEmail, setUserEmail] = useState("");
@@ -26,12 +27,7 @@ const SignupScreen = () => {
 
       await auth.currentUser.updateProfile(update);
 
-      console.log(credential.user);
-      console.log(auth.currentUser.uid);
-      console.log(auth.currentUser.email);
-      console.log(auth.currentUser.displayName);
-
-      console.log("User registered successfully!");
+      router.replace({ pathname: "/" });
     } catch (error) {
       console.error("Error signing up:", error);
     }

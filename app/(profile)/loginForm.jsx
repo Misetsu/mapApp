@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  Pressable,
-} from "react-native";
-import { Link } from "expo-router";
+import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { Link, useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
+const router = useRouter();
 
 GoogleSignin.configure({
   webClientId:
@@ -46,9 +40,7 @@ const LoginScreen = () => {
     const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
     await auth.signInWithCredential(credential);
 
-    console.log(auth.currentUser.uid);
-    console.log(auth.currentUser.email);
-    console.log(auth.currentUser.displayName);
+    router.replace({ pathname: "/" });
   };
 
   const signInWithEmail = async () => {
@@ -57,9 +49,7 @@ const LoginScreen = () => {
       userPassword
     );
 
-    console.log(credential.user);
-    console.log(auth.currentUser.uid);
-    console.log(auth.currentUser.email);
+    router.replace({ pathname: "/" });
   };
 
   return (

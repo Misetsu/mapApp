@@ -4,19 +4,17 @@ import {
   View,
   Text,
   Image,
-  Modal,
   Button,
   Pressable,
   Dimensions,
-  TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
 import { Link } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
+import FirebaseAuth from "@react-native-firebase/auth";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 
@@ -24,6 +22,9 @@ const { width, height } = Dimensions.get("window"); //デバイスの幅と高�
 const ASPECT_RATIO = width / height; //アスペクト比
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
+
+const auth = FirebaseAuth();
+const user = auth.currentUser;
 
 const TrackUserMapView = () => {
   const [position, setPosition] = useState({
@@ -39,7 +40,6 @@ const TrackUserMapView = () => {
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
-
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
   const [distance, setDistance] = useState(0);
   const [spotId, setSpotId] = useState(0);
@@ -327,11 +327,17 @@ const TrackUserMapView = () => {
         ></Pressable>
       </Link>
 
-      <View style={styles.loignBtnContainer}>
-        <Link href={{ pathname: "/loginForm" }} asChild>
-          <Button title="ログイン" />
-        </Link>
-      </View>
+      {user ? (
+        <View style={styles.loignBtnContainer}>
+          <Link href={{ pathname: "/loginForm" }} asChild>
+            <Button title="ログイン" />
+          </Link>
+        </View>
+      ) : (
+        <View style={styles.loignBtnContainer}>
+          <Button title="ログアウト" />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
