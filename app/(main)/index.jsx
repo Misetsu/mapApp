@@ -214,8 +214,9 @@ const TrackUserMapView = () => {
   };
 
   const signout = async () => {
-    await auth.signout();
+    await auth.signOut();
     router.replace({ pathname: "/" });
+    console.log(auth.currentUser);
   };
 
   useEffect(() => {
@@ -332,12 +333,12 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          <Button title="ログアウト" />
+          <Button title="ログアウト" onPress={signout} />
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
           <Link href={{ pathname: "/loginForm" }} asChild>
-            <Button title="ログイン" onPress={signout} />
+            <Button title="ログイン" />
           </Link>
         </View>
       )}

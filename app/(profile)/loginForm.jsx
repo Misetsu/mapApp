@@ -17,15 +17,15 @@ const LoginScreen = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(() => {
-      if (auth.currentUser) {
-        setEmail(auth.currentUser.email);
-      }
-    });
+  // useEffect(() => {
+  //   const unsubscribe = auth.onAuthStateChanged(() => {
+  //     if (auth.currentUser) {
+  //       setEmail(auth.currentUser.email);
+  //     }
+  //   });
 
-    return () => unsubscribe();
-  }, []);
+  //   return () => unsubscribe();
+  // }, []);
 
   const signInWithGoogle = async () => {
     // Google のログイン画面を表示して認証用の ID トークンを取得する
