@@ -39,12 +39,12 @@ const TrackUserMapView = () => {
   });
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
-  const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
+  const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
   const [distance, setDistance] = useState(0);
   const [spotId, setSpotId] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
-  const [uid, setUid] = useState("");
+  const [user, setUser] = useState(null); //ユーザー情報を保持する
 
   const YourComponent = () => {
     useEffect(() => {
@@ -216,7 +216,6 @@ const TrackUserMapView = () => {
   const signout = async () => {
     await auth.signOut();
     router.replace({ pathname: "/" });
-    console.log(auth.currentUser);
   };
 
   useEffect(() => {
@@ -244,15 +243,8 @@ const TrackUserMapView = () => {
   }, [initialRegion]);
 
   useEffect(() => {
-    const user = auth.currentUser;
+    setUser(auth.currentUser);
     fetchAllMarkerCord();
-    // const unsubscribe = auth.onAuthStateChanged(() => {
-    //   if (auth.currentUser) {
-    //     setUid(auth.currentUser.uid);
-    //   }
-    // });
-
-    // return () => unsubscribe();
   }, []);
 
   return (
@@ -315,29 +307,50 @@ const TrackUserMapView = () => {
         onClose={() => setModalVisible(false)}
       />
 
-      <Link
-        href={{
-          pathname: "/camera",
-          params: {
-            latitude: position.latitude,
-            longitude: position.longitude,
-            spotId: 0,
-          },
-        }}
-        asChild
-      >
-        <Pressable
-          style={{
-            position: "absolute",
-            alignSelf: "center",
-            bottom: 50,
-            width: 75,
-            height: 75,
-            backgroundColor: "blue",
-            borderRadius: 75,
+      {user ? (
+        <Link
+          href={{
+            pathname: "/camera",
+            params: {
+              latitude: position.latitude,
+              longitude: position.longitude,
+              spotId: 0,
+            },
           }}
-        ></Pressable>
-      </Link>
+          asChild
+        >
+          <Pressable
+            style={{
+              position: "absolute",
+              alignSelf: "center",
+              bottom: 50,
+              width: 75,
+              height: 75,
+              backgroundColor: "blue",
+              borderRadius: 75,
+            }}
+          ></Pressable>
+        </Link>
+      ) : (
+        <Link
+          href={{
+            pathname: "/loginForm",
+          }}
+          asChild
+        >
+          <Pressable
+            style={{
+              position: "absolute",
+              alignSelf: "center",
+              bottom: 50,
+              width: 75,
+              height: 75,
+              backgroundColor: "blue",
+              borderRadius: 75,
+            }}
+          ></Pressable>
+        </Link>
+      )}
 
       {user ? (
         <View style={styles.loignBtnContainer}>
