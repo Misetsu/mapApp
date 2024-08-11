@@ -24,7 +24,6 @@ const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
 
 const auth = FirebaseAuth();
-const user = auth.currentUser;
 const router = useRouter();
 
 const TrackUserMapView = () => {
@@ -45,6 +44,7 @@ const TrackUserMapView = () => {
   const [distance, setDistance] = useState(0);
   const [spotId, setSpotId] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
+  const [uid, setUid] = useState("");
 
   const YourComponent = () => {
     useEffect(() => {
@@ -244,7 +244,15 @@ const TrackUserMapView = () => {
   }, [initialRegion]);
 
   useEffect(() => {
+    const user = auth.currentUser;
     fetchAllMarkerCord();
+    // const unsubscribe = auth.onAuthStateChanged(() => {
+    //   if (auth.currentUser) {
+    //     setUid(auth.currentUser.uid);
+    //   }
+    // });
+
+    // return () => unsubscribe();
   }, []);
 
   return (

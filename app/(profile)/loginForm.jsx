@@ -13,19 +13,8 @@ GoogleSignin.configure({
 });
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
-
-  // useEffect(() => {
-  //   const unsubscribe = auth.onAuthStateChanged(() => {
-  //     if (auth.currentUser) {
-  //       setEmail(auth.currentUser.email);
-  //     }
-  //   });
-
-  //   return () => unsubscribe();
-  // }, []);
 
   const signInWithGoogle = async () => {
     // Google のログイン画面を表示して認証用の ID トークンを取得する
