@@ -21,7 +21,6 @@ const auth = FirebaseAuth();
 export default function test() {
   const [text, setText] = useState(""); // テキスト入力を保持するための状態
   const [post, setPost] = useState("");
-  const [user, setUser] = useState(null); //ユーザー情報を保持する
 
   const reference = storage();
   const router = useRouter();
@@ -34,8 +33,7 @@ export default function test() {
     const imagePath =
       "photo/image-" + new Date().getTime().toString() + randomNumber;
     await reference.ref(imagePath).putFile(imageUri);
-
-    setUser(auth.currentUser);
+    console.log(auth.currentUser.uid);
 
     // メイン画面の投稿であれば、現在地のスポットを追加
     if (spotId == 0) {
@@ -59,7 +57,7 @@ export default function test() {
         .add({
           imagePath: imagePath,
           spotId: maxId,
-          userId: user.uid,
+          userId: auth.currentUser.uid,
         })
         .then()
         .catch((error) => console.log(error));
@@ -69,7 +67,7 @@ export default function test() {
         .add({
           postTxt: post,
           spotId: maxId,
-          userId: user.uid,
+          userId: auth.currentUser.uid,
         })
         .then()
         .catch((error) => console.log(error));
@@ -80,7 +78,7 @@ export default function test() {
         .add({
           imagePath: imagePath,
           spotId: parseInt(spotId),
-          userId: user.uid,
+          userId: auth.currentUser.uid,
         })
         .then()
         .catch((error) => console.log(error));
@@ -90,7 +88,7 @@ export default function test() {
         .add({
           postTxt: post,
           spotId: parseInt(spotId),
-          userId: user.uid,
+          userId: auth.currentUser.uid,
         })
         .then()
         .catch((error) => console.log(error));
