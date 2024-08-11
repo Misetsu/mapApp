@@ -10,15 +10,19 @@ import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import FirebaseAuth from "@react-native-firebase/auth";
 
 //画像のサイズを固定
 const { width } = Dimensions.get("window");
 const imageWidth = width * 0.75; // 画面幅の75%
 const imageHeight = (imageWidth * 4) / 3; // 3:4のアスペクト比を維持
+const auth = FirebaseAuth();
 
 export default function test() {
   const [text, setText] = useState(""); // テキスト入力を保持するための状態
   const [post, setPost] = useState("");
+  const [user, setUser] = useState(null); //ユーザー情報を保持する
+
   const reference = storage();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -30,6 +34,8 @@ export default function test() {
     const imagePath =
       "photo/image-" + new Date().getTime().toString() + randomNumber;
     await reference.ref(imagePath).putFile(imageUri);
+
+    setUser(auth.currentUser);
 
     // メイン画面の投稿であれば、現在地のスポットを追加
     if (spotId == 0) {
@@ -53,7 +59,7 @@ export default function test() {
         .add({
           imagePath: imagePath,
           spotId: maxId,
-          userId: 1,
+          userId: user.uid,
         })
         .then()
         .catch((error) => console.log(error));
@@ -63,7 +69,7 @@ export default function test() {
         .add({
           postTxt: post,
           spotId: maxId,
-          userId: 1,
+          userId: user.uid,
         })
         .then()
         .catch((error) => console.log(error));
@@ -74,7 +80,7 @@ export default function test() {
         .add({
           imagePath: imagePath,
           spotId: parseInt(spotId),
-          userId: 1,
+          userId: user.uid,
         })
         .then()
         .catch((error) => console.log(error));
@@ -84,7 +90,7 @@ export default function test() {
         .add({
           postTxt: post,
           spotId: parseInt(spotId),
-          userId: 1,
+          userId: user.uid,
         })
         .then()
         .catch((error) => console.log(error));
