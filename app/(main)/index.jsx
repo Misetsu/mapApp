@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -93,6 +93,11 @@ const TrackUserMapView = () => {
     return (degrees * Math.PI) / 180;
   }
 
+  function closemodal() {
+    setImageUri("");
+    setModalVisible(false);
+  }
+
   // 2点間の距離を計算する関数
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // 地球の半径（単位: km）
@@ -113,7 +118,10 @@ const TrackUserMapView = () => {
   const [textData, setTextData] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [spotImageList, setspotImageList] = useState([]);
   const fetchImageUri = async (spotid) => {
+    const imagelist = [];
+    setspotImageList(imagelist);
     setLoading(true);
     try {
       const querySnapshot = await firestore()
@@ -122,17 +130,22 @@ const TrackUserMapView = () => {
         .get();
 
       if (!querySnapshot.empty) {
-        const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
-        const data = documentSnapshot.data();
-        console.log("Document data:", data.imagePath);
+        const size = querySnapshot.size;
+        let cnt = 0;
+        while (cnt < size) {
+          const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
+          const data = documentSnapshot.data();
+          console.log("Document data:", data.imagePath);
 
-        if (data.imagePath) {
-          const url = await storage().ref(data.imagePath).getDownloadURL();
-          console.log(url);
-
-          setImageUri(url);
-        } else {
-          console.log("No imagePath field in document");
+          if (data.imagePath) {
+            const url = await storage().ref(data.imagePath).getDownloadURL();
+            console.log(`awawawawaawaw-----${url}`);
+            imagelist.push(url);
+            cnt = cnt + 1;
+          } else {
+            console.log("No imagePath field in document");
+          }
+          setspotImageList(imagelist);
         }
       } else {
         setImageUri("");
@@ -301,8 +314,9 @@ const TrackUserMapView = () => {
 
       <MyModal
         visible={modalVisible}
-        imageUri={imageUri}
+        imageUri={spotImageList[0]}
         textData={textData}
+        spotImageList={spotImageList}
         spotId={spotId}
         onClose={() => setModalVisible(false)}
       />

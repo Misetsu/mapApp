@@ -10,10 +10,18 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  ScrollView,
 } from "react-native";
 import { Link } from "expo-router";
 
-const MyModal = ({ visible, imageUri, textData, spotId, onClose }) => {
+const MyModal = ({
+  visible,
+  imageUri,
+  textData,
+  spotImageList,
+  spotId,
+  onClose,
+}) => {
   return (
     <Modal
       animationType="fade"
@@ -23,15 +31,21 @@ const MyModal = ({ visible, imageUri, textData, spotId, onClose }) => {
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text>{textData.userId}</Text>
-          {imageUri ? (
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: 300, height: 400 }}
-            />
-          ) : (
-            <ActivityIndicator size="large" color="#0000ff" />
-          )}
+          <ScrollView>
+            {imageUri ? (
+              spotImageList.map((imageUri) => (
+                <React.Fragment key={imageUri}>
+                  <Text>{textData.userId}</Text>
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={{ width: 300, height: 400 }}
+                  />
+                </React.Fragment>
+              ))
+            ) : (
+              <Text>投稿がありません</Text>
+            )}
+          </ScrollView>
           <TouchableOpacity onPress={onClose}>
             <Text>{textData.postTxt}</Text>
             <Text>Close</Text>
