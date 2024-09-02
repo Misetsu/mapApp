@@ -1,71 +1,40 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { Link, useRouter } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
-
-const auth = FirebaseAuth();
-const router = useRouter();
+import { Link } from "expo-router";
 
 const SignupScreen = () => {
-  const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
-  const [userPasswordVal, setUserPasswordVal] = useState("");
-  const [userName, setUserName] = useState("");
-
-  const signUpWithEmail = async () => {
-    try {
-      await auth.createUserWithEmailAndPassword(userEmail, userPassword);
-
-      const credential = await auth.signInWithEmailAndPassword(
-        userEmail,
-        userPassword
-      );
-
-      const update = {
-        displayName: userName,
-      };
-
-      await auth.currentUser.updateProfile(update);
-
-      router.replace({ pathname: "/" });
-    } catch (error) {
-      console.error("Error signing up:", error);
-    }
-  };
+  const [email, setEmail] = useState("");
+  const [password1, setPassword1] = useState("");
+  const [password2, setPassword2] = useState("");
 
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        value={userEmail}
-        onChangeText={setUserEmail}
+        value={email}
+        onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholder="Email"
+        placeholder="email"
       />
       <TextInput
         style={styles.input}
-        value={userName}
-        onChangeText={setUserName}
-        placeholder="Username"
-      />
-      <TextInput
-        style={styles.input}
-        value={userPassword}
-        onChangeText={setUserPassword}
+        value={password1}
+        onChangeText={setPassword1}
         secureTextEntry
         placeholder="Password"
       />
       <TextInput
         style={styles.input}
-        value={userPasswordVal}
-        onChangeText={setUserPasswordVal}
+        value={password2}
+        onChangeText={setPassword2}
         secureTextEntry
         placeholder="Confirm Password"
       />
-
-      <Button title="SIGN UP" style={styles.button} onPress={signUpWithEmail} />
-
+      <TextInput style={styles.input} placeholder="Username" />
+      <Link href={{ pathname: "/" }} asChild>
+        <Button title="SIGN UP" style={styles.button} />
+      </Link>
       <Text style={styles.noamllabel}>Have an account?</Text>
 
       <Link href={{ pathname: "/loginForm" }} asChild>
