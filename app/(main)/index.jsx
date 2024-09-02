@@ -1,25 +1,21 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
   Text,
   Image,
-  Modal,
   Button,
   Pressable,
   Dimensions,
-  TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
-  ScrollView
 } from "react-native";
 import { Link } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
-
-// import { customMapStyle } from "../component/mapLayout.jsx";
+import MyModal from "../component/modal";
+import { customMapStyle, styles } from "../component/styles";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height; //アスペクト比
@@ -43,10 +39,9 @@ const TrackUserMapView = () => {
 
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
   const [distance, setDistance] = useState(0);
+  const [spotId, setSpotId] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
 
-
-  
   const YourComponent = () => {
     useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
@@ -83,6 +78,7 @@ const TrackUserMapView = () => {
       //距離が50m以上離れているかのチェック
       fetchImageUri(marker.id);
       fetchTextData(marker.id);
+      setSpotId(marker.id);
       setModalVisible(true);
     } else {
       setModalVisible(false);
@@ -93,9 +89,9 @@ const TrackUserMapView = () => {
     return (degrees * Math.PI) / 180;
   }
 
-  function closemodal(){
-    setImageUri("")
-    setModalVisible(false)
+  function closemodal() {
+    setImageUri("");
+    setModalVisible(false);
   }
 
   // 2点間の距離を計算する関数
@@ -120,8 +116,8 @@ const TrackUserMapView = () => {
 
   const [spotImageList, setspotImageList] = useState([]);
   const fetchImageUri = async (spotid) => {
-    const imagelist = []
-    setspotImageList(imagelist)
+    const imagelist = [];
+    setspotImageList(imagelist);
     setLoading(true);
     try {
       const querySnapshot = await firestore()
@@ -130,24 +126,25 @@ const TrackUserMapView = () => {
         .get();
 
       if (!querySnapshot.empty) {
-        const size = querySnapshot.size
-        let cnt = 0
-        while(cnt < size){
-        const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
-        const data = documentSnapshot.data();
-        console.log("Document data:", data.imagePath);
+        const size = querySnapshot.size;
+        let cnt = 0;
+        while (cnt < size) {
+          const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
+          const data = documentSnapshot.data();
+          console.log("Document data:", data.imagePath);
 
-        if (data.imagePath) {
-          const url = await storage().ref(data.imagePath).getDownloadURL();
-          console.log(`awawawawaawaw-----${url}`);
-          imagelist.push(url);
-          cnt = cnt + 1
-        } else {
-          console.log("No imagePath field in document");
+          if (data.imagePath) {
+            const url = await storage().ref(data.imagePath).getDownloadURL();
+            console.log(`awawawawaawaw-----${url}`);
+            imagelist.push(url);
+            cnt = cnt + 1;
+          } else {
+            console.log("No imagePath field in document");
+          }
+          setspotImageList(imagelist);
         }
-        setspotImageList(imagelist)
-      }
       } else {
+        setImageUri("");
         console.log("No documents found with the specified condition");
       }
     } catch (error) {
@@ -175,6 +172,7 @@ const TrackUserMapView = () => {
           console.log("No textData field in document");
         }
       } else {
+        setTextData("");
         console.log("No documents found with the specified condition");
       }
     } catch (error) {
@@ -267,7 +265,8 @@ const TrackUserMapView = () => {
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
           style={StyleSheet.absoluteFillObject}
           customMapStyle={customMapStyle}
-          region={{
+          initialRegion={{
+            //regionは固定
             latitude: position.latitude,
             longitude: position.longitude,
             latitudeDelta: LATITUDE_DELTA,
@@ -311,7 +310,8 @@ const TrackUserMapView = () => {
         imageUri={spotImageList[0]}
         textData={textData}
         spotImageList={spotImageList}
-        onClose={() => closemodal()}
+        spotId={spotId}
+        onClose={() => setModalVisible(false)}
       />
 
       <Link
@@ -346,410 +346,5 @@ const TrackUserMapView = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  radius: {
-    width: 50,
-    height: 50,
-    borderRadius: 50 / 2,
-    overflow: "hidden",
-    backgroundColor: "rgba(0, 112, 255, 0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(0, 112, 255, 0.3)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  marker: {
-    width: 20,
-    height: 20,
-    borderWidth: 3,
-    borderColor: "white",
-    borderRadius: 20 / 2,
-    overflow: "hidden",
-    backgroundColor: "#007AFF",
-  },
-  spot: {
-    width: 20,
-    height: 20,
-    borderWidth: 3,
-    borderColor: "white",
-    borderRadius: 20 / 20,
-    overflow: "hidden",
-    backgroundColor: "#c71585",
-  },
-  container: {
-    width: "100%",
-    height: "100%",
-  },
-  map: {
-    flex: 1,
-  },
-  debugContainer: {
-    backgroundColor: "#fff",
-    opacity: 0.8,
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    padding: 10,
-  },
-  errorContainer: {
-    position: "absolute",
-    top: 50,
-    left: 0,
-    right: 0,
-    backgroundColor: "red",
-    padding: 10,
-  },
-  errorText: {
-    color: "#fff",
-    textAlign: "center",
-  },
-  markerImage: {
-    width: 50,
-    height: 50,
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalView: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    elevation: 5,
-  },
-  closeButton: {
-    marginTop: 20,
-    backgroundColor: "#2196F3",
-    padding: 10,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  loignBtnContainer: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    borderRadius: 5,
-    padding: 10,
-  },
-});
-
-const [defaultimage, setdefaultimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
-
-const MyModal = ({ visible, imageUri, textData,spotImageList,onClose }) => {
-  return (
-    
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <View style={{ backgroundColor: "white", padding: 20 }}>
-        <ScrollView>
-        {spotImageList.map((imageUri) => (
-  <React.Fragment key={imageUri}>
-    <Text>{textData.userId}</Text>
-    {imageUri ? (
-      <Image
-        source={{ uri: imageUri }}
-        style={{ width: 300, height: 400 }}
-      />
-    ) : (
-      <Text>投稿がありません</Text>
-    )}
-  </React.Fragment>
-))}
-{imageUri ? (
-<></>
-    ) : (
-      <Text>投稿がありません</Text>
-    )}
-          </ScrollView>
-          <TouchableOpacity onPress={onClose}>
-            <Text>{textData.postTxt}</Text>
-            <Text>Close</Text>
-          </TouchableOpacity>
-          <Link
-            href={{
-              pathname: "/camera",
-              params: {
-                latitude: 0,
-                longitude: 0,
-                spotId: textData.spotId,
-              },
-            }}
-            asChild
-          >
-            <Pressable
-              style={{
-                position: "absolute",
-                // alignSelf: "center",
-                bottom: 5,
-                right: 20,
-                width: 75,
-                height: 45,
-                backgroundColor: "blue",
-              }}
-            ></Pressable>
-          </Link>
-        </View>
-      </View>
-      
-    </Modal>
-  );
-};
-
-const customMapStyle = [
-  {
-    featureType: "poi.business", // ビジネス（ビル、店舗など）のラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.business", // ビジネス（ビル、店舗など）のアイコンを非表示
-    elementType: "labels.icon",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.attraction", // 観光スポットのラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.government", // 政府機関のラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.medical", // 医療施設のラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.park", // 公園のラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.place_of_worship", // 宗教施設のラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.school", // 学校のラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi.sports_complex", // スポーツ施設のラベルを非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "road", // 道路の号線表示を非表示
-    elementType: "labels",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "administrative.locality", // 町、村、区のラベルを非表示
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "administrative.locality", // 町、村、区のラベルのアウトラインを非表示
-    elementType: "labels.text.stroke",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "administrative.neighborhood", // 住所（丁目）のラベルを非表示
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "administrative.neighborhood", // 住所（丁目）のラベルのアウトラインを非表示
-    elementType: "labels.text.stroke",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-
-  //ここから地図の色
-  {
-    featureType: "landscape.natural", // 自然地形の色
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#66bb66",
-      },
-    ],
-  },
-  {
-    featureType: "landscape.man_made", //地面の色
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#e0ffe0",
-      },
-    ],
-  },
-  {
-    featureType: "water",
-    elementType: "geometry.fill",
-    stylers: [
-      {
-        color: "#6699ff", // 水の色を青色に変更
-      },
-    ],
-  },
-  {
-    featureType: "road", //  一般道の色
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#404040",
-      },
-    ],
-  },
-  {
-    featureType: "road", // 一般道の枠線
-    elementType: "geometry.stroke",
-    stylers: [
-      {
-        color: "#fcfcfc",
-        weight: 1,
-      },
-    ],
-  },
-  {
-    featureType: "road.highway", // 高速道路の色
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#808080",
-      },
-    ],
-  },
-  {
-    featureType: "road.highway", // 高速道路の枠線の色
-    elementType: "geometry.stroke",
-    stylers: [
-      {
-        color: "#fcfcfc",
-        weight: 1,
-      },
-    ],
-  },
-  {
-    featureType: "poi.park", // 公園の色
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#99dd66",
-      },
-    ],
-  },
-  {
-    featureType: "transit.line", // 鉄道の色
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#33ccff",
-      },
-    ],
-  },
-  {
-    featureType: "transit.line", // 鉄道の枠線の太さ
-    elementType: "geometry.stroke",
-    stylers: [
-      {
-        color: "#ffffff",
-        weight: 1,
-      },
-    ],
-  },
-  {
-    featureType: "poi.school", // 教育機関の色
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#ffeecc",
-      },
-    ],
-  },
-  {
-    // 医療機関の背景色を指定（例: 薄いピンク色）
-    featureType: "poi.medical",
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#ffdddd",
-      },
-    ],
-  },
-];
 
 export default TrackUserMapView;

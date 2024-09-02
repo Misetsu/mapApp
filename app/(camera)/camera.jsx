@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Text } from "react-native";
+import { View, StyleSheet, Pressable, Dimensions } from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -28,6 +28,7 @@ import {
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
 
+const width = Dimensions.get("window");
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
@@ -40,6 +41,7 @@ export default function CameraScreen() {
 
   const params = useLocalSearchParams();
   const { latitude, longitude, spotId } = params;
+  console.log(spotId);
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
@@ -209,7 +211,7 @@ const styles = StyleSheet.create({
     width: "auto",
   },
   camera: {
-    flex: 0.788,
+    flex: 0.8,
     aspectRatio: 3 / 4,
   },
   sliderContainer: {
