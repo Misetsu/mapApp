@@ -2,35 +2,35 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { Link, useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
-// import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
 const router = useRouter();
 
-// GoogleSignin.configure({
-//   webClientId:
-//     "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
-// });
+GoogleSignin.configure({
+  webClientId:
+    "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
+});
 
 const LoginScreen = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
-  // const signInWithGoogle = async () => {
-  //   // Google のログイン画面を表示して認証用の ID トークンを取得する
-  //   const user = await GoogleSignin.signIn();
-  //   const idToken = user.idToken;
+  const signInWithGoogle = async () => {
+    // Google のログイン画面を表示して認証用の ID トークンを取得する
+    const user = await GoogleSignin.signIn();
+    const idToken = user.idToken;
 
-  //   if (idToken === null) {
-  //     return;
-  //   }
+    if (idToken === null) {
+      return;
+    }
 
-  //   // 取得した認証情報 (ID トークン) を元にサインインする
-  //   const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
-  //   await auth.signInWithCredential(credential);
+    // 取得した認証情報 (ID トークン) を元にサインインする
+    const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
+    await auth.signInWithCredential(credential);
 
-  //   router.replace({ pathname: "/" });
-  // };
+    router.replace({ pathname: "/" });
+  };
 
   const signInWithEmail = async () => {
     const credential = await auth.signInWithEmailAndPassword(
@@ -65,7 +65,7 @@ const LoginScreen = () => {
       <Button
         title="Googleでサインイン"
         style={styles.button}
-        // onPress={signInWithGoogle}
+        onPress={signInWithGoogle}
       />
 
       <Link href={{ pathname: "/" }} asChild>
