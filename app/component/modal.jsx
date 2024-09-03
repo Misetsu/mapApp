@@ -26,17 +26,7 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
         <View style={styles.modalView}>
           <ScrollView>
             {!empty ? (
-              // spotImageList.map((imageUri) => (
-              //   <React.Fragment key={imageUri}>
-              //     <Text>{textData.userId}</Text>
-              //     <Image
-              //       source={{ uri: imageUri }}
-              //       style={{ width: 300, height: 400 }}
-              //     />
-              //   </React.Fragment>
-              // ))
               postData.map((post) => {
-                // post.map((username, text, url) => {
                 return (
                   <View>
                     <Text>{post.username}</Text>
@@ -47,7 +37,6 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
                     <Text>{post.postText}</Text>
                   </View>
                 );
-                // });
               })
             ) : (
               <Text>投稿がありません</Text>
