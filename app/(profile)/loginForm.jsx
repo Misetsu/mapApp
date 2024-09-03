@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { Link, useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
@@ -28,6 +29,22 @@ const LoginScreen = () => {
     // 取得した認証情報 (ID トークン) を元にサインインする
     const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
     await auth.signInWithCredential(credential);
+
+    const querySnapshot = await firestore()
+      .collection("users")
+      .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
+      .get();
+
+    if (querySnapshot.empty) {
+      firestore()
+        .collection("users")
+        .add({
+          uid: auth.currentUser.uid,
+          displayName: auth.currentUser.displayName,
+        })
+        .then()
+        .catch((error) => console.log(error));
+    }
 
     router.replace({ pathname: "/" });
   };
