@@ -81,11 +81,10 @@ const TrackUserMapView = () => {
     );
     if (distance < marker.areaRadius) {
       //距離が50m以上離れているかのチェック
-      fetchImageUri(marker.id);
-      fetchTextData(marker.id);
       setSpotId(marker.id);
       setModalVisible(true);
       fetchPostData(marker.id);
+      console.log(postData);
     } else {
       setModalVisible(false);
     }
@@ -93,11 +92,6 @@ const TrackUserMapView = () => {
 
   function toRadians(degrees) {
     return (degrees * Math.PI) / 180;
-  }
-
-  function closemodal() {
-    setImageUri("");
-    setModalVisible(false);
   }
 
   // 2点間の距離を計算する関数
@@ -116,50 +110,9 @@ const TrackUserMapView = () => {
     return distance;
   }
 
-  const [imageUri, setImageUri] = useState("");
-  const [textData, setTextData] = useState("");
   const [loading, setLoading] = useState(true);
   const [postData, setPostData] = useState([]);
-
-  const [spotImageList, setspotImageList] = useState([]);
-  const fetchImageUri = async (spotid) => {
-    const imagelist = [];
-    setspotImageList(imagelist);
-    setLoading(true);
-    try {
-      const querySnapshot = await firestore()
-        .collection("photo")
-        .where("spotId", "==", spotid) // 特定の条件を指定
-        .get();
-
-      if (!querySnapshot.empty) {
-        const size = querySnapshot.size;
-        let cnt = 0;
-        while (cnt < size) {
-          const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
-          const data = documentSnapshot.data();
-          console.log("Document data:", data.imagePath);
-
-          if (data.imagePath) {
-            const url = await storage().ref(data.imagePath).getDownloadURL();
-            console.log(`awawawawaawaw-----${url}`);
-            imagelist.push(url);
-            cnt = cnt + 1;
-          } else {
-            console.log("No imagePath field in document");
-          }
-          setspotImageList(imagelist);
-        }
-      } else {
-        setImageUri("");
-        console.log("No documents found with the specified condition");
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [emptyPost, setEmptyPost] = useState(true);
 
   const fetchPostData = async (spotId) => {
     try {
@@ -176,14 +129,15 @@ const TrackUserMapView = () => {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
           const postData = documentSnapshot.data();
 
-          let username = postData.userId;
-          let postText = postData.postTxt;
-          let photoUrl = "";
-          let tempArray = [];
+          let photoUri = "";
+          let tempObj = {};
+          const firstKey = "username";
+          const secondKey = "postText";
+          const thirdKey = "photoUri";
 
           const queryPhoto = await firestore()
             .collection("photo")
-            .where("postId", "==", data.id) // 特定の条件を指定
+            .where("postId", "==", postData.id) // 特定の条件を指定
             .get();
           if (!queryPhoto.empty) {
             const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
@@ -194,54 +148,40 @@ const TrackUserMapView = () => {
                 .ref(photoData.imagePath)
                 .getDownloadURL();
               console.log(`${url}`);
-              photoUrl = url;
+              photoUri = url;
             }
           }
 
-          tempArray.push(username);
-          tempArray.push(postText);
-          tempArray.push(photoUrl);
+          const queryUser = await firestore()
+            .collection("users")
+            .where("uid", "==", postData.userId)
+            .get();
+          const userSnapshot = queryUser.docs[0];
+          const userData = userSnapshot.data();
 
-          postArray.push(tempArray);
+          tempObj[firstKey] = userData.displayName;
+          tempObj[secondKey] = postData.postTxt;
+          tempObj[thirdKey] = photoUri;
+
+          postArray.push(tempObj);
 
           cnt = cnt + 1;
         }
+        let empty = false;
 
         setPostData(postArray);
-        console.log(postData);
+        setEmptyPost(empty);
       } else {
-        setTextData("");
         console.log("No documents found with the specified condition");
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
     }
-  };
 
-  const fetchTextData = async (spotId) => {
-    try {
-      const querySnapshot = await firestore()
-        .collection("post")
-        .where("spotId", "==", spotId) // 特定の条件を指定
-        .get();
-
-      if (!querySnapshot.empty) {
-        const documentSnapshot = querySnapshot.docs[0]; // 最初のドキュメントを取得
-        const data = documentSnapshot.data();
-        console.log("Document data:", data);
-
-        setTextData(data);
-      } else {
-        setTextData("");
-        console.log("No documents found with the specified condition");
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-    }
+    console.log(postData);
   };
 
   const [markerCords, setMarkerCords] = useState([]);
-  const [photodata, setphotodata] = useState();
 
   const getPinColor = (marker) => {
     const distance = calculateDistance(
@@ -269,9 +209,6 @@ const TrackUserMapView = () => {
           const item = docs.data();
           fetchResult.push(item);
         });
-
-        // const item = querySnapshot.docs[0].data();
-        // fetchResult.push(item);
 
         setMarkerCords(fetchResult);
       } else {
@@ -373,9 +310,8 @@ const TrackUserMapView = () => {
 
       <MyModal
         visible={modalVisible}
-        imageUri={spotImageList[0]}
-        textData={textData}
-        spotImageList={spotImageList}
+        empty={emptyPost}
+        postData={postData}
         spotId={spotId}
         onClose={() => setModalVisible(false)}
       />
