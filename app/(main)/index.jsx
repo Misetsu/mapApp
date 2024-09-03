@@ -19,7 +19,8 @@ import MapView, { Marker } from "react-native-maps";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 
-// import { customMapStyle } from "../component/mapLayout.jsx";
+//import { customMapStyle } from "../component/mapLayout.jsx";
+
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height; //アスペクト比
@@ -47,14 +48,15 @@ const TrackUserMapView = () => {
 
 
   
-  const YourComponent = () => {
-    useEffect(() => {
+
+  useEffect(() => {
       // コンポーネントがマウントされたときに実行する処理
       handleMarkerPress(0, 0);
     }, []);
-  };
+  
 
   const handleMarkerPress = (latitude, longitude) => {
+    try{
     const distance = calculateDistance(
       position.latitude,
       position.longitude,
@@ -70,9 +72,11 @@ const TrackUserMapView = () => {
       setimage(require("../image/pin_blue.png")); //離れている(遠い場合)は青のピン
     }
     console.log(distance);
+  }catch (error) {console.error("Error fetching documents: ", error);}
   };
 
   const setmodal = (marker) => {
+    try{
     const distance = calculateDistance(
       position.latitude,
       position.longitude,
@@ -87,19 +91,25 @@ const TrackUserMapView = () => {
     } else {
       setModalVisible(false);
     }
+  }catch (error) {console.error("Error fetching documents: ", error);}
   };
 
   function toRadians(degrees) {
+    try{
     return (degrees * Math.PI) / 180;
+  }catch (error) {console.error("Error fetching documents: ", error);}
   }
 
   function closemodal(){
+    try {
     setImageUri("")
     setModalVisible(false)
+  }catch (error) {console.error("Error fetching documents: ", error);}
   }
 
   // 2点間の距離を計算する関数
   function calculateDistance(lat1, lon1, lat2, lon2) {
+    try{
     const R = 6371; // 地球の半径（単位: km）
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
@@ -112,6 +122,7 @@ const TrackUserMapView = () => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
     return distance;
+  }catch (error) {console.error("Error fetching documents: ", error);}
   }
 
   const [imageUri, setImageUri] = useState("");
@@ -120,10 +131,10 @@ const TrackUserMapView = () => {
 
   const [spotImageList, setspotImageList] = useState([]);
   const fetchImageUri = async (spotid) => {
-    const imagelist = []
-    setspotImageList(imagelist)
-    setLoading(true);
     try {
+      const imagelist = []
+      setspotImageList(imagelist)
+      setLoading(true);
       const querySnapshot = await firestore()
         .collection("photo")
         .where("spotId", "==", spotid) // 特定の条件を指定
@@ -186,6 +197,7 @@ const TrackUserMapView = () => {
   const [photodata, setphotodata] = useState();
 
   const getPinColor = (marker) => {
+    try{
     const distance = calculateDistance(
       position.latitude,
       position.longitude,
@@ -195,6 +207,9 @@ const TrackUserMapView = () => {
     return distance < marker.areaRadius
       ? require("../image/pin_orange.png")
       : require("../image/pin_blue.png");
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
   };
 
   const fetchAllMarkerCord = async () => {
@@ -231,6 +246,7 @@ const TrackUserMapView = () => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
+        try {
         setPosition(position.coords);
         if (!initialRegion) {
           setInitialRegion({
@@ -242,6 +258,9 @@ const TrackUserMapView = () => {
         } else {
           setError("Position or coords is undefined");
         }
+      } catch (error) {
+        setError(`Error updating position: ${error.message}`);
+      }
       },
       (err) => {
         setError(err.message);
@@ -301,8 +320,6 @@ const TrackUserMapView = () => {
               />
             </Marker>
           ))}
-
-          <YourComponent />
         </MapView>
       )}
 
@@ -440,8 +457,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
-
-const [defaultimage, setdefaultimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
 
 const MyModal = ({ visible, imageUri, textData,spotImageList,onClose }) => {
   return (
