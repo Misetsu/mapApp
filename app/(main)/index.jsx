@@ -9,9 +9,10 @@ import {
   Dimensions,
   StyleSheet,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
+import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
@@ -21,6 +22,9 @@ const { width, height } = Dimensions.get("window"); //デバイスの幅と高�
 const ASPECT_RATIO = width / height; //アスペクト比
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
+
+const auth = FirebaseAuth();
+const router = useRouter();
 
 const TrackUserMapView = () => {
   const [position, setPosition] = useState({
@@ -41,6 +45,7 @@ const TrackUserMapView = () => {
   const [distance, setDistance] = useState(0);
   const [spotId, setSpotId] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
+  const [user, setUser] = useState(null); //ユーザー情報を保持する
 
   const YourComponent = () => {
     useEffect(() => {
@@ -225,6 +230,11 @@ const TrackUserMapView = () => {
     }
   };
 
+  const signout = async () => {
+    await auth.signOut();
+    router.replace({ pathname: "/" });
+  };
+
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
@@ -250,6 +260,7 @@ const TrackUserMapView = () => {
   }, [initialRegion]);
 
   useEffect(() => {
+    setUser(auth.currentUser);
     fetchAllMarkerCord();
   }, []);
 
@@ -314,35 +325,62 @@ const TrackUserMapView = () => {
         onClose={() => setModalVisible(false)}
       />
 
-      <Link
-        href={{
-          pathname: "/camera",
-          params: {
-            latitude: position.latitude,
-            longitude: position.longitude,
-            spotId: 0,
-          },
-        }}
-        asChild
-      >
-        <Pressable
-          style={{
-            position: "absolute",
-            alignSelf: "center",
-            bottom: 50,
-            width: 75,
-            height: 75,
-            backgroundColor: "blue",
-            borderRadius: 75,
+      {user ? (
+        <Link
+          href={{
+            pathname: "/camera",
+            params: {
+              latitude: position.latitude,
+              longitude: position.longitude,
+              spotId: 0,
+            },
           }}
-        ></Pressable>
-      </Link>
-
-      <View style={styles.loignBtnContainer}>
-        <Link href={{ pathname: "/loginForm" }} asChild>
-          <Button title="ログイン" />
+          asChild
+        >
+          <Pressable
+            style={{
+              position: "absolute",
+              alignSelf: "center",
+              bottom: 50,
+              width: 75,
+              height: 75,
+              backgroundColor: "blue",
+              borderRadius: 75,
+            }}
+          ></Pressable>
         </Link>
-      </View>
+      ) : (
+        <Link
+          href={{
+            pathname: "/loginForm",
+          }}
+          asChild
+        >
+          <Pressable
+            style={{
+              position: "absolute",
+              alignSelf: "center",
+              bottom: 50,
+              width: 75,
+              height: 75,
+              backgroundColor: "blue",
+              borderRadius: 75,
+            }}
+          ></Pressable>
+        </Link>
+      )}
+
+      {user ? (
+        <View style={styles.loignBtnContainer}>
+          <Button title="ログアウト" onPress={signout} />
+        </View>
+      ) : (
+        <View style={styles.loignBtnContainer}>
+          <Link href={{ pathname: "/loginForm" }} asChild>
+            <Button title="ログイン" />
+          </Link>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

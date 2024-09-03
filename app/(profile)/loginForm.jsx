@@ -1,17 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import FirebaseAuth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+const auth = FirebaseAuth();
+const router = useRouter();
+
+GoogleSignin.configure({
+  webClientId:
+    "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
+});
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+
+  const signInWithGoogle = async () => {
+    // Google のログイン画面を表示して認証用の ID トークンを取得する
+    const user = await GoogleSignin.signIn();
+    const idToken = user.idToken;
+
+    if (idToken === null) {
+      return;
+    }
+
+    // 取得した認証情報 (ID トークン) を元にサインインする
+    const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
+    await auth.signInWithCredential(credential);
+
+    const querySnapshot = await firestore()
+      .collection("users")
+      .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
+      .get();
+
+    if (querySnapshot.empty) {
+      firestore()
+        .collection("users")
+        .add({
+          uid: auth.currentUser.uid,
+          displayName: auth.currentUser.displayName,
+        })
+        .then()
+        .catch((error) => console.log(error));
+    }
+
+    router.replace({ pathname: "/" });
+  };
+
+  const signInWithEmail = async () => {
+    const credential = await auth.signInWithEmailAndPassword(
+      userEmail,
+      userPassword
+    );
+
+    router.replace({ pathname: "/" });
+  };
 
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        value={email}
-        onChangeText={setEmail}
+        value={userEmail}
+        onChangeText={setUserEmail}
         keyboardType="email-address"
         autoCapitalize="none"
         placeholder="email"
@@ -19,15 +71,19 @@ const LoginScreen = () => {
 
       <TextInput
         style={styles.input}
-        value={password}
-        onChangeText={setPassword}
+        value={userPassword}
+        onChangeText={setUserPassword}
         secureTextEntry
         placeholder="Password"
       />
 
-      <Link href={{ pathname: "/" }} asChild>
-        <Button title="LOGIN" style={styles.button} />
-      </Link>
+      <Button title="LOGIN" style={styles.button} onPress={signInWithEmail} />
+
+      <Button
+        title="Googleでサインイン"
+        style={styles.button}
+        onPress={signInWithGoogle}
+      />
 
       <Link href={{ pathname: "/" }} asChild>
         <Text style={styles.linklabel}>Forgot password?</Text>
@@ -68,6 +124,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
     color: "#1a0dab",
+  },
+  button: {
+    padding: 8,
+    backgroundColor: "black",
+  },
+  buttonText: {
+    color: "white",
   },
 });
 
