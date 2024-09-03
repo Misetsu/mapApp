@@ -18,6 +18,7 @@ const imageHeight = (imageWidth * 4) / 3; // 3:4のアスペクト比を維持
 
 export default function test() {
   const [text, setText] = useState(""); // テキスト入力を保持するための状態
+  const [post, setPost] = useState("");
   const reference = storage();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -56,12 +57,33 @@ export default function test() {
         })
         .then()
         .catch((error) => console.log(error));
+
+      firestore()
+        .collection("post")
+        .add({
+          postTxt: post,
+          spotId: maxId,
+          userId: 1,
+        })
+        .then()
+        .catch((error) => console.log(error));
     } else {
+      console.log(imagePath, spotId);
       firestore()
         .collection("photo")
         .add({
           imagePath: imagePath,
-          spotId: spotId,
+          spotId: parseInt(spotId),
+          userId: 1,
+        })
+        .then()
+        .catch((error) => console.log(error));
+
+      firestore()
+        .collection("post")
+        .add({
+          postTxt: post,
+          spotId: parseInt(spotId),
           userId: 1,
         })
         .then()
@@ -74,12 +96,22 @@ export default function test() {
   return (
     <View style={{ flex: 1 }}>
       <Image source={{ uri: imageUri }} style={styles.imageContainer} />
+      {spotId == 0 ? (
+        <TextInput
+          style={styles.textbox}
+          placeholder="場所の名前を入力"
+          maxLength={30} // 文字数制限を30文字に設定
+          onChangeText={setText}
+          value={text}
+        />
+      ) : (
+        <></>
+      )}
       <TextInput
         style={styles.textbox}
-        placeholder="場所の名前を入力"
-        maxLength={30} // 文字数制限を30文字に設定
-        onChangeText={setText}
-        value={text}
+        placeholder="投稿の文章を入力"
+        onChangeText={setPost}
+        value={post}
       />
       <Pressable onPress={uploadPhoto} style={styles.uploadButton} />
     </View>
