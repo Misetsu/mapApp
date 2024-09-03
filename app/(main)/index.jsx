@@ -85,6 +85,7 @@ const TrackUserMapView = () => {
       fetchTextData(marker.id);
       setSpotId(marker.id);
       setModalVisible(true);
+      fetchPostData(marker.id);
     } else {
       setModalVisible(false);
     }
@@ -118,6 +119,7 @@ const TrackUserMapView = () => {
   const [imageUri, setImageUri] = useState("");
   const [textData, setTextData] = useState("");
   const [loading, setLoading] = useState(true);
+  const [postData, setPostData] = useState([]);
 
   const [spotImageList, setspotImageList] = useState([]);
   const fetchImageUri = async (spotid) => {
@@ -159,6 +161,63 @@ const TrackUserMapView = () => {
     }
   };
 
+  const fetchPostData = async (spotId) => {
+    try {
+      const postArray = [];
+      const querySnapshot = await firestore()
+        .collection("post")
+        .where("spotId", "==", spotId) // 特定の条件を指定
+        .get();
+
+      if (!querySnapshot.empty) {
+        const size = querySnapshot.size;
+        let cnt = 0;
+        while (cnt < size) {
+          const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
+          const postData = documentSnapshot.data();
+
+          let username = postData.userId;
+          let postText = postData.postTxt;
+          let photoUrl = "";
+          let tempArray = [];
+
+          const queryPhoto = await firestore()
+            .collection("photo")
+            .where("postId", "==", data.id) // 特定の条件を指定
+            .get();
+          if (!queryPhoto.empty) {
+            const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+            const photoData = photoSnapshot.data();
+
+            if (photoData.imagePath) {
+              const url = await storage()
+                .ref(photoData.imagePath)
+                .getDownloadURL();
+              console.log(`${url}`);
+              photoUrl = url;
+            }
+          }
+
+          tempArray.push(username);
+          tempArray.push(postText);
+          tempArray.push(photoUrl);
+
+          postArray.push(tempArray);
+
+          cnt = cnt + 1;
+        }
+
+        setPostData(postArray);
+        console.log(postData);
+      } else {
+        setTextData("");
+        console.log("No documents found with the specified condition");
+      }
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
+  };
+
   const fetchTextData = async (spotId) => {
     try {
       const querySnapshot = await firestore()
@@ -171,11 +230,7 @@ const TrackUserMapView = () => {
         const data = documentSnapshot.data();
         console.log("Document data:", data);
 
-        if (data) {
-          setTextData(data);
-        } else {
-          console.log("No textData field in document");
-        }
+        setTextData(data);
       } else {
         setTextData("");
         console.log("No documents found with the specified condition");
