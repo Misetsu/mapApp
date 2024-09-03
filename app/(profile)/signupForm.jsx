@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { Link, useRouter } from "expo-router";
+import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 
 const auth = FirebaseAuth();
@@ -26,6 +27,15 @@ const SignupScreen = () => {
       };
 
       await auth.currentUser.updateProfile(update);
+
+      firestore()
+        .collection("users")
+        .add({
+          uid: auth.currentUser.uid,
+          displayName: auth.currentUser.displayName,
+        })
+        .then()
+        .catch((error) => console.log(error));
 
       router.replace({ pathname: "/" });
     } catch (error) {
