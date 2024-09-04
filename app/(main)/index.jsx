@@ -8,6 +8,9 @@ import {
   Pressable,
   Dimensions,
   StyleSheet,
+  Modal,
+  ScrollView,
+  TouchableOpacity
 } from "react-native";
 import { Link } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -42,6 +45,7 @@ const TrackUserMapView = () => {
   const [distance, setDistance] = useState(0);
   const [spotId, setSpotId] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
+  const [mapfixed,setmapfixed] = useState(false);
 
 
   
@@ -195,6 +199,13 @@ const TrackUserMapView = () => {
 
   const [markerCords, setMarkerCords] = useState([]);
   const [photodata, setphotodata] = useState();
+  const [region,setregion] = useState({
+    //ユーザーの位置情報を保持
+    latitude: 0,
+    longitude: 0,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  })
 
   const getPinColor = (marker) => {
     try{
@@ -212,6 +223,18 @@ const TrackUserMapView = () => {
     }
   };
 
+  const setmapfixeds = (latitude,longitude,LATITUDE_DELTA,LONGITUDE_DELTA) => {
+    if(mapfixed == true){
+      setmapfixed(false);
+      const regions =(latitude,longitude,LATITUDE_DELTA,LONGITUDE_DELTA)
+      setregion(regions)
+      console.log(region)
+    }
+    else
+    {
+      setmapfixed(true);
+    }
+  }
   const fetchAllMarkerCord = async () => {
     const fetchResult = [];
     setLoading(true);
@@ -286,6 +309,7 @@ const TrackUserMapView = () => {
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
           style={StyleSheet.absoluteFillObject}
           customMapStyle={customMapStyle}
+          
           initialRegion={{
             //regionは固定
             latitude: position.latitude,
@@ -293,12 +317,26 @@ const TrackUserMapView = () => {
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA,
           }}
+
+          scrollEnabled={mapfixed}
+          zoomEnabled={mapfixed}
+          rotateEnabled={mapfixed}
+          pitchEnabled={mapfixed}
+          
         >
           <Marker
             coordinate={{
               latitude: position.latitude,
               longitude: position.longitude,
             }}
+            initialRegion={
+              {
+                latitude: position.latitude,
+                longitude: position.longitude,
+                latitudeDelta: LATITUDE_DELTA,
+                longitudeDelta: LONGITUDE_DELTA,
+              }
+            }
           >
             <View style={styles.radius}>
               <View style={styles.marker} />
@@ -361,6 +399,13 @@ const TrackUserMapView = () => {
         <Link href={{ pathname: "/loginForm" }} asChild>
           <Button title="ログイン" />
         </Link>
+      </View>
+      <View style={styles.mapfixed}>
+          <Button title="マップ動かす"
+          onPress={() => setmapfixeds(position.latitude,
+            position.longitude,
+            LATITUDE_DELTA,
+            LONGITUDE_DELTA)}/>
       </View>
     </SafeAreaView>
   );
@@ -458,6 +503,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
   },
+  mapfixed:{
+    position: "absolute",
+    top: 10,
+    left: 10,
+    borderRadius: 5,
+    padding: 10,
+  }
 });
 
 const MyModal = ({ visible, imageUri, textData,spotImageList,onClose }) => {
