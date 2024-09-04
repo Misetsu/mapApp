@@ -383,7 +383,10 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          <Button title="ログアウト" onPress={signout} />
+          {/* <Button title="ログアウト" onPress={signout} /> */}
+          <Link href={{ pathname: "/myPage" }} asChild>
+            <Button title="マイページ" />
+          </Link>
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
