@@ -117,9 +117,27 @@ const TrackUserMapView = () => {
   const fetchPostData = async (spotId) => {
     try {
       const postArray = [];
+      const friendList = [];
+
+      const queryFollow = await firestore()
+        .collection("follow")
+        .where("followerId", "==", user.uid)
+        .get();
+      if (!queryFollow.empty) {
+        let cnt = 0;
+        while (cnt < queryFollow.size) {
+          const followSnapshot = queryFollow.doc[cnt];
+          const followData = followSnapshot.data();
+          friendList.push(followData.followeeId);
+        }
+      } else {
+        friendList.push("");
+      }
+
       const querySnapshot = await firestore()
         .collection("post")
-        .where("spotId", "==", spotId) // 特定の条件を指定
+        .where("spotId", "==", spotId)
+        .where("userId", "in", friendList) // 特定の条件を指定
         .get();
 
       if (!querySnapshot.empty) {
