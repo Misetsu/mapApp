@@ -121,25 +121,27 @@ const TrackUserMapView = () => {
 
       const queryFollow = await firestore()
         .collection("follow")
-        .where("followerId", "==", user.uid)
+        .where("followerId", "==", auth.currentUser.uid)
         .get();
+
       if (!queryFollow.empty) {
         let cnt = 0;
         while (cnt < queryFollow.size) {
-          const followSnapshot = queryFollow.doc[cnt];
+          const followSnapshot = queryFollow.docs[cnt];
           const followData = followSnapshot.data();
+          console.log(followData.followeeId);
           friendList.push(followData.followeeId);
+          cnt = cnt + 1;
         }
       } else {
         friendList.push("");
       }
-
+      console.log(friendList);
       const querySnapshot = await firestore()
         .collection("post")
         .where("spotId", "==", spotId)
         .where("userId", "in", friendList) // 特定の条件を指定
         .get();
-
       if (!querySnapshot.empty) {
         const size = querySnapshot.size;
         let cnt = 0;
