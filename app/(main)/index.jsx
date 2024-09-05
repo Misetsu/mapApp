@@ -46,6 +46,7 @@ const TrackUserMapView = () => {
   const [spotId, setSpotId] = useState(0);
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
   const [user, setUser] = useState(null); //ユーザー情報を保持する
+  const [mapfixed, setmapfixed] = useState(false);
 
   const YourComponent = () => {
     useEffect(() => {
@@ -55,59 +56,75 @@ const TrackUserMapView = () => {
   };
 
   const handleMarkerPress = (latitude, longitude) => {
-    const distance = calculateDistance(
-      position.latitude,
-      position.longitude,
-      latitude,
-      longitude
-    );
-    setDistance(distance); // 距離を状態として更新
-    console.log(image);
-    if (distance < 50) {
-      //距離が50m以上離れているかのチェック
-      setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
-    } else {
-      setimage(require("../image/pin_blue.png")); //離れている(遠い場合)は青のピン
+    try {
+      const distance = calculateDistance(
+        position.latitude,
+        position.longitude,
+        latitude,
+        longitude
+      );
+      setDistance(distance); // 距離を状態として更新
+      console.log(image);
+      if (distance < 50) {
+        //距離が50m以上離れているかのチェック
+        setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
+      } else {
+        setimage(require("../image/pin_blue.png")); //離れている(遠い場合)は青のピン
+      }
+      console.log(distance);
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
     }
-    console.log(distance);
   };
 
   const setmodal = (marker) => {
-    const distance = calculateDistance(
-      position.latitude,
-      position.longitude,
-      marker.mapLatitude,
-      marker.mapLongitude
-    );
-    if (distance < marker.areaRadius) {
-      //距離が50m以上離れているかのチェック
-      setSpotId(marker.id);
-      setModalVisible(true);
-      fetchPostData(marker.id);
-      console.log(postData);
-    } else {
-      setModalVisible(false);
+    try {
+      const distance = calculateDistance(
+        position.latitude,
+        position.longitude,
+        marker.mapLatitude,
+        marker.mapLongitude
+      );
+      if (distance < marker.areaRadius) {
+        //距離が50m以上離れているかのチェック
+        setSpotId(marker.id);
+        setModalVisible(true);
+        fetchPostData(marker.id);
+        console.log(postData);
+      } else {
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
     }
   };
 
   function toRadians(degrees) {
-    return (degrees * Math.PI) / 180;
+    try {
+      return (degrees * Math.PI) / 180;
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
   }
 
   // 2点間の距離を計算する関数
   function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // 地球の半径（単位: km）
-    const dLat = toRadians(lat2 - lat1);
-    const dLon = toRadians(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
-    return distance;
+    try {
+      const R = 6371; // 地球の半径（単位: km）
+      const dLat = toRadians(lat2 - lat1);
+      const dLon = toRadians(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat1)) *
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
+      return distance;
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
   }
 
   const [loading, setLoading] = useState(true);
@@ -182,17 +199,42 @@ const TrackUserMapView = () => {
   };
 
   const [markerCords, setMarkerCords] = useState([]);
+  const [photodata, setphotodata] = useState();
 
   const getPinColor = (marker) => {
-    const distance = calculateDistance(
-      position.latitude,
-      position.longitude,
-      marker.mapLatitude,
-      marker.mapLongitude
-    );
-    return distance < marker.areaRadius
-      ? require("../image/pin_orange.png")
-      : require("../image/pin_blue.png");
+    try {
+      const distance = calculateDistance(
+        position.latitude,
+        position.longitude,
+        marker.mapLatitude,
+        marker.mapLongitude
+      );
+      return distance < marker.areaRadius
+        ? require("../image/pin_orange.png")
+        : require("../image/pin_blue.png");
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
+  };
+
+  const setmapfixeds = (
+    latitude,
+    longitude,
+    LATITUDE_DELTA,
+    LONGITUDE_DELTA
+  ) => {
+    if (mapfixed == true) {
+      setmapfixed(false);
+      setInitialRegion({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      });
+      console.log(initialRegion);
+    } else {
+      setmapfixed(true);
+    }
   };
 
   const fetchAllMarkerCord = async () => {
@@ -231,16 +273,20 @@ const TrackUserMapView = () => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
-        setPosition(position.coords);
-        if (!initialRegion) {
-          setInitialRegion({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          });
-        } else {
-          setError("Position or coords is undefined");
+        try {
+          setPosition(position.coords);
+          if (!initialRegion) {
+            setInitialRegion({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            });
+          } else {
+            setError("Position or coords is undefined");
+          }
+        } catch (error) {
+          setError(`Error updating position: ${error.message}`);
         }
       },
       (err) => {
@@ -268,18 +314,23 @@ const TrackUserMapView = () => {
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
           style={StyleSheet.absoluteFillObject}
           customMapStyle={customMapStyle}
-          initialRegion={{
-            //regionは固定
-            latitude: position.latitude,
-            longitude: position.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          }}
+          initialRegion={initialRegion}
+          region={initialRegion}
+          scrollEnabled={mapfixed}
+          zoomEnabled={mapfixed}
+          rotateEnabled={mapfixed}
+          pitchEnabled={mapfixed}
         >
           <Marker
             coordinate={{
               latitude: position.latitude,
               longitude: position.longitude,
+            }}
+            initialRegion={{
+              latitude: position.latitude,
+              longitude: position.longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
             }}
           >
             <View style={styles.radius}>
@@ -303,8 +354,6 @@ const TrackUserMapView = () => {
               />
             </Marker>
           ))}
-
-          <YourComponent />
         </MapView>
       )}
 
@@ -370,6 +419,35 @@ const TrackUserMapView = () => {
           <Link href={{ pathname: "/loginForm" }} asChild>
             <Button title="ログイン" />
           </Link>
+        </View>
+      )}
+      {mapfixed ? (
+        <View style={styles.mapfixed}>
+          <Button
+            title="マップ固定"
+            onPress={() =>
+              setmapfixeds(
+                position.latitude,
+                position.longitude,
+                LATITUDE_DELTA,
+                LONGITUDE_DELTA
+              )
+            }
+          />
+        </View>
+      ) : (
+        <View style={styles.mapfixed}>
+          <Button
+            title="マップ移動"
+            onPress={() =>
+              setmapfixeds(
+                position.latitude,
+                position.longitude,
+                LATITUDE_DELTA,
+                LONGITUDE_DELTA
+              )
+            }
+          />
         </View>
       )}
     </SafeAreaView>

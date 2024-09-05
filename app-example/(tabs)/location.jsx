@@ -24,6 +24,7 @@ const TrackUserMapView = () => {
   const [initialRegion, setInitialRegion] = useState(null);
 
   useEffect(() => {
+    try{
     const watchId = Geolocation.watchPosition(
       (position) => {
         setPosition(position.coords);
@@ -44,6 +45,7 @@ const TrackUserMapView = () => {
       { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
     );
     return () => Geolocation.clearWatch(watchId);
+}catch (error) {console.error("Error fetching documents: ", error);}
   }, [initialRegion]);
 
   return (
