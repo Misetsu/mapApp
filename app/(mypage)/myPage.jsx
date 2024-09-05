@@ -205,13 +205,17 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     backgroundColor: '#ccc',
-  },
+  },text: {
+    fontSize:16,
+    fontWeight:'600',
+    },
   FFnum:{
     flexDirection: 'row',
     justifyContent: 'space-between', 
     width: '90%',
     marginTop: 15,
-  }, modalOverlay: {
+  }, 
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
