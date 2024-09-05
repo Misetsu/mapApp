@@ -27,7 +27,7 @@ export default function test() {
   const params = useLocalSearchParams();
   const { imageUri, latitude, longitude, spotId } = params;
 
-  const uploadPhoto = async () => {
+  const uploadPost = async () => {
     // 写真をstorageに格納
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath =
@@ -52,10 +52,18 @@ export default function test() {
         areaRadius: 50,
       });
 
+      const queryPost = await firestore()
+        .collection("post")
+        .orderBy("id", "desc")
+        .get();
+
+      const maxPostId = queryPost.docs[0].data().id + 1;
+
       firestore()
         .collection("photo")
         .add({
           imagePath: imagePath,
+          postId: maxPostId,
           spotId: maxId,
           userId: auth.currentUser.uid,
         })
@@ -65,6 +73,7 @@ export default function test() {
       firestore()
         .collection("post")
         .add({
+          id: maxId,
           postTxt: post,
           spotId: maxId,
           userId: auth.currentUser.uid,
@@ -117,7 +126,7 @@ export default function test() {
         onChangeText={setPost}
         value={post}
       />
-      <Pressable onPress={uploadPhoto} style={styles.uploadButton} />
+      <Pressable onPress={uploadPost} style={styles.uploadButton} />
     </View>
   );
 }
