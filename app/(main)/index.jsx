@@ -266,7 +266,13 @@ const TrackUserMapView = () => {
       (err) => {
         setError(err.message);
       },
-      { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
+      // { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        distanceFilter: 1,
+        maximumAge: 1000,
+      }
     );
     return () => Geolocation.clearWatch(watchId);
   }, [initialRegion]);
