@@ -199,13 +199,6 @@ const TrackUserMapView = () => {
 
   const [markerCords, setMarkerCords] = useState([]);
   const [photodata, setphotodata] = useState();
-  const [region,setregion] = useState({
-    //ユーザーの位置情報を保持
-    latitude: 0,
-    longitude: 0,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  })
 
   const getPinColor = (marker) => {
     try{
@@ -226,9 +219,13 @@ const TrackUserMapView = () => {
   const setmapfixeds = (latitude,longitude,LATITUDE_DELTA,LONGITUDE_DELTA) => {
     if(mapfixed == true){
       setmapfixed(false);
-      const regions =(latitude,longitude,LATITUDE_DELTA,LONGITUDE_DELTA)
-      setregion(regions)
-      console.log(region)
+        setInitialRegion({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        });
+        console.log(initialRegion);
     }
     else
     {
@@ -310,14 +307,8 @@ const TrackUserMapView = () => {
           style={StyleSheet.absoluteFillObject}
           customMapStyle={customMapStyle}
           
-          initialRegion={{
-            //regionは固定
-            latitude: position.latitude,
-            longitude: position.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          }}
-
+          initialRegion={initialRegion}
+          region={initialRegion}
           scrollEnabled={mapfixed}
           zoomEnabled={mapfixed}
           rotateEnabled={mapfixed}
