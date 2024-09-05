@@ -102,9 +102,9 @@ const TrackUserMapView = () => {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
     return distance;
@@ -372,6 +372,21 @@ const TrackUserMapView = () => {
           </Link>
         </View>
       )}
+
+
+      {/* マイページボタン */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          borderRadius: 5,
+        }}
+      >
+        <Link href={{ pathname: "/myPage" }} asChild>
+          <Button title="マイページ" />
+        </Link>
+      </View>
     </SafeAreaView>
   );
 };
