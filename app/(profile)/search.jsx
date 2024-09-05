@@ -3,9 +3,8 @@ import {
   SafeAreaView,
   View,
   Text,
-  Image,
+  TextInput,
   Button,
-  Pressable,
   Dimensions,
   StyleSheet,
 } from "react-native";
@@ -21,7 +20,44 @@ const auth = FirebaseAuth();
 const router = useRouter();
 
 const MyPageScreen = () => {
-  return <View></View>;
+  const [searchText, setSearchText] = useState("");
+  const [searchResult, setSearchResult] = useState([]);
+  const userList = [];
+
+  const search = async () => {
+    const queryUser = await firestore()
+      .collection("users")
+      .where("displayName", "==", searchText)
+      .get();
+
+    if (!queryUser.empty) {
+      let cnt = 0;
+      while (cnt < queryUser.size) {
+        const userSnapshot = queryUser.docs[cnt];
+        const userData = userSnapshot.data();
+        userList.push(userData.displayName);
+        cnt = cnt + 1;
+      }
+    } else {
+      userList.push("");
+    }
+    console.log(userList);
+    setSearchResult(userList);
+  };
+
+  return (
+    <View>
+      <TextInput
+        placeholder="検索"
+        onChangeText={setSearchText}
+        value={searchText}
+      />
+      <Button onPress={search} title="検索" />
+      {searchResult.map((result) => {
+        <Text>{result}</Text>;
+      })}
+    </View>
+  );
 };
 
 export default MyPageScreen;
