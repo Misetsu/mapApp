@@ -378,8 +378,8 @@ const TrackUserMapView = () => {
       <View
         style={{
           position: 'absolute',
-          top: 10,
-          left: 10,
+          top: 20,
+          left: 20,
           borderRadius: 5,
         }}
       >

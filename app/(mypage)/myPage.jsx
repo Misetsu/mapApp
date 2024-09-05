@@ -1,121 +1,240 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, Modal, Image, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { Link, useRouter } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
+import FirebaseAuth from '@react-native-firebase/auth';
+import * as ImagePicker from 'expo-image-picker';
 
-const auth = FirebaseAuth();
-const router = useRouter();
+const myPage = () => {
+  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
+  const [photoUri, setPhotoUri] = useState(''); // プロフィール画像のURL
+  const [displayName, setDisplayName] = useState('KENTA'); // ユーザーの表示名
+  const [displayEmail, setDisplayEmail] = useState('kobe@denshi.jp'); // ユーザーの表示名
 
-GoogleSignin.configure({
-  webClientId:
-    "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
-});
+  useEffect(() => {
+    // ユーザーデータを取得するための非同期関数
+    const fetchUserData = async () => {
+      const currentUser = FirebaseAuth().currentUser;
+      if (currentUser) {
+        setUser(currentUser);
+        const userDoc = await firestore().collection('users').doc(currentUser.uid).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          setDisplayName(userData.displayName || '');
+          if (userData.photoUri) {
+            // 画像のURLを取得
+            const url = await storage().ref(userData.photoUri).getDownloadURL();
+            setPhotoUri(url);
+          }
+        }
+      }
+    };
 
-const LoginScreen = () => {
-  const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
+    fetchUserData();
+  }, []);
 
-  const signInWithGoogle = async () => {
-    // Google のログイン画面を表示して認証用の ID トークンを取得する
-    const user = await GoogleSignin.signIn();
-    const idToken = user.idToken;
-
-    if (idToken === null) {
-      return;
+  // ユーザーの表示名を保存する関数
+  const handleSave = async () => {
+    if (user) {
+      await firestore().collection('users').doc(user.uid).update({
+        displayName,
+      });
+      setIsEditing(false); // 編集モードを終了
     }
-
-    // 取得した認証情報 (ID トークン) を元にサインインする
-    const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
-    await auth.signInWithCredential(credential);
-
-    const querySnapshot = await firestore()
-      .collection("users")
-      .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
-      .get();
-
-    if (querySnapshot.empty) {
-      firestore()
-        .collection("users")
-        .add({
-          uid: auth.currentUser.uid,
-          displayName: auth.currentUser.displayName,
-        })
-        .then()
-        .catch((error) => console.log(error));
-    }
-
-    router.replace({ pathname: "/" });
   };
 
-  const signInWithEmail = async () => {
-    const credential = await auth.signInWithEmailAndPassword(
-      userEmail,
-      userPassword
-    );
+  // 画像ピッカーを開いて画像を選択する関数
+  const handlePickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
 
-    router.replace({ pathname: "/" });
+    if (!result.canceled) {
+      const { uri } = result.assets[0];
+      const photoUri = await uploadPhoto(uri); // 画像をアップロードし、URLを取得
+      setPhotoUri(photoUri);
+    }
+  };
+
+  // 画像をアップロードする関数
+  const uploadPhoto = async (uri) => {
+    const filename = uri.split('/').pop(); // ファイル名を取得
+    const uploadUri = uri;
+    try {
+      // Firebase Storageに画像をアップロード
+      await storage().ref(`profilePhotos/${filename}`).putFile(uploadUri);
+      const url = await storage().ref(`profilePhotos/${filename}`).getDownloadURL(); // アップロードした画像のURLを取得
+      await firestore().collection('users').doc(user.uid).update({ photoUri: url }); // ユーザーのドキュメントにURLを保存
+      return url;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+    }
+  };
+
+  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
+  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
+
+  const handleFollowPress = () => {
+    // Followテキストが押されたときにフォローモーダルを表示
+    setIsFollowModalVisible(true);
+  };
+
+  const handleFollowerPress = () => {
+    // Followerテキストが押されたときにフォロワーモーダルを表示
+    setIsFollowerModalVisible(true);
+  };
+
+  const handleCloseFollowModal = () => {
+    // フォローモーダルを閉じる
+    setIsFollowModalVisible(false);
+  };
+
+  const handleCloseFollowerModal = () => {
+    // フォロワーモーダルを閉じる
+    setIsFollowerModalVisible(false);
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        value={userEmail}
-        onChangeText={setUserEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        placeholder="email"
-      />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.profileContainer}>
+        {/* フォロワーの検索へのボタン */}
+        <View style={styles.searchbtn}>
+          <Button title="SEARCH Follower" />
+        </View>
 
-      <TextInput
-        style={styles.input}
-        value={userPassword}
-        onChangeText={setUserPassword}
-        secureTextEntry
-        placeholder="Password"
-      />
+        {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
+        <TouchableOpacity onPress={handlePickImage}>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.profileImagePlaceholder} />
+          )}
+        </TouchableOpacity>
+        {/* フォロー、フォロワーを表示 */}
+         {/* フォロー、フォロワーを表示 */}
+      <View style={styles.FFnum}>
+        <TouchableOpacity onPress={handleFollowPress}>
+          <Text style={styles.text}>Follow: 20</Text>
+        </TouchableOpacity>
 
-      <Button title="MYPAGE" style={styles.button} onPress={signInWithEmail} />
+        <TouchableOpacity onPress={handleFollowerPress}>
+          <Text style={styles.text}>Follower: 123,456,789</Text>
+        </TouchableOpacity>
+      </View>
 
-      <Button
-        title="Googleでサインイン"
-        style={styles.button}
-        onPress={signInWithGoogle}
-      />
+      {/* フォローモーダル */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isFollowModalVisible}
+        onRequestClose={handleCloseFollowModal} // Androidの戻るボタンで閉じるために必要
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text>Follow</Text>
+            <Button title="閉じる" onPress={handleCloseFollowModal} />
+          </View>
+        </View>
+      </Modal>
 
-      <Link href={{ pathname: "/" }} asChild>
-        <Text style={styles.linklabel}>Forgot password?</Text>
-      </Link>
+      {/* フォロワーモーダル */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isFollowerModalVisible}
+        onRequestClose={handleCloseFollowerModal} // Androidの戻るボタンで閉じるために必要
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text>Follower</Text>
+            <Button title="閉じる" onPress={handleCloseFollowerModal} />
+          </View>
+        </View>
+      </Modal>
+        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
+        <Text style={styles.displayName}>USERNAME</Text>
+        <TextInput
+          value={displayName}
+          onChangeText={setDisplayName}
+          style={styles.textInput}
+        />
+        {/* メールアドレスを表示し、テキストボックスに入力でメールアドレス変更*/}
+        <Text style={styles.displayName}>Email</Text>
+        <TextInput
+          value={displayEmail}
+          onChangeText={setDisplayEmail}
+          style={styles.textInput}
+        />
 
-      <Text style={styles.noamllabel}>Dont't have an account?</Text>
+        <Link href={{ pathname: "/" }} asChild>
+          <Text style={styles.linklabel}>Change password?</Text>
+        </Link>
 
-      <Link href={{ pathname: "/signupForm" }} asChild>
-        <Button title="SIGN UP" style={styles.button} />
-      </Link>
-    </View>
+        <Button title="Save" onPress={handleSave} />
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
+  },
+  profileContainer: {
+    alignItems: 'center',
+  },
+  searchbtn: {
+    alignSelf: 'center',
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    width: '90%',
+    backgroundColor: '#fff',
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  profileImagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#ccc',
+  },
+  FFnum:{
+    flexDirection: 'row',
+    justifyContent: 'space-between', 
+    width: '90%',
+    marginTop: 15,
+  }, modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 背景を半透明に
+  },
+  modalContent: {
+    width: 300,
     padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',},
+  displayName: {
+    fontSize: 15,
+    marginTop: 20,
+    textAlign: 'left',
+    width: '90%',
   },
-  input: {
-    margin: 10,
+  textInput: {
+    borderBottomWidth: 1,
+    width: '90%',
+    textAlign: 'center',
+    marginVertical: 16,
     fontSize: 20,
-    height: 40,
-    borderBottomWidth: 2,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  noamllabel: {
-    fontSize: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
-    textAlign: "center",
   },
   linklabel: {
     fontSize: 16,
@@ -124,14 +243,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
     color: "#1a0dab",
-  },
-  button: {
-    padding: 8,
-    backgroundColor: "black",
-  },
-  buttonText: {
-    color: "white",
-  },
+  }
 });
 
-export default LoginScreen;
+export default myPage;
