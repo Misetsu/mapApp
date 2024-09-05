@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Dimensions } from "react-native";
-import FirebaseAuth from "@react-native-firebase/auth";
+import { View, Text, TextInput, Dimensions } from "react-native";
 import firestore from "@react-native-firebase/firestore";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -9,7 +8,6 @@ const ASPECT_RATIO = width / height; //アスペクト比
 const SearchScreen = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResult, setSearchResult] = useState([]);
-  const userList = [];
 
   const handleSearch = (text) => {
     setSearchText(text);
@@ -21,8 +19,6 @@ const SearchScreen = () => {
         .get()
         .then((result) => {
           setSearchResult(result.docs);
-          console.log(result.docs);
-          console.log(searchText);
         });
     }
   };
@@ -41,9 +37,6 @@ const SearchScreen = () => {
           })}
         </View>
       )}
-      {searchResult.map((result) => {
-        <Text>{result.data().displayName}</Text>;
-      })}
     </View>
   );
 };
