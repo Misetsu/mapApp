@@ -93,6 +93,13 @@ export const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
   },
+  mapfixed: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    borderRadius: 5,
+    padding: 10,
+  },
 });
 
 export const customMapStyle = [

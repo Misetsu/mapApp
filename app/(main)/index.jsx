@@ -225,16 +225,14 @@ const TrackUserMapView = () => {
   ) => {
     if (mapfixed == true) {
       setmapfixed(false);
-        setInitialRegion({
-          latitude: latitude,
-          longitude: longitude,
-          latitudeDelta: LATITUDE_DELTA,
-          longitudeDelta: LONGITUDE_DELTA,
-        });
-        console.log(initialRegion);
-    }
-    else
-    {
+      setInitialRegion({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      });
+      console.log(initialRegion);
+    } else {
       setmapfixed(true);
     }
   };
@@ -316,7 +314,6 @@ const TrackUserMapView = () => {
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
           style={StyleSheet.absoluteFillObject}
           customMapStyle={customMapStyle}
-          
           initialRegion={initialRegion}
           region={initialRegion}
           scrollEnabled={mapfixed}
@@ -424,19 +421,35 @@ const TrackUserMapView = () => {
           </Link>
         </View>
       )}
-      <View style={styles.mapfixed}>
-        <Button
-          title="マップ動かす"
-          onPress={() =>
-            setmapfixeds(
-              position.latitude,
-              position.longitude,
-              LATITUDE_DELTA,
-              LONGITUDE_DELTA
-            )
-          }
-        />
-      </View>
+      {mapfixed ? (
+        <View style={styles.mapfixed}>
+          <Button
+            title="マップ固定"
+            onPress={() =>
+              setmapfixeds(
+                position.latitude,
+                position.longitude,
+                LATITUDE_DELTA,
+                LONGITUDE_DELTA
+              )
+            }
+          />
+        </View>
+      ) : (
+        <View style={styles.mapfixed}>
+          <Button
+            title="マップ移動"
+            onPress={() =>
+              setmapfixeds(
+                position.latitude,
+                position.longitude,
+                LATITUDE_DELTA,
+                LONGITUDE_DELTA
+              )
+            }
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
