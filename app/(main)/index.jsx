@@ -27,6 +27,8 @@ const auth = FirebaseAuth();
 const router = useRouter();
 
 const TrackUserMapView = () => {
+  const isHermes = () => !!global.HermesInternal; //hermes
+  console.log("Hermes Enabled: ", isHermes()); //hermes
   const [position, setPosition] = useState({
     //ユーザーの位置情報を保持
     latitude: 0,
@@ -134,11 +136,31 @@ const TrackUserMapView = () => {
   const fetchPostData = async (spotId) => {
     try {
       const postArray = [];
-      const querySnapshot = await firestore()
-        .collection("post")
-        .where("spotId", "==", spotId) // 特定の条件を指定
+      const friendList = [];
+
+      const queryFollow = await firestore()
+        .collection("follow")
+        .where("followerId", "==", auth.currentUser.uid)
         .get();
 
+      if (!queryFollow.empty) {
+        let cnt = 0;
+        while (cnt < queryFollow.size) {
+          const followSnapshot = queryFollow.docs[cnt];
+          const followData = followSnapshot.data();
+          console.log(followData.followeeId);
+          friendList.push(followData.followeeId);
+          cnt = cnt + 1;
+        }
+      } else {
+        friendList.push("");
+      }
+      console.log(friendList);
+      const querySnapshot = await firestore()
+        .collection("post")
+        .where("spotId", "==", spotId)
+        .where("userId", "in", friendList) // 特定の条件を指定
+        .get();
       if (!querySnapshot.empty) {
         const size = querySnapshot.size;
         let cnt = 0;
@@ -292,7 +314,13 @@ const TrackUserMapView = () => {
       (err) => {
         setError(err.message);
       },
-      { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
+      // { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        distanceFilter: 5,
+        maximumAge: 1000,
+      }
     );
     return () => Geolocation.clearWatch(watchId);
   }, [initialRegion]);
@@ -412,7 +440,10 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          <Button title="ログアウト" onPress={signout} />
+          {/* <Button title="ログアウト" onPress={signout} /> */}
+          <Link href={{ pathname: "/myPage" }} asChild>
+            <Button title="マイページ" />
+          </Link>
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
