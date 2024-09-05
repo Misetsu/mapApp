@@ -24,37 +24,38 @@ const MyPageScreen = () => {
   const [searchResult, setSearchResult] = useState([]);
   const userList = [];
 
-  const search = async () => {
-    const queryUser = await firestore()
-      .collection("users")
-      .where("displayName", "==", searchText)
-      .get();
-
-    if (!queryUser.empty) {
-      let cnt = 0;
-      while (cnt < queryUser.size) {
-        const userSnapshot = queryUser.docs[cnt];
-        const userData = userSnapshot.data();
-        userList.push(userData.displayName);
-        cnt = cnt + 1;
-      }
-    } else {
-      userList.push("");
+  const handleSearch = (text) => {
+    setSearchText(text);
+    if (searchText != "") {
+      firestore()
+        .collection("users")
+        .where("displayName", ">=", searchText)
+        .where("displayName", "<=", searchText + "¥uf8ff")
+        .get()
+        .then((result) => {
+          setSearchResult(result.docs);
+          console.log(result.docs);
+          console.log(searchText);
+        });
     }
-    console.log(userList);
-    setSearchResult(userList);
   };
 
   return (
     <View>
       <TextInput
         placeholder="検索"
-        onChangeText={setSearchText}
+        onChangeText={handleSearch}
         value={searchText}
       />
-      <Button onPress={search} title="検索" />
+      {searchResult.length > 0 && searchText != "" && (
+        <View>
+          {searchResult.map((result) => {
+            <Text>{result.data().displayName}</Text>;
+          })}
+        </View>
+      )}
       {searchResult.map((result) => {
-        <Text>{result}</Text>;
+        <Text>{result.data().displayName}</Text>;
       })}
     </View>
   );
