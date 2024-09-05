@@ -16,10 +16,7 @@ import storage from "@react-native-firebase/storage";
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height; //アスペクト比
 
-const auth = FirebaseAuth();
-const router = useRouter();
-
-const MyPageScreen = () => {
+const SearchScreen = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const userList = [];
@@ -61,4 +58,4 @@ const MyPageScreen = () => {
   );
 };
 
-export default MyPageScreen;
+export default SearchScreen;
