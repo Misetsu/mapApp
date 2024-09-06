@@ -15,7 +15,9 @@ import {
 import { Link } from "expo-router";
 
 const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
+  console.log("AAA"+empty);
   return (
+    
     <Modal
       animationType="fade"
       transparent={true}
@@ -67,7 +69,11 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
                   height: 25,
                   backgroundColor: "blue",
                 }}
-              ></Pressable>
+              ><Text style={{
+                // position: "absolute",
+                alignSelf: "center",
+                color: "#FFFFFF"
+              }}>投稿</Text></Pressable>
             </Link>
           </View>
         </View>
