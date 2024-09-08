@@ -38,9 +38,11 @@ const LoginScreen = () => {
     if (querySnapshot.empty) {
       firestore()
         .collection("users")
-        .add({
+        .doc(auth.currentUser.uid)
+        .set({
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
+          photoURL: auth.currentUser.photoURL,
         })
         .then()
         .catch((error) => console.log(error));

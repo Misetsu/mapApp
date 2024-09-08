@@ -124,7 +124,6 @@ export default function CameraScreen() {
     });
 
     if (!result.canceled) {
-      console.log(result.assets[0].uri);
       router.navigate({
         pathname: "/edit",
         params: {
