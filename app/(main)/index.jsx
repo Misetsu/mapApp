@@ -138,6 +138,8 @@ const TrackUserMapView = () => {
       const postArray = [];
       const friendList = [];
 
+      setEmptyPost(true);
+
       const queryFollow = await firestore()
         .collection("follow")
         .where("followerId", "==", auth.currentUser.uid)

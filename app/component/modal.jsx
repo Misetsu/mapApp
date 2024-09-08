@@ -67,7 +67,17 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
                   height: 25,
                   backgroundColor: "blue",
                 }}
-              ></Pressable>
+              >
+                <Text
+                  style={{
+                    // position: "absolute",
+                    alignSelf: "center",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  投稿
+                </Text>
+              </Pressable>
             </Link>
           </View>
         </View>
