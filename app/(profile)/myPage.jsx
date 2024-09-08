@@ -257,7 +257,7 @@ const myPage = () => {
               <Text>Follower</Text>
               {followerList.map((follower) => {
                 return (
-                  <View>
+                  <View style={styles.followList}>
                     <Image
                       source={{ uri: follower.photoURL }}
                       style={styles.listProfileImage}
