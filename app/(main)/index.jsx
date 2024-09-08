@@ -27,8 +27,6 @@ const auth = FirebaseAuth();
 const router = useRouter();
 
 const TrackUserMapView = () => {
-  const isHermes = () => !!global.HermesInternal; //hermes
-  console.log("Hermes Enabled: ", isHermes()); //hermes
   const [position, setPosition] = useState({
     //ユーザーの位置情報を保持
     latitude: 0,
@@ -286,11 +284,6 @@ const TrackUserMapView = () => {
       console.log(markerCords);
       setLoading(false);
     }
-  };
-
-  const signout = async () => {
-    await auth.signOut();
-    router.replace({ pathname: "/" });
   };
 
   useEffect(() => {

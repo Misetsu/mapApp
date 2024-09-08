@@ -5,8 +5,6 @@ import {
   Text,
   Image,
   Modal,
-  Button,
-  ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
   Pressable,
@@ -70,7 +68,6 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
               >
                 <Text
                   style={{
-                    // position: "absolute",
                     alignSelf: "center",
                     color: "#FFFFFF",
                   }}
