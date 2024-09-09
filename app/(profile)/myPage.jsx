@@ -232,11 +232,21 @@ const myPage = () => {
               {followList.map((follow) => {
                 return (
                   <View style={styles.followList}>
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follow.displayName}</Text>
+                    <Link
+                      href={{
+                        pathname: "/profile",
+                        params: {
+                          uid: follow.uid,
+                        },
+                      }}
+                      asChild
+                    >
+                      <Image
+                        source={{ uri: follow.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <Text>{follow.displayName}</Text>
+                    </Link>
                   </View>
                 );
               })}
@@ -258,11 +268,21 @@ const myPage = () => {
               {followerList.map((follower) => {
                 return (
                   <View style={styles.followList}>
-                    <Image
-                      source={{ uri: follower.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follower.displayName}</Text>
+                    <Link
+                      href={{
+                        pathname: "/profile",
+                        params: {
+                          uid: follower.uid,
+                        },
+                      }}
+                      asChild
+                    >
+                      <Image
+                        source={{ uri: follower.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <Text>{follower.displayName}</Text>
+                    </Link>
                   </View>
                 );
               })}
