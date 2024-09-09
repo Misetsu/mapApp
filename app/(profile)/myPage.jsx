@@ -231,25 +231,23 @@ const myPage = () => {
               <Text>Follow</Text>
               {followList.map((follow) => {
                 return (
-                  <View style={styles.followList}>
-                    <Link
-                      href={{
-                        pathname: "/profile",
-                        params: {
-                          uid: follow.uid,
-                        },
-                      }}
-                      asChild
-                    >
-                      <TouchableOpacity>
-                        <Image
-                          source={{ uri: follow.photoURL }}
-                          style={styles.listProfileImage}
-                        />
-                        <Text>{follow.displayName}</Text>
-                      </TouchableOpacity>
-                    </Link>
-                  </View>
+                  <Link
+                    href={{
+                      pathname: "/profile",
+                      params: {
+                        uid: follow.uid,
+                      },
+                    }}
+                    asChild
+                  >
+                    <TouchableOpacity style={styles.followList}>
+                      <Image
+                        source={{ uri: follow.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <Text>{follow.displayName}</Text>
+                    </TouchableOpacity>
+                  </Link>
                 );
               })}
               <Button title="閉じる" onPress={handleCloseFollowModal} />
@@ -269,25 +267,23 @@ const myPage = () => {
               <Text>Follower</Text>
               {followerList.map((follower) => {
                 return (
-                  <View style={styles.followList}>
-                    <Link
-                      href={{
-                        pathname: "/profile",
-                        params: {
-                          uid: follower.uid,
-                        },
-                      }}
-                      asChild
-                    >
-                      <TouchableOpacity>
-                        <Image
-                          source={{ uri: follower.photoURL }}
-                          style={styles.listProfileImage}
-                        />
-                        <Text>{follower.displayName}</Text>
-                      </TouchableOpacity>
-                    </Link>
-                  </View>
+                  <Link
+                    href={{
+                      pathname: "/profile",
+                      params: {
+                        uid: follower.uid,
+                      },
+                    }}
+                    asChild
+                  >
+                    <TouchableOpacity style={styles.followList}>
+                      <Image
+                        source={{ uri: follower.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <Text>{follower.displayName}</Text>
+                    </TouchableOpacity>
+                  </Link>
                 );
               })}
               <Button title="閉じる" onPress={handleCloseFollowerModal} />

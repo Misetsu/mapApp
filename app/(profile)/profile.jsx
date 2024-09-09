@@ -178,13 +178,11 @@ const profile = () => {
         </View>
 
         {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
-        <TouchableOpacity onPress={handlePickImage}>
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profileImagePlaceholder} />
-          )}
-        </TouchableOpacity>
+        {photoUri ? (
+          <Image source={{ uri: photoUri }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.profileImagePlaceholder} />
+        )}
         {/* フォロー、フォロワーを表示 */}
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFnum}>
