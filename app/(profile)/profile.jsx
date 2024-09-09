@@ -26,9 +26,13 @@ const profile = () => {
   const [followList, setFollowList] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
 
+  if (auth.currentUser.uid == uid) {
+    router.push({ pathname: "/myPage" });
+  }
+
   useEffect(() => {
     const { uid } = params;
-    console.log(uid);
+
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
       const queryProfile = await firestore()
@@ -71,7 +75,7 @@ const profile = () => {
         setFollowList(followArray);
       }
 
-      // フォロー中取得
+      // フォローワー取得
       const queryFollower = await firestore()
         .collection("follow")
         .where("followeeId", "==", uid)
@@ -146,6 +150,10 @@ const profile = () => {
     }
   };
 
+  const handleProfile = (uid) => {
+    router.push({ pathname: "/profile", params: { uid: uid } });
+  };
+
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
@@ -174,7 +182,9 @@ const profile = () => {
       <View style={styles.profileContainer}>
         {/* フォロワーの検索へのボタン */}
         <View style={styles.searchbtn}>
-          <Button title="SEARCH Follower" />
+          <Link href={{ pathname: "/search" }} asChild>
+            <Button title="SEARCH Follower" />
+          </Link>
         </View>
 
         {/* プロフィール画像を表示するだけ */}
@@ -199,12 +209,16 @@ const profile = () => {
 
         {/* フォローボタンを追加 */}
         <View style={styles.followButton}>
-          <Button title="フォローする" onPress={handleFollow} />
+          {isFollowing ? (
+            <Button title="フォロー解除" onPress={handleFollow} />
+          ) : (
+            <Button title="フォローする" onPress={handleFollow} />
+          )}
         </View>
 
         {/* フォローモーダル */}
         <Modal
-          animationType="slide"
+          animationType="fade"
           transparent={true}
           visible={isFollowModalVisible}
           onRequestClose={handleCloseFollowModal} // Androidの戻るボタンで閉じるために必要
@@ -212,6 +226,22 @@ const profile = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text>Follow</Text>
+              {followList.map((follow) => {
+                return (
+                  <TouchableOpacity
+                    style={styles.followList}
+                    onPress={() => {
+                      handleProfile(follow.uid);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: follow.photoURL }}
+                      style={styles.listProfileImage}
+                    />
+                    <Text>{follow.displayName}</Text>
+                  </TouchableOpacity>
+                );
+              })}
               <Button title="閉じる" onPress={handleCloseFollowModal} />
             </View>
           </View>
@@ -219,7 +249,7 @@ const profile = () => {
 
         {/* フォロワーモーダル */}
         <Modal
-          animationType="slide"
+          animationType="fade"
           transparent={true}
           visible={isFollowerModalVisible}
           onRequestClose={handleCloseFollowerModal} // Androidの戻るボタンで閉じるために必要
@@ -227,6 +257,22 @@ const profile = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text>Follower</Text>
+              {followerList.map((follower) => {
+                return (
+                  <TouchableOpacity
+                    style={styles.followList}
+                    onPress={() => {
+                      handleProfile(follower.uid);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: follower.photoURL }}
+                      style={styles.listProfileImage}
+                    />
+                    <Text>{follower.displayName}</Text>
+                  </TouchableOpacity>
+                );
+              })}
               <Button title="閉じる" onPress={handleCloseFollowerModal} />
             </View>
           </View>
@@ -264,6 +310,17 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     backgroundColor: "#ccc",
+  },
+  followList: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 8,
+    margin: 8,
+  },
+  listProfileImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
   text: {
     fontSize: 16,

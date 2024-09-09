@@ -37,8 +37,6 @@ const myPage = () => {
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
 
-      console.log(auth.currentUser.photoURL);
-
       // フォロー中取得
       const queryFollow = await firestore()
         .collection("follow")
@@ -63,7 +61,6 @@ const myPage = () => {
           tempObj[firstKey] = userData.uid;
           tempObj[secondKey] = userData.displayName;
           tempObj[thirdKey] = userData.photoURL;
-          console.log(tempObj.uid);
 
           followArray.push(tempObj);
 
@@ -212,7 +209,7 @@ const myPage = () => {
             <View style={styles.profileImagePlaceholder} />
           )}
         </TouchableOpacity>
-        {/* フォロー、フォロワーを表示 */}
+
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFnum}>
           <TouchableOpacity onPress={handleFollowPress}>
@@ -236,15 +233,6 @@ const myPage = () => {
               <Text>Follow</Text>
               {followList.map((follow) => {
                 return (
-                  // <Link
-                  //   href={{
-                  //     pathname: "/profile",
-                  //     params: {
-                  //       uid: follow,
-                  //     },
-                  //   }}
-                  //   asChild
-                  // >
                   <TouchableOpacity
                     style={styles.followList}
                     onPress={() => {
@@ -257,7 +245,6 @@ const myPage = () => {
                     />
                     <Text>{follow.displayName}</Text>
                   </TouchableOpacity>
-                  // </Link>
                 );
               })}
               <Button title="閉じる" onPress={handleCloseFollowModal} />
@@ -277,23 +264,18 @@ const myPage = () => {
               <Text>Follower</Text>
               {followerList.map((follower) => {
                 return (
-                  <Link
-                    href={{
-                      pathname: "/profile",
-                      params: {
-                        uid: follower.uid,
-                      },
+                  <TouchableOpacity
+                    style={styles.followList}
+                    onPress={() => {
+                      handleProfile(follower.uid);
                     }}
-                    asChild
                   >
-                    <TouchableOpacity style={styles.followList}>
-                      <Image
-                        source={{ uri: follower.photoURL }}
-                        style={styles.listProfileImage}
-                      />
-                      <Text>{follower.displayName}</Text>
-                    </TouchableOpacity>
-                  </Link>
+                    <Image
+                      source={{ uri: follower.photoURL }}
+                      style={styles.listProfileImage}
+                    />
+                    <Text>{follower.displayName}</Text>
+                  </TouchableOpacity>
                 );
               })}
               <Button title="閉じる" onPress={handleCloseFollowerModal} />
