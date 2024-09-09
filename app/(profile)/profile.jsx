@@ -172,18 +172,18 @@ const profile = () => {
       <View style={styles.profileContainer}>
         {/* フォロワーの検索へのボタン */}
         <View style={styles.searchbtn}>
-          <Link href={{ pathname: "/search" }} asChild>
-            <Button title="SEARCH Follower" />
-          </Link>
+          <Button title="SEARCH Follower" />
         </View>
 
-        {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
-        {photoUri ? (
-          <Image source={{ uri: photoUri }} style={styles.profileImage} />
-        ) : (
-          <View style={styles.profileImagePlaceholder} />
-        )}
-        {/* フォロー、フォロワーを表示 */}
+        {/* プロフィール画像を表示するだけ */}
+        <View>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.profileImagePlaceholder} />
+          )}
+        </View>
+
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFnum}>
           <TouchableOpacity onPress={handleFollowPress}>
@@ -195,9 +195,14 @@ const profile = () => {
           </TouchableOpacity>
         </View>
 
+        {/* フォローボタンを追加 */}
+        <View style={styles.followButton}>
+          <Button title="フォローする" onPress={handleFollow} />
+        </View>
+
         {/* フォローモーダル */}
         <Modal
-          animationType="fade"
+          animationType="slide"
           transparent={true}
           visible={isFollowModalVisible}
           onRequestClose={handleCloseFollowModal} // Androidの戻るボタンで閉じるために必要
@@ -205,17 +210,6 @@ const profile = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text>Follow</Text>
-              {followList.map((follow) => {
-                return (
-                  <View style={styles.followList}>
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follow.displayName}</Text>
-                  </View>
-                );
-              })}
               <Button title="閉じる" onPress={handleCloseFollowModal} />
             </View>
           </View>
@@ -223,7 +217,7 @@ const profile = () => {
 
         {/* フォロワーモーダル */}
         <Modal
-          animationType="fade"
+          animationType="slide"
           transparent={true}
           visible={isFollowerModalVisible}
           onRequestClose={handleCloseFollowerModal} // Androidの戻るボタンで閉じるために必要
@@ -231,29 +225,14 @@ const profile = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text>Follower</Text>
-              {followerList.map((follower) => {
-                return (
-                  <View style={styles.followList}>
-                    <Image
-                      source={{ uri: follower.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follower.displayName}</Text>
-                  </View>
-                );
-              })}
               <Button title="閉じる" onPress={handleCloseFollowerModal} />
             </View>
           </View>
         </Modal>
-        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
+
+        {/* ユーザーネームを表示するだけ */}
         <Text style={styles.displayName}>USERNAME</Text>
-        <TextInput
-          value={displayName}
-          onChangeText={setDisplayName}
-          style={styles.textInput}
-          editable={editable}
-        />
+        <Text style={styles.displayText}>{displayName}</Text>
       </View>
     </SafeAreaView>
   );
@@ -272,7 +251,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: "#fff",
     width: "90%",
-    backgroundColor: "#fff",
   },
   profileImage: {
     width: 100,
@@ -285,17 +263,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: "#ccc",
   },
-  followList: {
-    display: "flex",
-    flexDirection: "row",
-    gap: 8,
-    margin: 8,
-  },
-  listProfileImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-  },
   text: {
     fontSize: 16,
     fontWeight: "600",
@@ -305,6 +272,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "90%",
     marginTop: 15,
+  },
+  followButton: {
+    marginTop: 10,
+    width: "90%",
   },
   modalOverlay: {
     flex: 1,
@@ -325,20 +296,12 @@ const styles = StyleSheet.create({
     textAlign: "left",
     width: "90%",
   },
-  textInput: {
+  displayText: {
     borderBottomWidth: 1,
-    width: "90%",
-    textAlign: "center",
-    marginVertical: 16,
     fontSize: 20,
-  },
-  linklabel: {
-    fontSize: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
+    marginVertical: 16,
     textAlign: "center",
-    textDecorationLine: "underline",
-    color: "#1a0dab",
+    width: "90%",
   },
 });
 
