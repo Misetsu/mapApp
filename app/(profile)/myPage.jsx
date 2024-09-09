@@ -161,6 +161,10 @@ const myPage = () => {
     return url;
   };
 
+  const handleProfile = (uid) => {
+    router.push({ pathname: "/profile", params: { uid: uid } });
+  };
+
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
@@ -231,23 +235,26 @@ const myPage = () => {
               <Text>Follow</Text>
               {followList.map((follow) => {
                 return (
-                  <Link
-                    href={{
-                      pathname: "/profile",
-                      params: {
-                        uid: follow,
-                      },
-                    }}
-                    asChild
+                  // <Link
+                  //   href={{
+                  //     pathname: "/profile",
+                  //     params: {
+                  //       uid: follow,
+                  //     },
+                  //   }}
+                  //   asChild
+                  // >
+                  <TouchableOpacity
+                    style={styles.followList}
+                    onPress={handleProfile(follow.uid)}
                   >
-                    <TouchableOpacity style={styles.followList}>
-                      <Image
-                        source={{ uri: follow.photoURL }}
-                        style={styles.listProfileImage}
-                      />
-                      <Text>{follow.displayName}</Text>
-                    </TouchableOpacity>
-                  </Link>
+                    <Image
+                      source={{ uri: follow.photoURL }}
+                      style={styles.listProfileImage}
+                    />
+                    <Text>{follow.displayName}</Text>
+                  </TouchableOpacity>
+                  // </Link>
                 );
               })}
               <Button title="閉じる" onPress={handleCloseFollowModal} />
