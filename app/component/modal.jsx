@@ -1,5 +1,5 @@
 // MyModal.js
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -14,11 +14,8 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 
-
-const MyModal = ({ visible, empty, postData, spotId, onClose,loadingtext}) => {
-  console.log("AAA"+spotId);
+const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
   return (
-    
     <Modal
       animationType="fade"
       transparent={true}
@@ -30,9 +27,7 @@ const MyModal = ({ visible, empty, postData, spotId, onClose,loadingtext}) => {
           <ScrollView>
             {!empty ? (
               postData.map((post) => {
-                
                 return (
-                  
                   <View>
                     <Text>{post.username}</Text>
                     <Image
@@ -44,7 +39,7 @@ const MyModal = ({ visible, empty, postData, spotId, onClose,loadingtext}) => {
                 );
               })
             ) : (
-              <Text>{loadingtext}</Text>
+              <Text>投稿がありません</Text>
             )}
           </ScrollView>
           <View style={styles.toolView}>
@@ -72,11 +67,17 @@ const MyModal = ({ visible, empty, postData, spotId, onClose,loadingtext}) => {
                   height: 25,
                   backgroundColor: "blue",
                 }}
-              ><Text style={{
-                // position: "absolute",
-                alignSelf: "center",
-                color: "#FFFFFF"
-              }}>投稿</Text></Pressable>
+              >
+                <Text
+                  style={{
+                    // position: "absolute",
+                    alignSelf: "center",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  投稿
+                </Text>
+              </Pressable>
             </Link>
           </View>
         </View>
