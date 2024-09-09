@@ -16,9 +16,9 @@ import FirebaseAuth from "@react-native-firebase/auth";
 
 const auth = FirebaseAuth();
 const router = useRouter();
-const params = useLocalSearchParams();
 
 const profile = () => {
+  const params = useLocalSearchParams();
   const { uid } = params;
   console.log(uid);
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
