@@ -10,37 +10,43 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
-import * as ImagePicker from "expo-image-picker";
 
 const auth = FirebaseAuth();
 const router = useRouter();
-const reference = storage();
 
-const myPage = () => {
-  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
+const profile = () => {
+  const params = useLocalSearchParams();
+  const { uid } = params;
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
-  const [displayName, setDisplayName] = useState("KENTA"); // ユーザーの表示名
-  const [displayEmail, setDisplayEmail] = useState("kobe@denshi.jp"); // ユーザーの表示名
-  const [editable, setEditable] = useState(false);
+  const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  if (auth.currentUser.uid == uid) {
+    router.push({ pathname: "/myPage" });
+  }
 
   useEffect(() => {
+    const { uid } = params;
+
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
-      setUser(auth.currentUser);
-      setDisplayEmail(auth.currentUser.email);
-      setDisplayName(auth.currentUser.displayName);
-      setPhotoUri(auth.currentUser.photoURL);
+      const queryProfile = await firestore()
+        .collection("users")
+        .where("uid", "==", uid)
+        .get();
+      const profileData = queryProfile.docs[0].data();
+      setDisplayName(profileData.displayName);
+      setPhotoUri(profileData.photoURL);
 
       // フォロー中取得
       const queryFollow = await firestore()
         .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
+        .where("followerId", "==", uid)
         .get();
 
       if (!queryFollow.empty) {
@@ -69,10 +75,10 @@ const myPage = () => {
         setFollowList(followArray);
       }
 
-      // フォロー中取得
+      // フォローワー取得
       const queryFollower = await firestore()
         .collection("follow")
-        .where("followeeId", "==", auth.currentUser.uid)
+        .where("followeeId", "==", uid)
         .get();
 
       if (!queryFollower.empty) {
@@ -102,61 +108,46 @@ const myPage = () => {
       }
     };
 
+    const fetchFollowStatus = async () => {
+      const queryStatus = await firestore()
+        .collection("follow")
+        .where("followeeId", "==", uid)
+        .where("followerId", "==", auth.currentUser.uid)
+        .get();
+      if (!queryStatus.empty) {
+        setIsFollowing(true);
+      } else {
+        setIsFollowing(false);
+      }
+    };
+
     fetchUserData();
+    fetchFollowStatus();
   }, []);
 
-  const handleEdit = () => {
-    setEditable(true);
-  };
-
-  // ユーザーの表示名を保存する関数
-  const handleSave = async () => {
-    if (user) {
-      await firestore().collection("users").doc(user.uid).update({
-        displayName: displayName,
+  const handleFollow = async () => {
+    if (isFollowing) {
+      const queryStatus = await firestore()
+        .collection("follow")
+        .where("followeeId", "==", uid)
+        .where("followerId", "==", auth.currentUser.uid)
+        .get();
+      const docId = queryStatus.docs[0].id;
+      firestore().collection("follow").doc(docId).delete();
+      setIsFollowing(false);
+    } else {
+      const queryFollow = await firestore()
+        .collection("follow")
+        .orderBy("id", "desc")
+        .get();
+      const maxId = queryFollow.docs[0].data().id + 1;
+      firestore().collection("follow").add({
+        id: maxId,
+        followerId: auth.currentUser.uid,
+        followeeId: uid,
       });
-      await auth.currentUser.updateProfile({ displayName: displayName });
-      setEditable(false); // 編集モードを終了
+      setIsFollowing(true);
     }
-  };
-
-  // 画像ピッカーを開いて画像を選択する関数
-  const handlePickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const { uri } = result.assets[0];
-      const photoUri = await uploadPhoto(uri); // 画像をアップロードし、URLを取得
-      setPhotoUri(photoUri);
-    }
-  };
-
-  // 画像をアップロードする関数
-  const uploadPhoto = async (uri) => {
-    const uploadUri = uri;
-    const randomNumber = Math.floor(Math.random() * 100) + 1;
-    const imagePath =
-      "profile/photo" + new Date().getTime().toString() + randomNumber;
-    await reference.ref(imagePath).putFile(uploadUri);
-
-    const url = await reference.ref(imagePath).getDownloadURL();
-
-    await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .update({ photoURL: url });
-
-    const update = {
-      photoURL: url,
-    };
-    await auth.currentUser.updateProfile(update);
-
-    return url;
   };
 
   const handleProfile = (uid) => {
@@ -186,11 +177,6 @@ const myPage = () => {
     setIsFollowerModalVisible(false);
   };
 
-  const signout = async () => {
-    await auth.signOut();
-    router.replace({ pathname: "/" });
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.profileContainer}>
@@ -201,14 +187,14 @@ const myPage = () => {
           </Link>
         </View>
 
-        {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
-        <TouchableOpacity onPress={handlePickImage}>
+        {/* プロフィール画像を表示するだけ */}
+        <View>
           {photoUri ? (
             <Image source={{ uri: photoUri }} style={styles.profileImage} />
           ) : (
             <View style={styles.profileImagePlaceholder} />
           )}
-        </TouchableOpacity>
+        </View>
 
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFnum}>
@@ -219,6 +205,15 @@ const myPage = () => {
           <TouchableOpacity onPress={handleFollowerPress}>
             <Text style={styles.text}>Follower: {followerList.length}</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* フォローボタンを追加 */}
+        <View style={styles.followButton}>
+          {isFollowing ? (
+            <Button title="フォロー解除" onPress={handleFollow} />
+          ) : (
+            <Button title="フォローする" onPress={handleFollow} />
+          )}
         </View>
 
         {/* フォローモーダル */}
@@ -282,33 +277,10 @@ const myPage = () => {
             </View>
           </View>
         </Modal>
-        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
+
+        {/* ユーザーネームを表示するだけ */}
         <Text style={styles.displayName}>USERNAME</Text>
-        <TextInput
-          value={displayName}
-          onChangeText={setDisplayName}
-          style={styles.textInput}
-          editable={editable}
-        />
-        {/* メールアドレスを表示し、テキストボックスに入力でメールアドレス変更*/}
-        <Text style={styles.displayName}>Email</Text>
-        <TextInput
-          value={displayEmail}
-          onChangeText={setDisplayEmail}
-          style={styles.textInput}
-          editable={false}
-        />
-
-        <Link href={{ pathname: "/" }} asChild>
-          <Text style={styles.linklabel}>Change password?</Text>
-        </Link>
-
-        {editable ? (
-          <Button title="Save" onPress={handleSave} />
-        ) : (
-          <Button title="Edit" onPress={handleEdit} />
-        )}
-        <Button title="Logout" onPress={signout} />
+        <Text style={styles.displayText}>{displayName}</Text>
       </View>
     </SafeAreaView>
   );
@@ -327,7 +299,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: "#fff",
     width: "90%",
-    backgroundColor: "#fff",
   },
   profileImage: {
     width: 100,
@@ -361,6 +332,10 @@ const styles = StyleSheet.create({
     width: "90%",
     marginTop: 15,
   },
+  followButton: {
+    marginTop: 10,
+    width: "90%",
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -380,21 +355,13 @@ const styles = StyleSheet.create({
     textAlign: "left",
     width: "90%",
   },
-  textInput: {
+  displayText: {
     borderBottomWidth: 1,
-    width: "90%",
-    textAlign: "center",
-    marginVertical: 16,
     fontSize: 20,
-  },
-  linklabel: {
-    fontSize: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
+    marginVertical: 16,
     textAlign: "center",
-    textDecorationLine: "underline",
-    color: "#1a0dab",
+    width: "90%",
   },
 });
 
-export default myPage;
+export default profile;
