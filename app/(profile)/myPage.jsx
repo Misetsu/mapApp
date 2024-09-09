@@ -246,7 +246,9 @@ const myPage = () => {
                   // >
                   <TouchableOpacity
                     style={styles.followList}
-                    onPress={handleProfile(follow.uid)}
+                    onPress={() => {
+                      handleProfile(follow.uid);
+                    }}
                   >
                     <Image
                       source={{ uri: follow.photoURL }}
