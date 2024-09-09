@@ -235,7 +235,7 @@ const myPage = () => {
                     href={{
                       pathname: "/profile",
                       params: {
-                        uid: follow.uid,
+                        uid: follow,
                       },
                     }}
                     asChild

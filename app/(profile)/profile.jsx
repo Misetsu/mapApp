@@ -20,6 +20,7 @@ const params = useLocalSearchParams();
 
 const profile = () => {
   const { uid } = params;
+  console.log(uid);
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
