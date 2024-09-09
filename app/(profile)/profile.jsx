@@ -19,7 +19,6 @@ const router = useRouter();
 const params = useLocalSearchParams();
 
 const profile = () => {
-  const { uid } = params;
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
@@ -27,6 +26,8 @@ const profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
+    const { uid } = params;
+    console.log(uid);
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
       const queryProfile = await firestore()

@@ -63,6 +63,7 @@ const myPage = () => {
           tempObj[firstKey] = userData.uid;
           tempObj[secondKey] = userData.displayName;
           tempObj[thirdKey] = userData.photoURL;
+          console.log(tempObj.uid);
 
           followArray.push(tempObj);
 
@@ -232,6 +233,7 @@ const myPage = () => {
               {followList.map((follow) => {
                 return (
                   <Link
+                    key={follow.uid}
                     href={{
                       pathname: "/profile",
                       params: {
