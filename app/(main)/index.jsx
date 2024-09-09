@@ -129,6 +129,7 @@ const TrackUserMapView = () => {
   const [emptyPost, setEmptyPost] = useState(true);
 
   const fetchPostData = async (spotId) => {
+    setLoading(true);
     try {
       const postArray = [];
       const friendList = [];
@@ -210,6 +211,7 @@ const TrackUserMapView = () => {
 
         setPostData(postArray);
         setEmptyPost(empty);
+        setLoading(false);
       } else {
         console.log("No documents found with the specified condition");
       }
@@ -323,6 +325,9 @@ const TrackUserMapView = () => {
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
+      </View>
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -381,6 +386,7 @@ const TrackUserMapView = () => {
         empty={emptyPost}
         postData={postData}
         spotId={spotId}
+        loading={loading}
         onClose={() => setModalVisible(false)}
       />
 

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 
-const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
+const MyModal = ({ visible, empty, postData, spotId, loading, onClose }) => {
   return (
     <Modal
       animationType="fade"
@@ -23,7 +23,9 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <ScrollView>
-            {!empty ? (
+            {loading ? (
+              <Text>読み込み中...</Text>
+            ) : !empty ? (
               postData.map((post) => {
                 return (
                   <View key={post.postId}>
