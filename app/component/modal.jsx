@@ -1,5 +1,5 @@
 // MyModal.js
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -14,8 +14,9 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 
-const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
-  console.log("AAA"+empty);
+
+const MyModal = ({ visible, empty, postData, spotId, onClose,loadingtext}) => {
+  console.log("AAA"+spotId);
   return (
     
     <Modal
@@ -29,7 +30,9 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
           <ScrollView>
             {!empty ? (
               postData.map((post) => {
+                
                 return (
+                  
                   <View>
                     <Text>{post.username}</Text>
                     <Image
@@ -41,7 +44,7 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
                 );
               })
             ) : (
-              <Text>投稿がありません</Text>
+              <Text>{loadingtext}</Text>
             )}
           </ScrollView>
           <View style={styles.toolView}>

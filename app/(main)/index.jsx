@@ -49,6 +49,7 @@ const TrackUserMapView = () => {
   const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
   const [user, setUser] = useState(null); //ユーザー情報を保持する
   const [mapfixed, setmapfixed] = useState(false);
+  const [loadingtext,setLoadingtext] = useState("読み込み中...");
 
   const YourComponent = () => {
     useEffect(() => {
@@ -79,7 +80,8 @@ const TrackUserMapView = () => {
     }
   };
 
-  const setmodal = (marker) => {
+  const setmodal = (marker) => 
+    {
     try {
       const distance = calculateDistance(
         position.latitude,
@@ -92,7 +94,7 @@ const TrackUserMapView = () => {
         setSpotId(marker.id);
         setModalVisible(true);
         fetchPostData(marker.id);
-        console.log(postData);
+        console.log("postData="+postData);
       } else {
         setModalVisible(false);
       }
@@ -137,6 +139,9 @@ const TrackUserMapView = () => {
     try {
       const postArray = [];
       const friendList = [];
+
+      setPostData([])
+      setEmptyPost(true)
 
       const queryFollow = await firestore()
         .collection("follow")
@@ -212,6 +217,8 @@ const TrackUserMapView = () => {
 
         setPostData(postArray);
         setEmptyPost(empty);
+        setLoading("投稿がありません")
+        
       } else {
         console.log("No documents found with the specified condition");
       }
@@ -334,6 +341,8 @@ const TrackUserMapView = () => {
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
+      <View style={{flex: 1,justifyContent: 'center',alignItems: 'center'}}>
+      <Text style={{    fontSize: 18,fontWeight: 'bold',}}>読み込み中...</Text></View>
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -375,6 +384,7 @@ const TrackUserMapView = () => {
                 latitude: parseFloat(marker.mapLatitude),
                 longitude: parseFloat(marker.mapLongitude),
               }}
+              size={35}
               title={marker.name}
               onPress={() => setmodal(marker)}
             >
@@ -393,6 +403,7 @@ const TrackUserMapView = () => {
         postData={postData}
         spotId={spotId}
         onClose={() => setModalVisible(false)}
+        loadingtext={loadingtext}
       />
 
       {user ? (
