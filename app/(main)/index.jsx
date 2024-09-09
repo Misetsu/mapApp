@@ -64,14 +64,12 @@ const TrackUserMapView = () => {
         longitude
       );
       setDistance(distance); // 距離を状態として更新
-      console.log(image);
       if (distance < 50) {
         //距離が50m以上離れているかのチェック
         setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
       } else {
         setimage(require("../image/pin_blue.png")); //離れている(遠い場合)は青のピン
       }
-      console.log(distance);
     } catch (error) {
       console.error("Error fetching documents: ", error);
     }
@@ -90,7 +88,6 @@ const TrackUserMapView = () => {
         setSpotId(marker.id);
         setModalVisible(true);
         fetchPostData(marker.id);
-        console.log(postData);
       } else {
         setModalVisible(false);
       }
@@ -148,14 +145,12 @@ const TrackUserMapView = () => {
         while (cnt < queryFollow.size) {
           const followSnapshot = queryFollow.docs[cnt];
           const followData = followSnapshot.data();
-          console.log(followData.followeeId);
           friendList.push(followData.followeeId);
           cnt = cnt + 1;
         }
       } else {
         friendList.push("");
       }
-      console.log(friendList);
       const querySnapshot = await firestore()
         .collection("post")
         .where("spotId", "==", spotId)
@@ -173,6 +168,9 @@ const TrackUserMapView = () => {
           const firstKey = "username";
           const secondKey = "postText";
           const thirdKey = "photoUri";
+          const forthKey = "userIcon";
+          const fifthKey = "userId";
+          const sixthKey = "postId";
 
           const queryPhoto = await firestore()
             .collection("photo")
@@ -186,7 +184,6 @@ const TrackUserMapView = () => {
               const url = await storage()
                 .ref(photoData.imagePath)
                 .getDownloadURL();
-              console.log(`${url}`);
               photoUri = url;
             }
           }
@@ -201,6 +198,9 @@ const TrackUserMapView = () => {
           tempObj[firstKey] = userData.displayName;
           tempObj[secondKey] = postData.postTxt;
           tempObj[thirdKey] = photoUri;
+          tempObj[forthKey] = userData.photoURL;
+          tempObj[fifthKey] = postData.userId;
+          tempObj[sixthKey] = postData.id;
 
           postArray.push(tempObj);
 
@@ -216,8 +216,6 @@ const TrackUserMapView = () => {
     } catch (error) {
       console.error("Error fetching documents: ", error);
     }
-
-    console.log(postData);
   };
 
   const [markerCords, setMarkerCords] = useState([]);
@@ -253,7 +251,6 @@ const TrackUserMapView = () => {
         latitudeDelta: LATITUDE_DELTA,
         longitudeDelta: LONGITUDE_DELTA,
       });
-      console.log(initialRegion);
     } else {
       setmapfixed(true);
     }
@@ -281,7 +278,6 @@ const TrackUserMapView = () => {
     } catch (error) {
       console.error("Error fetching documents: ", error);
     } finally {
-      console.log(markerCords);
       setLoading(false);
     }
   };

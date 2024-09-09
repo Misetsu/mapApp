@@ -26,8 +26,24 @@ const MyModal = ({ visible, empty, postData, spotId, onClose }) => {
             {!empty ? (
               postData.map((post) => {
                 return (
-                  <View>
-                    <Text>{post.username}</Text>
+                  <View key={post.postId}>
+                    <Link
+                      href={{
+                        pathname: "/profile",
+                        params: {
+                          uid: post.userId,
+                        },
+                      }}
+                      asChild
+                    >
+                      <TouchableOpacity style={styles.userInfo}>
+                        <Image
+                          source={{ uri: post.userIcon }}
+                          style={styles.userIcon}
+                        />
+                        <Text>{post.username}</Text>
+                      </TouchableOpacity>
+                    </Link>
                     <Image
                       source={{ uri: post.photoUri }}
                       style={{ width: 300, height: 400 }}
@@ -110,6 +126,16 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignContent: "space-between",
+  },
+  userIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  userInfo: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 8,
   },
 });
 

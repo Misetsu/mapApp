@@ -229,6 +229,7 @@ const profile = () => {
               {followList.map((follow) => {
                 return (
                   <TouchableOpacity
+                    key={follow.uid}
                     style={styles.followList}
                     onPress={() => {
                       handleProfile(follow.uid);
@@ -260,6 +261,7 @@ const profile = () => {
               {followerList.map((follower) => {
                 return (
                   <TouchableOpacity
+                    key={follower.uid}
                     style={styles.followList}
                     onPress={() => {
                       handleProfile(follower.uid);
