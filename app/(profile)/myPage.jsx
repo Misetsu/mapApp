@@ -388,6 +388,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 16,
     fontSize: 20,
+    color: "black",
   },
   linklabel: {
     fontSize: 16,
