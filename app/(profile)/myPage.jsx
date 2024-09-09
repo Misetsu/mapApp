@@ -241,11 +241,13 @@ const myPage = () => {
                       }}
                       asChild
                     >
-                      <Image
-                        source={{ uri: follow.photoURL }}
-                        style={styles.listProfileImage}
-                      />
-                      <Text>{follow.displayName}</Text>
+                      <TouchableOpacity>
+                        <Image
+                          source={{ uri: follow.photoURL }}
+                          style={styles.listProfileImage}
+                        />
+                        <Text>{follow.displayName}</Text>
+                      </TouchableOpacity>
                     </Link>
                   </View>
                 );
@@ -277,11 +279,13 @@ const myPage = () => {
                       }}
                       asChild
                     >
-                      <Image
-                        source={{ uri: follower.photoURL }}
-                        style={styles.listProfileImage}
-                      />
-                      <Text>{follower.displayName}</Text>
+                      <TouchableOpacity>
+                        <Image
+                          source={{ uri: follower.photoURL }}
+                          style={styles.listProfileImage}
+                        />
+                        <Text>{follower.displayName}</Text>
+                      </TouchableOpacity>
                     </Link>
                   </View>
                 );
