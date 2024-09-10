@@ -70,34 +70,50 @@ export default function test() {
         .then()
         .catch((error) => console.log(error));
 
+      const currentTime = new Date().toISOString();
+      console.log(currentTime);
+
       firestore()
         .collection("post")
         .add({
-          id: maxId,
+          id: maxPostId,
           postTxt: post,
           spotId: maxId,
           userId: auth.currentUser.uid,
+          timeStamp: currentTime,
         })
         .then()
         .catch((error) => console.log(error));
     } else {
-      console.log(imagePath, spotId);
+      const queryPost = await firestore()
+        .collection("post")
+        .orderBy("id", "desc")
+        .get();
+
+      const maxPostId = queryPost.docs[0].data().id + 1;
+
       firestore()
         .collection("photo")
         .add({
           imagePath: imagePath,
+          postId: maxPostId,
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,
         })
         .then()
         .catch((error) => console.log(error));
 
+      const currentTime = new Date().toISOString();
+      console.log(currentTime);
+
       firestore()
         .collection("post")
         .add({
+          id: maxPostId,
           postTxt: post,
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,
+          timeStamp: currentTime,
         })
         .then()
         .catch((error) => console.log(error));

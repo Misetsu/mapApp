@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Link } from "expo-router";
+import { formatInTimeZone, utcToZonedTime } from "date-fns-tz";
 
 const MyModal = ({ visible, empty, postData, spotId, loading, onClose }) => {
   return (
@@ -50,6 +51,13 @@ const MyModal = ({ visible, empty, postData, spotId, loading, onClose }) => {
                       source={{ uri: post.photoUri }}
                       style={{ width: 300, height: 400 }}
                     />
+                    <Text>
+                      {formatInTimeZone(
+                        new Date(post.timestamp),
+                        "Asia/Tokyo",
+                        "yyyy/MM/dd HH:mm"
+                      )}
+                    </Text>
                     <Text>{post.postText}</Text>
                   </View>
                 );

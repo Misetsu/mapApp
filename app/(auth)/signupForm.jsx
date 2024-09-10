@@ -40,6 +40,8 @@ const SignupScreen = () => {
         .then()
         .catch((error) => console.log(error));
 
+      firestore().collection("star").doc(auth.currentUser.uid).set({});
+
       router.replace({ pathname: "/" });
     } catch (error) {
       console.error("Error signing up:", error);
