@@ -284,6 +284,15 @@ const profile = () => {
         <Text style={styles.displayName}>USERNAME</Text>
         <Text style={styles.displayText}>{displayName}</Text>
       </View>
+
+      {/* ホームに戻るボタンを追加 */}
+      <View style={styles.homeButtonContainer}>
+        <Button
+          title="ホームに戻る"
+          onPress={() => router.push("/")}
+          color="#841584"
+        />
+      </View>
     </SafeAreaView>
   );
 };

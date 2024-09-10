@@ -69,7 +69,7 @@ const myPage = () => {
         setFollowList(followArray);
       }
 
-      // フォロー中取得
+      // フォロワー取得
       const queryFollower = await firestore()
         .collection("follow")
         .where("followeeId", "==", auth.currentUser.uid)
@@ -191,6 +191,10 @@ const myPage = () => {
     router.replace({ pathname: "/" });
   };
 
+  const navigateHome = () => {
+    router.push("/index");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.profileContainer}>
@@ -284,33 +288,39 @@ const myPage = () => {
             </View>
           </View>
         </Modal>
-        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
-        <Text style={styles.displayName}>USERNAME</Text>
-        <TextInput
-          value={displayName}
-          onChangeText={setDisplayName}
-          style={styles.textInput}
-          editable={editable}
-        />
-        {/* メールアドレスを表示し、テキストボックスに入力でメールアドレス変更*/}
-        <Text style={styles.displayName}>Email</Text>
-        <TextInput
-          value={displayEmail}
-          onChangeText={setDisplayEmail}
-          style={styles.textInput}
-          editable={false}
-        />
 
-        <Link href={{ pathname: "/" }} asChild>
-          <Text style={styles.linklabel}>Change password?</Text>
-        </Link>
-
+        {/* プロフィール情報の表示 */}
         {editable ? (
-          <Button title="Save" onPress={handleSave} />
+          <TextInput
+            style={styles.input}
+            value={displayName}
+            onChangeText={setDisplayName}
+          />
         ) : (
-          <Button title="Edit" onPress={handleEdit} />
+          <Text style={styles.displayName}>{displayName}</Text>
         )}
-        <Button title="Logout" onPress={signout} />
+        <Text style={styles.displayEmail}>{displayEmail}</Text>
+
+        {/* 編集モードか通常モードでボタンの表示を切り替える */}
+        {editable ? (
+          <Button title="保存" onPress={handleSave} />
+        ) : (
+          <Button title="編集" onPress={handleEdit} />
+        )}
+
+        {/* サインアウトボタン */}
+        <View style={styles.signoutBtn}>
+          <Button title="Sign out" onPress={signout} />
+        </View>
+
+        {/* ホームに戻るボタンを追加 */}
+      <View style={styles.homeButtonContainer}>
+        <Button
+          title="ホームに戻る"
+          onPress={() => router.push("/")}
+          color="#841584"
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -319,84 +329,84 @@ const myPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: "#fff",
+    alignItems: "center",
   },
   profileContainer: {
     alignItems: "center",
-  },
-  searchbtn: {
-    alignSelf: "center",
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    width: "90%",
-    backgroundColor: "#fff",
+    marginTop: 20,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 2,
+    borderColor: "gray",
   },
   profileImagePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#ccc",
-  },
-  followList: {
-    display: "flex",
-    flexDirection: "row",
-    gap: 8,
-    margin: 8,
-  },
-  listProfileImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "600",
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: "gray",
   },
   FFnum: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    width: "90%",
-    marginTop: 15,
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  text: {
+    marginHorizontal: 10,
+    fontSize: 16,
+  },
+  displayName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 10,
+  },
+  displayEmail: {
+    fontSize: 16,
+    color: "gray",
+  },
+  input: {
+    borderColor: "gray",
+    borderWidth: 1,
+    padding: 8,
+    borderRadius: 4,
+    marginVertical: 10,
+    width: 200,
+  },
+  signoutBtn: {
+    marginTop: 20,
+  },
+  homeBtn: {
+    marginTop: 20,
+  },
+  searchbtn: {
+    marginVertical: 20,
+  },
+  followList: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  listProfileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
   },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     width: 300,
+    backgroundColor: "#fff",
     padding: 20,
-    backgroundColor: "white",
     borderRadius: 10,
     alignItems: "center",
-  },
-  displayName: {
-    fontSize: 15,
-    marginTop: 20,
-    textAlign: "left",
-    width: "90%",
-  },
-  textInput: {
-    borderBottomWidth: 1,
-    width: "90%",
-    textAlign: "center",
-    marginVertical: 16,
-    fontSize: 20,
-    color: "black",
-  },
-  linklabel: {
-    fontSize: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
-    textAlign: "center",
-    textDecorationLine: "underline",
-    color: "#1a0dab",
   },
 });
 

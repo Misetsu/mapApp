@@ -18,7 +18,6 @@ const LoginScreen = () => {
   const [userPassword, setUserPassword] = useState("");
 
   const signInWithGoogle = async () => {
-    // Google のログイン画面を表示して認証用の ID トークンを取得する
     const user = await GoogleSignin.signIn();
     const idToken = user.idToken;
 
@@ -26,13 +25,12 @@ const LoginScreen = () => {
       return;
     }
 
-    // 取得した認証情報 (ID トークン) を元にサインインする
     const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
     await auth.signInWithCredential(credential);
 
     const querySnapshot = await firestore()
       .collection("users")
-      .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
+      .where("uid", "==", auth.currentUser.uid)
       .get();
 
     if (querySnapshot.empty) {
@@ -91,11 +89,20 @@ const LoginScreen = () => {
         <Text style={styles.linklabel}>Forgot password?</Text>
       </Link>
 
-      <Text style={styles.noamllabel}>Dont't have an account?</Text>
+      <Text style={styles.noamllabel}>Don't have an account?</Text>
 
       <Link href={{ pathname: "/signupForm" }} asChild>
         <Button title="SIGN UP" style={styles.button} />
       </Link>
+
+      {/* ホームに戻るボタンを追加 */}
+      <View style={styles.homeButtonContainer}>
+        <Button
+          title="ホームに戻る"
+          onPress={() => router.push("/")}
+          color="#841584"
+        />
+      </View>
     </View>
   );
 };
@@ -130,6 +137,10 @@ const styles = StyleSheet.create({
   button: {
     padding: 8,
     backgroundColor: "black",
+  },
+  homeButtonContainer: {
+    marginTop: 20,
+    padding: 8,
   },
   buttonText: {
     color: "white",

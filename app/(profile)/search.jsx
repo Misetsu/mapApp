@@ -6,20 +6,21 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Button,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome";
-
-const router = useRouter();
 
 const SearchScreen = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResult, setSearchResult] = useState([]);
 
+  const router = useRouter();
+
   const handleSearch = (text) => {
     setSearchText(text);
-    if (searchText != "") {
+    if (searchText !== "") {
       firestore()
         .collection("users")
         .where("displayName", ">=", searchText)
@@ -69,6 +70,14 @@ const SearchScreen = () => {
           })}
         </View>
       )}
+      {/* ホームに戻るボタンを追加 */}
+      <View style={styles.homeButtonContainer}>
+        <Button
+          title="ホームに戻る"
+          onPress={() => router.push("/")}
+          color="#841584"
+        />
+      </View>
     </View>
   );
 };
@@ -111,6 +120,9 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
+  },
+  homeButtonContainer: {
+    marginTop: 20,
   },
 });
 
