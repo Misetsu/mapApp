@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   View,
   Image,
@@ -5,22 +6,27 @@ import {
   Pressable,
   Dimensions,
   TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  Keyboard,
 } from "react-native";
-import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 
-//画像のサイズを固定
 const { width } = Dimensions.get("window");
-const imageWidth = width * 0.75; // 画面幅の75%
-const imageHeight = (imageWidth * 4) / 3; // 3:4のアスペクト比を維持
+const imageWidth = width * 0.75;
+const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
-export default function test() {
-  const [text, setText] = useState(""); // テキスト入力を保持するための状態
+export default function edit() {
+  const [text, setText] = useState("");
   const [post, setPost] = useState("");
+  const [focusedInput, setFocusedInput] = useState(null);
+  const [keyboardStatus, setKeyboardStatus] = useState(false);
 
   const reference = storage();
   const router = useRouter();
@@ -28,14 +34,12 @@ export default function test() {
   const { imageUri, latitude, longitude, spotId } = params;
 
   const uploadPost = async () => {
-    // 写真をstorageに格納
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath =
       "photo/image-" + new Date().getTime().toString() + randomNumber;
-    await reference.ref(imagePath).putFile(imageUri);
-    console.log(auth.currentUser.uid);
 
-    // メイン画面の投稿であれば、現在地のスポットを追加
+    await reference.ref(imagePath).putFile(imageUri);
+
     if (spotId == 0) {
       const querySnapshot = await firestore()
         .collection("spot")
@@ -44,7 +48,7 @@ export default function test() {
 
       const maxId = querySnapshot.docs[0].data().id + 1;
 
-      firestore().collection("spot").add({
+      await firestore().collection("spot").add({
         id: maxId,
         mapLatitude: latitude,
         mapLongitude: longitude,
@@ -59,7 +63,7 @@ export default function test() {
 
       const maxPostId = queryPost.docs[0].data().id + 1;
 
-      firestore()
+      await firestore()
         .collection("photo")
         .add({
           imagePath: imagePath,
@@ -67,13 +71,11 @@ export default function test() {
           spotId: maxId,
           userId: auth.currentUser.uid,
         })
-        .then()
         .catch((error) => console.log(error));
 
       const currentTime = new Date().toISOString();
-      console.log(currentTime);
 
-      firestore()
+      await firestore()
         .collection("post")
         .add({
           id: maxPostId,
@@ -82,7 +84,6 @@ export default function test() {
           userId: auth.currentUser.uid,
           timeStamp: currentTime,
         })
-        .then()
         .catch((error) => console.log(error));
     } else {
       const queryPost = await firestore()
@@ -92,7 +93,7 @@ export default function test() {
 
       const maxPostId = queryPost.docs[0].data().id + 1;
 
-      firestore()
+      await firestore()
         .collection("photo")
         .add({
           imagePath: imagePath,
@@ -104,9 +105,8 @@ export default function test() {
         .catch((error) => console.log(error));
 
       const currentTime = new Date().toISOString();
-      console.log(currentTime);
 
-      firestore()
+      await firestore()
         .collection("post")
         .add({
           id: maxPostId,
@@ -119,35 +119,83 @@ export default function test() {
         .catch((error) => console.log(error));
     }
 
-    router.replace({ pathname: "/" });
+    router.replace("/");
+  };
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardStatus(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardStatus(false);
+      setFocusedInput(null);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  const handleFocus = (inputName) => {
+    setFocusedInput(inputName); // フォーカスされた入力フィールドを設定
+  };
+
+  const handleBlur = () => {
+    setFocusedInput(null); // フォーカスが外れたらリセット
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <Image source={{ uri: imageUri }} style={styles.imageContainer} />
-      {spotId == 0 ? (
-        <TextInput
-          style={styles.textbox}
-          placeholder="場所の名前を入力"
-          maxLength={30} // 文字数制限を30文字に設定
-          onChangeText={setText}
-          value={text}
-        />
-      ) : (
-        <></>
-      )}
-      <TextInput
-        style={styles.textbox}
-        placeholder="投稿の文章を入力"
-        onChangeText={setPost}
-        value={post}
-      />
-      <Pressable onPress={uploadPost} style={styles.uploadButton} />
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={{ flex: 1 }}>
+          <Image source={{ uri: imageUri }} style={styles.imageContainer} />
+          {spotId == 0 && focusedInput !== "post" ? (
+            <TextInput
+              style={
+                focusedInput === "name" && keyboardStatus
+                  ? styles.focusedTextbox
+                  : styles.textbox
+              }
+              placeholder="場所の名前を入力"
+              maxLength={30}
+              onFocus={() => handleFocus("name")}
+              onBlur={handleBlur}
+              onChangeText={setText}
+              value={text}
+            />
+          ) : null}
+          {focusedInput !== "name" ? (
+            <TextInput
+              style={
+                focusedInput === "post" && keyboardStatus
+                  ? styles.focusedTextbox
+                  : styles.textbox
+              }
+              placeholder="投稿の文章を入力"
+              onFocus={() => handleFocus("post")}
+              onBlur={handleBlur}
+              onChangeText={setPost}
+              value={post}
+            />
+          ) : null}
+          <Pressable onPress={uploadPost} style={styles.uploadButton}>
+            <Text
+              style={{ color: "white", textAlign: "center", marginTop: 25 }}
+            >
+              Upload
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
-//スタイル
 const styles = StyleSheet.create({
   imageContainer: {
     width: imageWidth,
@@ -162,9 +210,22 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginVertical: 20,
     paddingHorizontal: 10,
-    width: width * 0.6, // 画面幅の50%に設定
-    marginLeft: 25, // 左寄せ
-    marginTop: 25, // 上部の余白
+    width: width * 0.6,
+    marginLeft: 25,
+    marginTop: 25,
+  },
+  focusedTextbox: {
+    position: "absolute",
+    top: 10, // 画像の上に表示させるため、topを0に設定
+    width: width * 0.9, // 画面幅の90%
+    left: width * 0.05, // 画面幅の5%の余白を両側に追加
+    height: 50,
+    backgroundColor: "white", // 背景色を白に設定
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    zIndex: 10, // 画像の上に表示するためにzIndexを指定
   },
   uploadButton: {
     position: "absolute",
