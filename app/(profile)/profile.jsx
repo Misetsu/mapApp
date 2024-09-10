@@ -26,10 +26,6 @@ const profile = () => {
   const [followList, setFollowList] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
 
-  if (auth.currentUser.uid == uid) {
-    router.push({ pathname: "/myPage" });
-  }
-
   useEffect(() => {
     const { uid } = params;
 
@@ -151,7 +147,11 @@ const profile = () => {
   };
 
   const handleProfile = (uid) => {
-    router.push({ pathname: "/profile", params: { uid: uid } });
+    if (uid == auth.currentUser.uid) {
+      router.push({ pathname: "/myPage" });
+    } else {
+      router.push({ pathname: "/profile", params: { uid: uid } });
+    }
   };
 
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
