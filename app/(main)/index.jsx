@@ -214,6 +214,7 @@ const TrackUserMapView = () => {
         setLoading(false);
       } else {
         console.log("No documents found with the specified condition");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -284,6 +285,8 @@ const TrackUserMapView = () => {
     }
   };
 
+  const [Buttonvisible, setbuttonvisible] = useState(false);
+
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
@@ -291,12 +294,14 @@ const TrackUserMapView = () => {
         try {
           setPosition(position.coords);
           if (!initialRegion) {
+            setbuttonvisible(false);
             setInitialRegion({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
+            setbuttonvisible(true);
           } else {
             setError("Position or coords is undefined");
           }
@@ -411,6 +416,7 @@ const TrackUserMapView = () => {
               height: 75,
               backgroundColor: "blue",
               borderRadius: 75,
+              display: Buttonvisible ? "flex" : "none",
             }}
           ></Pressable>
         </Link>
@@ -430,6 +436,7 @@ const TrackUserMapView = () => {
               height: 75,
               backgroundColor: "blue",
               borderRadius: 75,
+              display: Buttonvisible ? "flex" : "none",
             }}
           ></Pressable>
         </Link>
