@@ -128,8 +128,7 @@ const profile = () => {
         .doc(auth.currentUser.uid)
         .get();
       const favData = queryFav.get(uid);
-      console.log(favData);
-      if (favData === undefined) {
+      if (favData === undefined || !queryFav.exists) {
         setIsFav(false);
       } else {
         setIsFav(true);
