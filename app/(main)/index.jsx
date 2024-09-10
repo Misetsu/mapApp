@@ -6,6 +6,7 @@ import {
   Image,
   Button,
   Pressable,
+  TouchableOpacity,
   Dimensions,
   StyleSheet,
 } from "react-native";
@@ -166,12 +167,13 @@ const TrackUserMapView = () => {
 
           let photoUri = "";
           let tempObj = {};
-          const firstKey = "username";
-          const secondKey = "postText";
-          const thirdKey = "photoUri";
-          const forthKey = "userIcon";
-          const fifthKey = "userId";
-          const sixthKey = "postId";
+          const firstKey = "userId";
+          const secondKey = "username";
+          const thirdKey = "userIcon";
+          const forthKey = "postId";
+          const fifthKey = "postText";
+          const sixthKey = "photoUri";
+          const seventhKey = "timestamp";
 
           const queryPhoto = await firestore()
             .collection("photo")
@@ -196,12 +198,13 @@ const TrackUserMapView = () => {
           const userSnapshot = queryUser.docs[0];
           const userData = userSnapshot.data();
 
-          tempObj[firstKey] = userData.displayName;
-          tempObj[secondKey] = postData.postTxt;
-          tempObj[thirdKey] = photoUri;
-          tempObj[forthKey] = userData.photoURL;
-          tempObj[fifthKey] = postData.userId;
-          tempObj[sixthKey] = postData.id;
+          tempObj[firstKey] = postData.userId;
+          tempObj[secondKey] = userData.displayName;
+          tempObj[thirdKey] = userData.photoURL;
+          tempObj[forthKey] = postData.id;
+          tempObj[fifthKey] = postData.postTxt;
+          tempObj[sixthKey] = photoUri;
+          tempObj[seventhKey] = postData.timeStamp;
 
           postArray.push(tempObj);
 
@@ -214,6 +217,7 @@ const TrackUserMapView = () => {
         setLoading(false);
       } else {
         console.log("No documents found with the specified condition");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -284,6 +288,8 @@ const TrackUserMapView = () => {
     }
   };
 
+  const [Buttonvisible, setbuttonvisible] = useState(false);
+
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
@@ -291,12 +297,14 @@ const TrackUserMapView = () => {
         try {
           setPosition(position.coords);
           if (!initialRegion) {
+            setbuttonvisible(false);
             setInitialRegion({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
+            setbuttonvisible(true);
           } else {
             setError("Position or coords is undefined");
           }
@@ -363,20 +371,22 @@ const TrackUserMapView = () => {
           </Marker>
 
           {markerCords.map((marker) => (
-            <Marker
-              key={marker.id}
-              coordinate={{
-                latitude: parseFloat(marker.mapLatitude),
-                longitude: parseFloat(marker.mapLongitude),
-              }}
-              title={marker.name}
-              onPress={() => setmodal(marker)}
-            >
-              <Image
-                source={getPinColor(marker)}
-                style={styles.markerImage} //ピンの色
-              />
-            </Marker>
+            <TouchableOpacity style={styles.hitSlop}>
+              <Marker
+                key={marker.id}
+                coordinate={{
+                  latitude: parseFloat(marker.mapLatitude),
+                  longitude: parseFloat(marker.mapLongitude),
+                }}
+                title={marker.name}
+                onPress={() => setmodal(marker)}
+              >
+                <Image
+                  source={getPinColor(marker)}
+                  style={styles.markerImage} //ピンの色
+                />
+              </Marker>
+            </TouchableOpacity>
           ))}
         </MapView>
       )}
@@ -411,6 +421,7 @@ const TrackUserMapView = () => {
               height: 75,
               backgroundColor: "blue",
               borderRadius: 75,
+              display: Buttonvisible ? "flex" : "none",
             }}
           ></Pressable>
         </Link>
@@ -430,6 +441,7 @@ const TrackUserMapView = () => {
               height: 75,
               backgroundColor: "blue",
               borderRadius: 75,
+              display: Buttonvisible ? "flex" : "none",
             }}
           ></Pressable>
         </Link>

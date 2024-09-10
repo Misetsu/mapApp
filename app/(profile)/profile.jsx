@@ -11,7 +11,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
+import Icon from "react-native-vector-icons/FontAwesome";
+import firestore, {
+  deleteField,
+  FieldValue,
+} from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 
 const auth = FirebaseAuth();
@@ -25,10 +29,7 @@ const profile = () => {
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
-
-  if (auth.currentUser.uid == uid) {
-    router.push({ pathname: "/myPage" });
-  }
+  const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
     const { uid } = params;
@@ -121,8 +122,22 @@ const profile = () => {
       }
     };
 
+    const fetchFavStatus = async () => {
+      const queryFav = await firestore()
+        .collection("star")
+        .doc(auth.currentUser.uid)
+        .get();
+      const favData = queryFav.get(uid);
+      if (favData === undefined || !queryFav.exists) {
+        setIsFav(false);
+      } else {
+        setIsFav(true);
+      }
+    };
+
     fetchUserData();
     fetchFollowStatus();
+    fetchFavStatus();
   }, []);
 
   const handleFollow = async () => {
@@ -150,8 +165,32 @@ const profile = () => {
     }
   };
 
+  const handleFav = async () => {
+    if (isFav) {
+      firestore()
+        .collection("star")
+        .doc(auth.currentUser.uid)
+        .update({
+          [uid]: FieldValue.delete(),
+        });
+      setIsFav(false);
+    } else {
+      firestore()
+        .collection("star")
+        .doc(auth.currentUser.uid)
+        .set({
+          [uid]: uid,
+        });
+      setIsFav(true);
+    }
+  };
+
   const handleProfile = (uid) => {
-    router.push({ pathname: "/profile", params: { uid: uid } });
+    if (uid == auth.currentUser.uid) {
+      router.push({ pathname: "/myPage" });
+    } else {
+      router.push({ pathname: "/profile", params: { uid: uid } });
+    }
   };
 
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
@@ -208,11 +247,28 @@ const profile = () => {
         </View>
 
         {/* フォローボタンを追加 */}
-        <View style={styles.followButton}>
+        <View style={styles.actionBar}>
           {isFollowing ? (
-            <Button title="フォロー解除" onPress={handleFollow} />
+            <Button
+              title="フォロー解除"
+              onPress={handleFollow}
+              style={styles.followButton}
+            />
           ) : (
-            <Button title="フォローする" onPress={handleFollow} />
+            <Button
+              title="フォローする"
+              onPress={handleFollow}
+              style={styles.followButton}
+            />
+          )}
+          {isFav ? (
+            <TouchableOpacity onPress={handleFav}>
+              <Icon name="star" size={40} color="#f2c530" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleFav}>
+              <Icon name="star-o" size={40} color="#000" />
+            </TouchableOpacity>
           )}
         </View>
 
@@ -334,9 +390,15 @@ const styles = StyleSheet.create({
     width: "90%",
     marginTop: 15,
   },
-  followButton: {
+  actionBar: {
     marginTop: 10,
     width: "90%",
+    display: "flex",
+    flexDirection: "row",
+    gap: 10,
+  },
+  followButton: {
+    width: "70%",
   },
   modalOverlay: {
     flex: 1,

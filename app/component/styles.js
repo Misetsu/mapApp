@@ -13,6 +13,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  hitSlop: {
+    width: 50,
+    height: 50,
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: -25 }, { translateY: -25 }],
+  },
   marker: {
     width: 20,
     height: 20,

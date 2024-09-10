@@ -10,7 +10,9 @@ import {
 import { Link, useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome";
+import FirebaseAuth from "@react-native-firebase/auth";
 
+const auth = FirebaseAuth();
 const router = useRouter();
 
 const SearchScreen = () => {
@@ -32,7 +34,11 @@ const SearchScreen = () => {
   };
 
   const handleProfile = (uid) => {
-    router.push({ pathname: "/profile", params: { uid: uid } });
+    if (uid == auth.currentUser.uid) {
+      router.push({ pathname: "/myPage" });
+    } else {
+      router.push({ pathname: "/profile", params: { uid: uid } });
+    }
   };
 
   return (

@@ -46,6 +46,8 @@ const LoginScreen = () => {
         })
         .then()
         .catch((error) => console.log(error));
+
+      firestore().collection("star").doc(auth.currentUser.uid).set({});
     }
 
     router.replace({ pathname: "/" });
