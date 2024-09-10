@@ -6,6 +6,7 @@ import {
   Image,
   Button,
   Pressable,
+  TouchableOpacity,
   Dimensions,
   StyleSheet,
 } from "react-native";
@@ -370,20 +371,22 @@ const TrackUserMapView = () => {
           </Marker>
 
           {markerCords.map((marker) => (
-            <Marker
-              key={marker.id}
-              coordinate={{
-                latitude: parseFloat(marker.mapLatitude),
-                longitude: parseFloat(marker.mapLongitude),
-              }}
-              title={marker.name}
-              onPress={() => setmodal(marker)}
-            >
-              <Image
-                source={getPinColor(marker)}
-                style={styles.markerImage} //ピンの色
-              />
-            </Marker>
+            <TouchableOpacity style={styles.hitSlop}>
+              <Marker
+                key={marker.id}
+                coordinate={{
+                  latitude: parseFloat(marker.mapLatitude),
+                  longitude: parseFloat(marker.mapLongitude),
+                }}
+                title={marker.name}
+                onPress={() => setmodal(marker)}
+              >
+                <Image
+                  source={getPinColor(marker)}
+                  style={styles.markerImage} //ピンの色
+                />
+              </Marker>
+            </TouchableOpacity>
           ))}
         </MapView>
       )}
