@@ -137,6 +137,7 @@ const TrackUserMapView = () => {
 
       setEmptyPost(true);
 
+      
       const queryFollow = await firestore()
         .collection("follow")
         .where("followerId", "==", auth.currentUser.uid)
@@ -161,6 +162,7 @@ const TrackUserMapView = () => {
       if (!querySnapshot.empty) {
         const size = querySnapshot.size;
         let cnt = 0;
+        console.log(friendList)
         while (cnt < size) {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
           const postData = documentSnapshot.data();
@@ -257,7 +259,6 @@ const TrackUserMapView = () => {
       });
     } else {
       setmapfixed(true);
-      
     }
   };
 
