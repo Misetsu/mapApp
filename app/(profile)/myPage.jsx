@@ -28,6 +28,8 @@ const myPage = () => {
   const [editable, setEditable] = useState(false);
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
+  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
+  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
@@ -166,9 +168,6 @@ const myPage = () => {
       router.push({ pathname: "/profile", params: { uid: uid } });
     }
   };
-
-  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
-  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
   const handleFollowPress = () => {
     // Followテキストが押されたときにフォローモーダルを表示

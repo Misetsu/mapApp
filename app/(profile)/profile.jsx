@@ -30,6 +30,8 @@ const profile = () => {
   const [followList, setFollowList] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFav, setIsFav] = useState(false);
+  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
+  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
   useEffect(() => {
     const { uid } = params;
@@ -193,9 +195,6 @@ const profile = () => {
     }
   };
 
-  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
-  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
-
   const handleFollowPress = () => {
     // Followテキストが押されたときにフォローモーダルを表示
     setIsFollowModalVisible(true);
@@ -221,9 +220,9 @@ const profile = () => {
       <View style={styles.profileContainer}>
         {/* フォロワーの検索へのボタン */}
         <View style={styles.searchbtn}>
-          <Link href={{ pathname: "/search" }} asChild>
-            <Button title="SEARCH Follower" />
-          </Link>
+          <Button title="SEARCH Follower" asChild>
+            <Link href={{ pathname: "/search" }} />
+          </Button>
         </View>
 
         {/* プロフィール画像を表示するだけ */}
