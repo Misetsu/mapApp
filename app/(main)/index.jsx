@@ -415,9 +415,11 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          <Button title="マイページ" asChild>
-            <Link href={{ pathname: "/myPage" }} />
-          </Button>
+          {/* <Button title="マイページ" asChild> */}
+          <Link href={{ pathname: "/myPage" }} asChild>
+            <Button title="マイページ" />
+          </Link>
+          {/* </Button> */}
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
