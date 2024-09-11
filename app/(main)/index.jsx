@@ -415,17 +415,21 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          {/* <Button title="マイページ" asChild> */}
-          <Link href={{ pathname: "/myPage" }} asChild>
-            <Button title="マイページ" />
-          </Link>
-          {/* </Button> */}
+          <Button
+            title="マイページ"
+            onPress={() => {
+              router.push("/myPage");
+            }}
+          />
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
-          <Button title="ログイン" asChild>
-            <Link href={{ pathname: "/loginForm" }} />
-          </Button>
+          <Button
+            title="ログイン"
+            onPress={() => {
+              router.push("/loginForm");
+            }}
+          />
         </View>
       )}
       {mapfixed ? (
