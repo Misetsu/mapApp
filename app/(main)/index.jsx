@@ -40,42 +40,13 @@ const TrackUserMapView = () => {
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
-
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
-  const [distance, setDistance] = useState(0);
-  const [spotId, setSpotId] = useState(0);
-  const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
+  const [spotId, setSpotId] = useState(0);  //スポットのIDを管理する
   const [user, setUser] = useState(null); //ユーザー情報を保持する
-  const [mapfixed, setmapfixed] = useState(false);
-
-  const YourComponent = () => {
-    useEffect(() => {
-      // コンポーネントがマウントされたときに実行する処理
-      handleMarkerPress(0, 0);
-    }, []);
-  };
-
-  const handleMarkerPress = (latitude, longitude) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        latitude,
-        longitude
-      );
-      setDistance(distance); // 距離を状態として更新
-      if (distance < 50) {
-        //距離が50m以上離れているかのチェック
-        setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
-      } else {
-        setimage(require("../image/pin_blue.png")); //離れている(遠い場合)は青のピン
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-    }
-  };
+  const [mapfixed, setmapfixed] = useState(false);  //マップの固定化を管理する
 
   const setmodal = (marker) => {
+    //マーカーがタップされたときのアクション
     try {
       const distance = calculateDistance(
         position.latitude,
@@ -84,21 +55,23 @@ const TrackUserMapView = () => {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
-        //距離が50m以上離れているかのチェック
+        //距離がスポットのエリア内かのチェックし、エリア内であればスポットIdのidとモーダルの表示と写真のデータを保存する
         setSpotId(marker.id);
         setModalVisible(true);
         fetchPostData(marker.id);
       } else {
+        //範囲外であればモーダルを表示しない
         setModalVisible(false);
       }
     } catch (error) {
+      //エラーが起きた時
       console.error("Error fetching documents: ", error);
     }
   };
 
   function toRadians(degrees) {
+    //経緯度の差をラジアンという単位に変換する
     try {
-      
       return (degrees * Math.PI) / 180;
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -107,7 +80,7 @@ const TrackUserMapView = () => {
 
   // 2点間の距離を計算する関数
   function calculateDistance(lat1, lon1, lat2, lon2) {
-    try {
+    try { //tryでエラーをキャッチする
       const R = 6371; // 地球の半径（単位: km）
       const dLat = toRadians(lat2 - lat1);
       const dLon = toRadians(lon2 - lon1);
@@ -121,16 +94,18 @@ const TrackUserMapView = () => {
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
     } catch (error) {
+      //エラーをキャッチした場合実行
       console.error("Error fetching documents: ", error);
     }
   }
 
-  const [loading, setLoading] = useState(true);
-  const [postData, setPostData] = useState([]);
-  const [emptyPost, setEmptyPost] = useState(true);
+  const [loading, setLoading] = useState(true); //モーダルのローディング状態を保存する
+  const [postData, setPostData] = useState([]); //画像のデータを管理する
+  const [emptyPost, setEmptyPost] = useState(true); //投稿があるか確認している
 
   const fetchPostData = async (spotId) => {
-    setLoading(true);
+    //投稿の取得を行う非同期関数
+    setLoading(true); //ローディング中である
     try {
       const postArray = [];
       const friendList = [];
@@ -139,33 +114,34 @@ const TrackUserMapView = () => {
 
       
       const queryFollow = await firestore()
-        .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
+        .collection("follow") //followテーブルから
+        .where("followerId", "==", auth.currentUser.uid)  //現在ログインいているユーザーのIDとフォローしている人のidが一致するか
         .get();
 
-      if (!queryFollow.empty) {
-        let cnt = 0;
-        while (cnt < queryFollow.size) {
-          const followSnapshot = queryFollow.docs[cnt];
-          const followData = followSnapshot.data();
-          friendList.push(followData.followeeId);
+      if (!queryFollow.empty) { //結果が空で無い場合
+        let cnt = 0;    //カウンター
+        while (cnt < queryFollow.size) {    //取得したドキュメント数よりも小さい間ループ
+          const followSnapshot = queryFollow.docs[cnt]; 
+          const followData = followSnapshot.data(); //cnt番地のドキュメントスナップショットを取得する
+          friendList.push(followData.followeeId); //ログインしているユーザーがフォローしているユーザーのidをlistに格納
           cnt = cnt + 1;
         }
       } else {
-        friendList.push("");
+        friendList.push("");  //友達おらん;;
       }
       const querySnapshot = await firestore()
-        .collection("post")
-        .where("spotId", "==", spotId)
-        .where("userId", "in", friendList) // 特定の条件を指定
-        .get();
-      if (!querySnapshot.empty) {
-        const size = querySnapshot.size;
-        let cnt = 0;
-        console.log(friendList)
-        while (cnt < size) {
-          const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
-          const postData = documentSnapshot.data();
+        .collection("post") //postテーブルの
+        .where("spotId", "==", spotId)  //タップしたスポットのIDと一致するスポットIDで
+        .where("userId", "in", friendList) // userIdがfriendListに入っているIDのいずれかにマッチするアイテム
+        .get();   //を取り出す
+      if (!querySnapshot.empty) { //取り出した写真が存在するか
+        const size = querySnapshot.size;  //ドキュメントの数
+        let cnt = 0;  //カウンター
+        while (cnt < size) {  //ドキュメントの数だけループ
+          const documentSnapshot = querySnapshot.docs[cnt]; // cnt番目のドキュメントを取得
+          console.log("documentSnapshot=",documentSnapshot)
+          const postData = documentSnapshot.data(); //取得したドキュメントのデータを保存
+          console.log("postData=",postData)
 
           let photoUri = "";
           let tempObj = {};
