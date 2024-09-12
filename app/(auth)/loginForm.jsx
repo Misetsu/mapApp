@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Text, TextInput, Image, Button, StyleSheet } from "react-native";
 import { Link, useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
@@ -64,8 +64,10 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.pagetitle}>LOGIN</Text>
+      <Text style={styles.displayName}>Email</Text>
       <TextInput
-        style={styles.input}
+        style={styles.textInput}
         value={userEmail}
         onChangeText={setUserEmail}
         keyboardType="email-address"
@@ -73,31 +75,36 @@ const LoginScreen = () => {
         placeholder="email"
       />
 
+      <Text style={styles.displayName}>Password</Text>
       <TextInput
-        style={styles.input}
+        style={styles.textInput}
         value={userPassword}
         onChangeText={setUserPassword}
         secureTextEntry
         placeholder="Password"
       />
 
-      <Button title="LOGIN" style={styles.button} onPress={signInWithEmail} />
+      <TouchableOpacity style={styles.button} onPress={signInWithEmail}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
 
-      <Button
-        title="Googleでサインイン"
-        style={styles.button}
-        onPress={signInWithGoogle}
-      />
+      <TouchableOpacity style={styles.Googlebutton} onPress={signInWithGoogle}>
+        <Image source={require('./../image/android_neutral_sq_SI.png')} style={styles.imageButton} />
+      </TouchableOpacity>
 
       <Link href={{ pathname: "/" }} asChild>
         <Text style={styles.linklabel}>Forgot password?</Text>
       </Link>
 
-      <Text style={styles.noamllabel}>Dont't have an account?</Text>
+      <Text style={styles.noamllabel}>Don't have an account?</Text>
+
+
 
       <Link href={{ pathname: "/signupForm" }} asChild>
-        <Button title="SIGN UP" style={styles.button} />
-      </Link>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>SIGN UP</Text>
+        </TouchableOpacity>
+        </Link>
     </View>
   );
 };
@@ -107,13 +114,25 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  input: {
+  pagetitle: {
+    fontSize: 30,
+    textAlign: 'center',
+    fontWeight: '300',
+  },
+  displayName: {
+    fontSize: 15,
+    marginTop: 20,
+    marginLeft: 10,
+    textAlign: "left",
+  },
+  textInput: {
     margin: 10,
+    marginTop: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
-    marginBottom: 12,
-    paddingHorizontal: 8,
+    marginVertical: 16,
+    color: "black",
   },
   noamllabel: {
     fontSize: 16,
@@ -130,11 +149,28 @@ const styles = StyleSheet.create({
     color: "#1a0dab",
   },
   button: {
-    padding: 8,
-    backgroundColor: "black",
+    justifyContent: 'center', // 画像をボタンの垂直方向の中央に揃える
+    alignItems: 'center',     // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    border: 2,
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
+  },
+  Googlebutton: {
+    justifyContent: 'center', // 画像をボタンの垂直方向の中央に揃える
+    alignItems: 'center',     // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
   },
   buttonText: {
-    color: "white",
+    fontSize: 18,
+    color: 'black',
+    textAlign: 'center',
+  },
+  imageButton: {
+    height: 40,  // 画像のサイズを指定
+    resizeMode: 'contain',  // 画像のリサイズ方法を指定
   },
 });
 
