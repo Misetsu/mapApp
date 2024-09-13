@@ -224,11 +224,11 @@ const myPage = () => {
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFcontainer}>
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
-            <Text style={styles.text}>Follow: {followList.length}</Text>
+            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
-            <Text style={styles.text}>Follower: {followerList.length}</Text>
+            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
           </TouchableOpacity>
         </View>
 
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
   },
-  text: {
+  FFtext: {
     fontSize: 16,
     fontWeight: "600",
     textAlign: 'center',
