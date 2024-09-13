@@ -143,37 +143,44 @@ const TrackUserMapView = () => {
           const postData = documentSnapshot.data(); //取得したドキュメントのデータを保存
           console.log("postData=",postData)
 
-          let photoUri = "";
-          let tempObj = {};
-          const firstKey = "username";
-          const secondKey = "postText";
-          const thirdKey = "photoUri";
-          const forthKey = "userIcon";
-          const fifthKey = "userId";
-          const sixthKey = "postId";
+          let photoUri = "";  //画像のダウンロードURLが格納される
+          let tempObj = {}; //データを格納するのに使う
+          const firstKey = "username";  //ユーザー名を表すキー
+          const secondKey = "postText"; //投稿のテキストを表す
+          const thirdKey = "photoUri";  //写真のURIを表す
+          const forthKey = "userIcon";  //ユーザーのアイコンを表す
+          const fifthKey = "userId";  //ユーザーのIDを表す
+          const sixthKey = "postId";  //投稿のIDを表す
 
           const queryPhoto = await firestore()
-            .collection("photo")
-            .where("postId", "==", postData.id) // 特定の条件を指定
-            .get();
-          if (!queryPhoto.empty) {
+            .collection("photo")  //photoテーブルを参照
+            .where("postId", "==", postData.id) // photoテーブルのpostIdとpostdataのidが一致したデータをphotoテーブルから持ってくる
+            .get(); //一致したデータをqueryPhotoに格納
+          if (!queryPhoto.empty) {  //queryPhotoが空でないかをたしかめる
             const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
-            const photoData = photoSnapshot.data();
+            //photoSnapshotのはJSON形式でプロパティには
+            //data:ドキュメントに含まれるデータ(ImagePath(ファイルパス)、postId、spotId、userIdが入っている
+            //exists：ドキュメントが存在するか(true:存在する、false:存在しない)
+            //metadata：ドキュメントの取得情報やキャッシュ情報
+            //ref：ドキュメントの参照情報
+            console.log("photoSnapshot=",photoSnapshot)
+            const photoData = photoSnapshot.data(); //photoSnapshotのdataだけを切り取って格納する
+            console.log("photoData=",photoData)
 
-            if (photoData.imagePath) {
-              const url = await storage()
-                .ref(photoData.imagePath)
-                .getDownloadURL();
-              photoUri = url;
+            if (photoData.imagePath) {  //imagePathがあるか確認
+              const url = await storage()   //storage() 関数は、Firebase Storage のインスタンスを取得するために使用される関数
+                .ref(photoData.imagePath)   //Firebase Storage内のファイルの参照をする
+                .getDownloadURL();  //参照したファイルのダウンロードURLを取得する
+              photoUri = url; //urlを格納
             }
           }
 
           const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", postData.userId)
-            .get();
-          const userSnapshot = queryUser.docs[0];
-          const userData = userSnapshot.data();
+            .collection("users")  //usersテーブルから
+            .where("uid", "==", postData.userId)  //uidとuserIdが一致したアイテムを
+            .get(); //取り出す
+          const userSnapshot = queryUser.docs[0];   //ドキュメントの取得
+          const userData = userSnapshot.data();     //dataの取得
 
           tempObj[firstKey] = userData.displayName;
           tempObj[secondKey] = postData.postTxt;
