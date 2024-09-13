@@ -81,7 +81,7 @@ const LoginScreen = () => {
         onChangeText={setUserEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholder="email"
+        placeholder="Email"
       />
 
       <Text style={styles.displayName}>Password</Text>
@@ -176,6 +176,12 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 10, // ボタン間にスペースを追加
   },
+  buttonText: {
+    fontSize: 18,
+    color: 'black',
+    textAlign: 'center',
+    fontWeight: '300',
+  },
   buttonCenter: {
     flex: 1,
     justifyContent: 'center', // 垂直方向の中央揃え
@@ -204,12 +210,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#f2f2f2',
     textAlign: 'center',
-  },
-  buttonText: {
-    fontSize: 18,
-    color: 'black',
-    textAlign: 'center',
-    fontWeight: '300',
   },
   imageButton: {
     height: 45,  // 画像のサイズを指定
