@@ -27,6 +27,7 @@ export default function edit() {
   const [post, setPost] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
+  const [isLoading, setIsoading] = useState(false);
 
   const reference = storage();
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function edit() {
   const { imageUri, latitude, longitude, spotId } = params;
 
   const uploadPost = async () => {
+    setIsoading(true);
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath =
       "photo/image-" + new Date().getTime().toString() + randomNumber;
@@ -119,6 +121,7 @@ export default function edit() {
         .catch((error) => console.log(error));
     }
 
+    setIsoading(false);
     router.replace("/");
   };
 
@@ -151,47 +154,57 @@ export default function edit() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ flex: 1 }}>
-          <Image source={{ uri: imageUri }} style={styles.imageContainer} />
-          {spotId == 0 && focusedInput !== "post" ? (
-            <TextInput
-              style={
-                focusedInput === "name" && keyboardStatus
-                  ? styles.focusedTextbox
-                  : styles.textbox
-              }
-              placeholder="場所の名前を入力"
-              maxLength={30}
-              onFocus={() => handleFocus("name")}
-              onBlur={handleBlur}
-              onChangeText={setText}
-              value={text}
-            />
-          ) : null}
-          {focusedInput !== "name" ? (
-            <TextInput
-              style={
-                focusedInput === "post" && keyboardStatus
-                  ? styles.focusedTextbox
-                  : styles.textbox
-              }
-              placeholder="投稿の文章を入力"
-              onFocus={() => handleFocus("post")}
-              onBlur={handleBlur}
-              onChangeText={setPost}
-              value={post}
-            />
-          ) : null}
-          <Pressable onPress={uploadPost} style={styles.uploadButton}>
-            <Text
-              style={{ color: "white", textAlign: "center", marginTop: 25 }}
-            >
-              Upload
-            </Text>
-          </Pressable>
+      {isLoading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+            アップロード中...
+          </Text>
         </View>
-      </ScrollView>
+      ) : (
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={{ flex: 1 }}>
+            <Image source={{ uri: imageUri }} style={styles.imageContainer} />
+            {spotId == 0 && focusedInput !== "post" ? (
+              <TextInput
+                style={
+                  focusedInput === "name" && keyboardStatus
+                    ? styles.focusedTextbox
+                    : styles.textbox
+                }
+                placeholder="場所の名前を入力"
+                maxLength={30}
+                onFocus={() => handleFocus("name")}
+                onBlur={handleBlur}
+                onChangeText={setText}
+                value={text}
+              />
+            ) : null}
+            {focusedInput !== "name" ? (
+              <TextInput
+                style={
+                  focusedInput === "post" && keyboardStatus
+                    ? styles.focusedTextbox
+                    : styles.textbox
+                }
+                placeholder="投稿の文章を入力"
+                onFocus={() => handleFocus("post")}
+                onBlur={handleBlur}
+                onChangeText={setPost}
+                value={post}
+              />
+            ) : null}
+            <Pressable onPress={uploadPost} style={styles.uploadButton}>
+              <Text
+                style={{ color: "white", textAlign: "center", marginTop: 25 }}
+              >
+                Upload
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      )}
     </KeyboardAvoidingView>
   );
 }
