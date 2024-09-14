@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  ScrollView,
   View,
   Text,
   TextInput,
@@ -152,6 +153,15 @@ const profile = () => {
       const docId = queryStatus.docs[0].id;
       firestore().collection("follow").doc(docId).delete();
       setIsFollowing(false);
+      if (isFav) {
+        firestore()
+          .collection("star")
+          .doc(auth.currentUser.uid)
+          .update({
+            [uid]: FieldValue.delete(),
+          });
+        setIsFav(false);
+      }
     } else {
       const queryFollow = await firestore()
         .collection("follow")
@@ -215,18 +225,23 @@ const profile = () => {
     setIsFollowerModalVisible(false);
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.profileContainer}>
-        {/* フォロワーの検索へのボタン */}
-        <View style={styles.searchbtn}>
-          <Button title="SEARCH Follower" asChild>
-            <Link href={{ pathname: "/search" }} />
-          </Button>
-        </View>
+  const handleBackPress = () => {
+    router.back(); // 前の画面に戻る
+  };
 
+  return (
+    <ScrollView>
+      <View style={styles.container}>
+        {/* フォロワーの検索へのボタン */}
+        <Link href={{ pathname: "/search" }} asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>SEARCH</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <Text style={styles.pagetitle}>PROFILE</Text>
         {/* プロフィール画像を表示するだけ */}
-        <View>
+        <View style={styles.profileContainer}>
           {photoUri ? (
             <Image source={{ uri: photoUri }} style={styles.profileImage} />
           ) : (
@@ -235,30 +250,26 @@ const profile = () => {
         </View>
 
         {/* フォロー、フォロワーを表示 */}
-        <View style={styles.FFnum}>
-          <TouchableOpacity onPress={handleFollowPress}>
-            <Text style={styles.text}>Follow: {followList.length}</Text>
+        <View style={styles.FFcontainer}>
+          <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
+            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleFollowerPress}>
-            <Text style={styles.text}>Follower: {followerList.length}</Text>
+          <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
+            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
           </TouchableOpacity>
         </View>
 
         {/* フォローボタンを追加 */}
         <View style={styles.actionBar}>
           {isFollowing ? (
-            <Button
-              title="フォロー解除"
-              onPress={handleFollow}
-              style={styles.followButton}
-            />
+            <TouchableOpacity style={styles.FFbutton} onPress={handleFollow}>
+              <Text style={styles.buttonText}>UNFOLLOW</Text>
+            </TouchableOpacity>
           ) : (
-            <Button
-              title="フォローする"
-              onPress={handleFollow}
-              style={styles.followButton}
-            />
+            <TouchableOpacity style={styles.FFbutton} onPress={handleFollow}>
+              <Text style={styles.buttonText}>FOLLOW</Text>
+            </TouchableOpacity>
           )}
           {isFav ? (
             <TouchableOpacity onPress={handleFav}>
@@ -298,7 +309,12 @@ const profile = () => {
                   </TouchableOpacity>
                 );
               })}
-              <Button title="閉じる" onPress={handleCloseFollowModal} />
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseFollowModal}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -330,32 +346,71 @@ const profile = () => {
                   </TouchableOpacity>
                 );
               })}
-              <Button title="閉じる" onPress={handleCloseFollowerModal} />
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseFollowerModal}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
         {/* ユーザーネームを表示するだけ */}
         <Text style={styles.displayName}>USERNAME</Text>
-        <Text style={styles.displayText}>{displayName}</Text>
+        <TextInput
+          value={displayName}
+          style={styles.textInput}
+          editable={false}
+        />
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Text style={styles.backButtonText}>{"<"} Back</Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   profileContainer: {
     alignItems: "center",
   },
-  searchbtn: {
-    alignSelf: "center",
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    width: "90%",
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
+  },
+  FFbutton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    height: 50,
+    width: "60%",
+  },
+  closeButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    paddingHorizontal: 20,
+    paddingVertical: 5,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "black",
+    textAlign: "center",
+    fontWeight: "300",
+  },
+  pagetitle: {
+    fontSize: 30,
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "300",
   },
   profileImage: {
     width: 100,
@@ -371,33 +426,38 @@ const styles = StyleSheet.create({
   followList: {
     display: "flex",
     flexDirection: "row",
-    gap: 8,
-    margin: 8,
+    gap: 10,
+    margin: 10,
   },
   listProfileImage: {
     width: 30,
     height: 30,
     borderRadius: 15,
   },
-  text: {
+  FFtext: {
     fontSize: 16,
     fontWeight: "600",
+    textAlign: "center",
+  },
+  FFcontainer: {
+    flexDirection: "row", // 子要素を横並びに配置
+    justifyContent: "space-between", // 子要素間にスペースを空ける
+    alignItems: "center", // 垂直方向の中央に揃える
+    width: "80%", // 横幅を80%に設定（任意）
+    padding: 5, // 全体にパディング
   },
   FFnum: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "90%",
-    marginTop: 15,
+    padding: 10,
   },
   actionBar: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     marginTop: 10,
+    marginBottom: 10,
     width: "90%",
     display: "flex",
     flexDirection: "row",
-    gap: 10,
-  },
-  followButton: {
-    width: "70%",
+    gap: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -414,16 +474,32 @@ const styles = StyleSheet.create({
   },
   displayName: {
     fontSize: 15,
-    marginTop: 20,
+    marginTop: 10,
+    marginLeft: 10,
     textAlign: "left",
-    width: "90%",
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
-  displayText: {
-    borderBottomWidth: 1,
+  textInput: {
+    margin: 10,
+    marginTop: 0,
     fontSize: 20,
+    height: 40,
+    borderBottomWidth: 2,
     marginVertical: 16,
+    color: "black",
+    fontWeight: "300",
+  },
+  backButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+  },
+  backButtonText: {
+    fontSize: 18,
+    color: "black",
     textAlign: "center",
-    width: "90%",
+    fontWeight: "300",
   },
 });
 

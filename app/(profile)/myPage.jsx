@@ -34,6 +34,7 @@ const myPage = () => {
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
+
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
@@ -218,6 +219,7 @@ const myPage = () => {
             )}
           </TouchableOpacity>
         </View>
+
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFcontainer}>
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
@@ -256,7 +258,12 @@ const myPage = () => {
                   </TouchableOpacity>
                 );
               })}
-              <Button title="閉じる" onPress={handleCloseFollowModal} />
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseFollowModal}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -288,7 +295,12 @@ const myPage = () => {
                   </TouchableOpacity>
                 );
               })}
-              <Button title="閉じる" onPress={handleCloseFollowerModal} />
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseFollowerModal}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -350,6 +362,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F2",
     height: 50,
     marginBottom: 10, // ボタン間にスペースを追加
+  },
+  closeButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    paddingHorizontal: 20,
+    paddingVertical: 5,
   },
   buttonText: {
     fontSize: 18,
