@@ -15,7 +15,6 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from '@react-navigation/native';
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -29,10 +28,11 @@ const myPage = () => {
   const [editable, setEditable] = useState(false);
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
-  const navigation = useNavigation();
+  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
+  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
   const handleBackPress = () => {
-    navigation.goBack(); // 前の画面に戻る
+    router.back(); // 前の画面に戻る
   };
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
@@ -172,9 +172,6 @@ const myPage = () => {
     }
   };
 
-  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
-  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
-
   const handleFollowPress = () => {
     // Followテキストが押されたときにフォローモーダルを表示
     setIsFollowModalVisible(true);
@@ -295,6 +292,7 @@ const myPage = () => {
             </View>
           </View>
         </Modal>
+
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
         <Text style={styles.displayName}>USERNAME</Text>
         <TextInput
@@ -316,7 +314,7 @@ const myPage = () => {
           <Text style={styles.linklabel}>Change password?</Text>
         </Link>
 
-        {editable ? (      
+        {editable ? (
           <TouchableOpacity style={styles.submit} onPress={handleSave}>
             <Text style={styles.submitText}>SAVE</Text>
           </TouchableOpacity>
@@ -331,7 +329,7 @@ const myPage = () => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Text style={styles.backButtonText}>{'<'} Back</Text>
+          <Text style={styles.backButtonText}>{"<"} Back</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -347,31 +345,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   button: {
-    justifyContent: 'center', // 画像をボタンの垂直方向の中央に揃える
-    alignItems: 'center',     // 画像をボタンの水平方向の中央に揃える
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
     marginBottom: 10, // ボタン間にスペースを追加
   },
   buttonText: {
     fontSize: 18,
-    color: 'black',
-    textAlign: 'center',
-    fontWeight: '300',
+    color: "black",
+    textAlign: "center",
+    fontWeight: "300",
   },
   pagetitle: {
     fontSize: 30,
-    margin:10,
-    textAlign: 'center',
-    fontWeight: '300',
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "300",
   },
   displayName: {
     fontSize: 15,
     marginTop: 10,
     marginLeft: 10,
     textAlign: "left",
-    alignItems: 'flex-start',
-    fontWeight: '300',
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
   profileImage: {
     width: 100,
@@ -385,10 +383,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccc",
   },
   followList: {
-    flex: 1,
+    display: "flex",
     flexDirection: "row",
-    gap: 8,
-    margin: 8,
+    gap: 10,
+    margin: 10,
   },
   listProfileImage: {
     width: 30,
@@ -398,14 +396,14 @@ const styles = StyleSheet.create({
   FFtext: {
     fontSize: 16,
     fontWeight: "600",
-    textAlign: 'center',
+    textAlign: "center",
   },
   FFcontainer: {
-    flexDirection: 'row',      // 子要素を横並びに配置
-    justifyContent: 'space-between', // 子要素間にスペースを空ける
-    alignItems: 'center',      // 垂直方向の中央に揃える
-    width: '80%',              // 横幅を80%に設定（任意）
-    padding: 5,               // 全体にパディング
+    flexDirection: "row", // 子要素を横並びに配置
+    justifyContent: "space-between", // 子要素間にスペースを空ける
+    alignItems: "center", // 垂直方向の中央に揃える
+    width: "80%", // 横幅を80%に設定（任意）
+    padding: 5, // 全体にパディング
   },
   FFnum: {
     padding: 10,
@@ -431,20 +429,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     marginVertical: 16,
     color: "black",
-    fontWeight: '300',
+    fontWeight: "300",
   },
   submit: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',  
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
     height: 50,
     marginBottom: 10,
   },
   submitText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#f2f2f2',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#f2f2f2",
+    textAlign: "center",
   },
   linklabel: {
     fontSize: 16,
@@ -453,18 +451,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
     color: "#1a0dab",
-    fontWeight: '600',
+    fontWeight: "600",
   },
   backButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     height: 50,
   },
   backButtonText: {
     fontSize: 18,
-    color: 'black',
-    textAlign: 'center',
-    fontWeight: '300',
+    color: "black",
+    textAlign: "center",
+    fontWeight: "300",
   },
 });
 

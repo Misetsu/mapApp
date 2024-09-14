@@ -43,38 +43,14 @@ const TrackUserMapView = () => {
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
 
   const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
-  const [distance, setDistance] = useState(0);
   const [spotId, setSpotId] = useState(0);
-  const [image, setimage] = useState(require("../image/pin_blue.png")); //ピンの色を保存する
   const [user, setUser] = useState(null); //ユーザー情報を保持する
   const [mapfixed, setmapfixed] = useState(false);
-
-  const YourComponent = () => {
-    useEffect(() => {
-      // コンポーネントがマウントされたときに実行する処理
-      handleMarkerPress(0, 0);
-    }, []);
-  };
-
-  const handleMarkerPress = (latitude, longitude) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        latitude,
-        longitude
-      );
-      setDistance(distance); // 距離を状態として更新
-      if (distance < 50) {
-        //距離が50m以上離れているかのチェック
-        setimage(require("../image/pin_orange.png")); //離れていない(近い場合)は緑のピン
-      } else {
-        setimage(require("../image/pin_blue.png")); //離れている(遠い場合)は青のピン
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-    }
-  };
+  const [Buttonvisible, setbuttonvisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [postData, setPostData] = useState([]);
+  const [emptyPost, setEmptyPost] = useState(true);
+  const [markerCords, setMarkerCords] = useState([]);
 
   const setmodal = (marker) => {
     try {
@@ -124,10 +100,6 @@ const TrackUserMapView = () => {
       console.error("Error fetching documents: ", error);
     }
   }
-
-  const [loading, setLoading] = useState(true);
-  const [postData, setPostData] = useState([]);
-  const [emptyPost, setEmptyPost] = useState(true);
 
   const fetchPostData = async (spotId) => {
     setLoading(true);
@@ -224,9 +196,6 @@ const TrackUserMapView = () => {
     }
   };
 
-  const [markerCords, setMarkerCords] = useState([]);
-  const [photodata, setphotodata] = useState();
-
   const getPinColor = (marker) => {
     try {
       const distance = calculateDistance(
@@ -288,8 +257,6 @@ const TrackUserMapView = () => {
     }
   };
 
-  const [Buttonvisible, setbuttonvisible] = useState(false);
-
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
@@ -317,7 +284,7 @@ const TrackUserMapView = () => {
       },
       // { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
@@ -371,9 +338,8 @@ const TrackUserMapView = () => {
           </Marker>
 
           {markerCords.map((marker) => (
-            <TouchableOpacity style={styles.hitSlop}>
+            <TouchableOpacity style={styles.hitSlop} key={marker.id}>
               <Marker
-                key={marker.id}
                 coordinate={{
                   latitude: parseFloat(marker.mapLatitude),
                   longitude: parseFloat(marker.mapLongitude),
@@ -449,16 +415,21 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          {/* <Button title="ログアウト" onPress={signout} /> */}
-          <Link href={{ pathname: "/myPage" }} asChild>
-            <Button title="マイページ" />
-          </Link>
+          <Button
+            title="マイページ"
+            onPress={() => {
+              router.push("/myPage");
+            }}
+          />
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
-          <Link href={{ pathname: "/loginForm" }} asChild>
-            <Button title="ログイン" />
-          </Link>
+          <Button
+            title="ログイン"
+            onPress={() => {
+              router.push("/loginForm");
+            }}
+          />
         </View>
       )}
       {mapfixed ? (
