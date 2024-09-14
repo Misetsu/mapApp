@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  ScrollView,
   View,
   Text,
   TextInput,
@@ -7,7 +8,6 @@ import {
   Modal,
   Image,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
@@ -31,6 +31,9 @@ const myPage = () => {
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
+  const handleBackPress = () => {
+    router.back(); // 前の画面に戻る
+  };
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
@@ -195,32 +198,34 @@ const myPage = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.profileContainer}>
+    <ScrollView>
+      <View style={styles.container}>
         {/* フォロワーの検索へのボタン */}
-        <View style={styles.searchbtn}>
-          <Link href={{ pathname: "/search" }} asChild>
-            <Button title="SEARCH Follower" />
-          </Link>
+        <Link href={{ pathname: "/search" }} asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>SEARCH</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <Text style={styles.pagetitle}>MY PAGE</Text>
+        <View style={styles.profileContainer}>
+          {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
+          <TouchableOpacity onPress={handlePickImage}>
+            {photoUri ? (
+              <Image source={{ uri: photoUri }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.profileImagePlaceholder} />
+            )}
+          </TouchableOpacity>
         </View>
-
-        {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
-        <TouchableOpacity onPress={handlePickImage}>
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profileImagePlaceholder} />
-          )}
-        </TouchableOpacity>
-
         {/* フォロー、フォロワーを表示 */}
-        <View style={styles.FFnum}>
-          <TouchableOpacity onPress={handleFollowPress}>
-            <Text style={styles.text}>Follow: {followList.length}</Text>
+        <View style={styles.FFcontainer}>
+          <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
+            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleFollowerPress}>
-            <Text style={styles.text}>Follower: {followerList.length}</Text>
+          <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
+            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
           </TouchableOpacity>
         </View>
 
@@ -287,6 +292,7 @@ const myPage = () => {
             </View>
           </View>
         </Modal>
+
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
         <Text style={styles.displayName}>USERNAME</Text>
         <TextInput
@@ -309,30 +315,61 @@ const myPage = () => {
         </Link>
 
         {editable ? (
-          <Button title="Save" onPress={handleSave} />
+          <TouchableOpacity style={styles.submit} onPress={handleSave}>
+            <Text style={styles.submitText}>SAVE</Text>
+          </TouchableOpacity>
         ) : (
-          <Button title="Edit" onPress={handleEdit} />
+          <TouchableOpacity style={styles.button} onPress={handleEdit}>
+            <Text style={styles.buttonText}>EDIT</Text>
+          </TouchableOpacity>
         )}
-        <Button title="Logout" onPress={signout} />
+
+        <TouchableOpacity style={styles.button} onPress={signout}>
+          <Text style={styles.buttonText}>LOGOUT</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Text style={styles.backButtonText}>{"<"} Back</Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   profileContainer: {
     alignItems: "center",
   },
-  searchbtn: {
-    alignSelf: "center",
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    width: "90%",
-    backgroundColor: "#fff",
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "black",
+    textAlign: "center",
+    fontWeight: "300",
+  },
+  pagetitle: {
+    fontSize: 30,
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "300",
+  },
+  displayName: {
+    fontSize: 15,
+    marginTop: 10,
+    marginLeft: 10,
+    textAlign: "left",
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
   profileImage: {
     width: 100,
@@ -348,23 +385,28 @@ const styles = StyleSheet.create({
   followList: {
     display: "flex",
     flexDirection: "row",
-    gap: 8,
-    margin: 8,
+    gap: 10,
+    margin: 10,
   },
   listProfileImage: {
     width: 30,
     height: 30,
     borderRadius: 15,
   },
-  text: {
+  FFtext: {
     fontSize: 16,
     fontWeight: "600",
+    textAlign: "center",
+  },
+  FFcontainer: {
+    flexDirection: "row", // 子要素を横並びに配置
+    justifyContent: "space-between", // 子要素間にスペースを空ける
+    alignItems: "center", // 垂直方向の中央に揃える
+    width: "80%", // 横幅を80%に設定（任意）
+    padding: 5, // 全体にパディング
   },
   FFnum: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "90%",
-    marginTop: 15,
+    padding: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -379,19 +421,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  displayName: {
-    fontSize: 15,
-    marginTop: 20,
-    textAlign: "left",
-    width: "90%",
-  },
   textInput: {
-    borderBottomWidth: 1,
-    width: "90%",
-    textAlign: "center",
-    marginVertical: 16,
+    margin: 10,
+    marginTop: 0,
     fontSize: 20,
+    height: 40,
+    borderBottomWidth: 2,
+    marginVertical: 16,
     color: "black",
+    fontWeight: "300",
+  },
+  submit: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+    height: 50,
+    marginBottom: 10,
+  },
+  submitText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#f2f2f2",
+    textAlign: "center",
   },
   linklabel: {
     fontSize: 16,
@@ -400,6 +451,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
     color: "#1a0dab",
+    fontWeight: "600",
+  },
+  backButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+  },
+  backButtonText: {
+    fontSize: 18,
+    color: "black",
+    textAlign: "center",
+    fontWeight: "300",
   },
 });
 

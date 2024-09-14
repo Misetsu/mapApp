@@ -284,7 +284,7 @@ const TrackUserMapView = () => {
       },
       // { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
