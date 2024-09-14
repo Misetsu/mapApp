@@ -1,9 +1,15 @@
 import React, { useState } from "react";
-import { ScrollView, View, TouchableOpacity, Text, TextInput, Button, StyleSheet } from "react-native";
+import {
+  ScrollView,
+  View,
+  TouchableOpacity,
+  Text,
+  TextInput,
+  StyleSheet,
+} from "react-native";
 import { Link, useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-import { useNavigation } from '@react-navigation/native';
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -14,11 +20,8 @@ const SignupScreen = () => {
   const [userPasswordVal, setUserPasswordVal] = useState("");
   const [userName, setUserName] = useState("");
 
-
-  const navigation = useNavigation();
-
   const handleBackPress = () => {
-    navigation.goBack(); // 前の画面に戻る
+    router.back(); // 前の画面に戻る
   };
 
   const signUpWithEmail = async () => {
@@ -59,8 +62,6 @@ const SignupScreen = () => {
   return (
     <ScrollView>
       <View style={styles.container}>
-
-
         <Text style={styles.pagetitle}>SIGN UP</Text>
 
         <Text style={styles.displayName}>Email</Text>
@@ -108,10 +109,9 @@ const SignupScreen = () => {
           </TouchableOpacity>
         </Link>
 
-      <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-        <Text style={styles.backButtonText}>{'<'} Back</Text>
-      </TouchableOpacity>
-      
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Text style={styles.backButtonText}>{"<"} Back</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -124,16 +124,16 @@ const styles = StyleSheet.create({
   },
   pagetitle: {
     fontSize: 30,
-    textAlign: 'center',
-    fontWeight: '300',
+    textAlign: "center",
+    fontWeight: "300",
   },
   displayName: {
     fontSize: 15,
     marginTop: 20,
     marginLeft: 10,
     textAlign: "left",
-    alignItems: 'flex-start',
-    fontWeight: '300',
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
   textInput: {
     margin: 10,
@@ -143,14 +143,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     marginVertical: 16,
     color: "black",
-    fontWeight: '300',
+    fontWeight: "300",
   },
   noamllabel: {
     fontSize: 16,
     paddingTop: 15,
     paddingBottom: 15,
     textAlign: "center",
-    fontWeight: '300',
+    fontWeight: "300",
   },
   linklabel: {
     fontSize: 16,
@@ -159,46 +159,45 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
     color: "#1a0dab",
-    fontWeight: '600',
+    fontWeight: "600",
   },
   submit: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
     height: 50,
     marginBottom: 10,
   },
   submitText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#f2f2f2',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#f2f2f2",
+    textAlign: "center",
   },
   button: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#F2F2F2",
     height: 50,
     marginBottom: 10,
   },
   buttonText: {
     fontSize: 18,
-    color: 'black',
-    textAlign: 'center',
-    fontWeight: '300',
+    color: "black",
+    textAlign: "center",
+    fontWeight: "300",
   },
   backButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     height: 50,
   },
   backButtonText: {
     fontSize: 18,
-    color: 'black',
-    textAlign: 'center',
-    fontWeight: '300',
+    color: "black",
+    textAlign: "center",
+    fontWeight: "300",
   },
-
 });
 
 export default SignupScreen;

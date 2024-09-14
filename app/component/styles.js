@@ -89,6 +89,14 @@ export const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F2F2",
+    padding: 10,
+    marginBottom: 10, // ボタン間にスペースを追加
+    borderRadius: 10,
+  },
   buttonText: {
     color: "white",
     fontWeight: "bold",
@@ -96,17 +104,13 @@ export const styles = StyleSheet.create({
   },
   loignBtnContainer: {
     position: "absolute",
-    top: 10,
-    right: 10,
-    borderRadius: 5,
-    padding: 10,
+    top: 20,
+    right: 20,
   },
   mapfixed: {
     position: "absolute",
-    top: 10,
-    left: 10,
-    borderRadius: 5,
-    padding: 10,
+    top: 20,
+    left: 20,
   },
 });
 

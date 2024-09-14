@@ -46,7 +46,7 @@ const TrackUserMapView = () => {
   const [spotId, setSpotId] = useState(0);
   const [user, setUser] = useState(null); //ユーザー情報を保持する
   const [mapfixed, setmapfixed] = useState(false);
-  const [Buttonvisible, setbuttonvisible] = useState(false);
+  const [postButtonVisible, setPostButtonVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [postData, setPostData] = useState([]);
   const [emptyPost, setEmptyPost] = useState(true);
@@ -264,14 +264,14 @@ const TrackUserMapView = () => {
         try {
           setPosition(position.coords);
           if (!initialRegion) {
-            setbuttonvisible(false);
+            setPostButtonVisible(false);
             setInitialRegion({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
-            setbuttonvisible(true);
+            setPostButtonVisible(true);
           } else {
             setError("Position or coords is undefined");
           }
@@ -387,7 +387,7 @@ const TrackUserMapView = () => {
               height: 75,
               backgroundColor: "blue",
               borderRadius: 75,
-              display: Buttonvisible ? "flex" : "none",
+              display: postButtonVisible ? "flex" : "none",
             }}
           ></Pressable>
         </Link>
@@ -407,7 +407,7 @@ const TrackUserMapView = () => {
               height: 75,
               backgroundColor: "blue",
               borderRadius: 75,
-              display: Buttonvisible ? "flex" : "none",
+              display: postButtonVisible ? "flex" : "none",
             }}
           ></Pressable>
         </Link>
@@ -415,27 +415,31 @@ const TrackUserMapView = () => {
 
       {user ? (
         <View style={styles.loignBtnContainer}>
-          <Button
-            title="マイページ"
+          <TouchableOpacity
+            style={styles.button}
             onPress={() => {
               router.push("/myPage");
             }}
-          />
+          >
+            <Text>MY PAGE</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.loignBtnContainer}>
-          <Button
-            title="ログイン"
+          <TouchableOpacity
+            style={styles.button}
             onPress={() => {
               router.push("/loginForm");
             }}
-          />
+          >
+            <Text>LOGIN</Text>
+          </TouchableOpacity>
         </View>
       )}
       {mapfixed ? (
         <View style={styles.mapfixed}>
-          <Button
-            title="マップ固定"
+          <TouchableOpacity
+            style={styles.button}
             onPress={() =>
               setmapfixeds(
                 position.latitude,
@@ -444,12 +448,14 @@ const TrackUserMapView = () => {
                 LONGITUDE_DELTA
               )
             }
-          />
+          >
+            <Text>FIX MAP</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.mapfixed}>
-          <Button
-            title="マップ移動"
+          <TouchableOpacity
+            style={styles.button}
             onPress={() =>
               setmapfixeds(
                 position.latitude,
@@ -458,7 +464,9 @@ const TrackUserMapView = () => {
                 LONGITUDE_DELTA
               )
             }
-          />
+          >
+            <Text>MOVE MAP</Text>
+          </TouchableOpacity>
         </View>
       )}
     </SafeAreaView>
