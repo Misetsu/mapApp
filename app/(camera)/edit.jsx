@@ -167,33 +167,37 @@ export default function edit() {
           <View style={{ flex: 1 }}>
             <Image source={{ uri: imageUri }} style={styles.imageContainer} />
             {spotId == 0 && focusedInput !== "post" ? (
-              <TextInput
-                style={
-                  focusedInput === "name" && keyboardStatus
-                    ? styles.focusedTextbox
-                    : styles.textbox
-                }
-                placeholder="場所の名前を入力"
-                maxLength={30}
-                onFocus={() => handleFocus("name")}
-                onBlur={handleBlur}
-                onChangeText={setText}
-                value={text}
-              />
+              <View>
+                <Text style={styles.displayName}>場所の名前を入力</Text>
+                <TextInput
+                  style={
+                    focusedInput === "name" && keyboardStatus
+                      ? styles.focusedTextbox
+                      : styles.textbox
+                  }
+                  maxLength={30}
+                  onFocus={() => handleFocus("name")}
+                  onBlur={handleBlur}
+                  onChangeText={setText}
+                  value={text}
+                />
+              </View>
             ) : null}
             {focusedInput !== "name" ? (
-              <TextInput
-                style={
-                  focusedInput === "post" && keyboardStatus
-                    ? styles.focusedTextbox
-                    : styles.textbox
-                }
-                placeholder="投稿の文章を入力"
-                onFocus={() => handleFocus("post")}
-                onBlur={handleBlur}
-                onChangeText={setPost}
-                value={post}
-              />
+              <View>
+                <Text style={styles.displayName}>投稿の文章を入力</Text>
+                <TextInput
+                  style={
+                    focusedInput === "post" && keyboardStatus
+                      ? styles.focusedTextbox
+                      : styles.textbox
+                  }
+                  onFocus={() => handleFocus("post")}
+                  onBlur={handleBlur}
+                  onChangeText={setPost}
+                  value={post}
+                />
+              </View>
             ) : null}
             <Pressable onPress={uploadPost} style={styles.uploadButton}>
               <Text
@@ -216,28 +220,36 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 20,
   },
+  displayName: {
+    fontSize: 15,
+    marginTop: 20,
+    marginBottom: 10,
+    marginLeft: 25,
+    textAlign: "left",
+    alignItems: "flex-start",
+    fontWeight: "300",
+  },
   textbox: {
     height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    borderRadius: 5,
-    marginVertical: 20,
+    borderBottomWidth: 2,
+    color: "black",
+    fontWeight: "300",
     paddingHorizontal: 10,
     width: width * 0.6,
     marginLeft: 25,
-    marginTop: 25,
+    backgroundColor: "#fbfbfb",
   },
   focusedTextbox: {
     position: "absolute",
     top: 10, // 画像の上に表示させるため、topを0に設定
     width: width * 0.9, // 画面幅の90%
-    left: width * 0.05, // 画面幅の5%の余白を両側に追加
-    height: 50,
-    backgroundColor: "white", // 背景色を白に設定
-    borderColor: "gray",
-    borderWidth: 1,
-    borderRadius: 5,
+    marginLeft: 25,
+    height: 40,
+    borderBottomWidth: 2,
+    color: "black",
+    fontWeight: "300",
     paddingHorizontal: 10,
+    backgroundColor: "#fbfbfb",
     zIndex: 10, // 画像の上に表示するためにzIndexを指定
   },
   uploadButton: {
