@@ -182,124 +182,145 @@ const TrackUserMapView = () => {
           const userSnapshot = queryUser.docs[0];   //ドキュメントの取得
           const userData = userSnapshot.data();     //dataの取得
 
-          tempObj[firstKey] = userData.displayName;
-          tempObj[secondKey] = postData.postTxt;
-          tempObj[thirdKey] = photoUri;
-          tempObj[forthKey] = userData.photoURL;
-          tempObj[fifthKey] = postData.userId;
-          tempObj[sixthKey] = postData.id;
+          console.log("userData=",userData)  
 
-          postArray.push(tempObj);
+          tempObj[firstKey] = userData.displayName;   //ユーザーネームを格納
+          tempObj[secondKey] = postData.postTxt;    //投稿のテキスト
+          tempObj[thirdKey] = photoUri;             //ダウンロードurl保存
+          tempObj[forthKey] = userData.photoURL;    //ユーザーアイコンの画像
+          tempObj[fifthKey] = postData.userId;      //ユーザーIdの格納
+          tempObj[sixthKey] = postData.id;          //投稿のIdを格納
 
-          cnt = cnt + 1;
+          postArray.push(tempObj);    //postArray配列に投稿データ追加
+
+          cnt = cnt + 1;            //追加
         }
-        let empty = false;
+        let empty = false;        //投稿データが空でない事を表す
 
-        setPostData(postArray);
-        setEmptyPost(empty);
-        setLoading(false);
+        setPostData(postArray);   //投稿データをステートに保存
+        setEmptyPost(empty);      //投稿データの有無をステートに保存
+        setLoading(false);        //ローディング状況を更新
       } else {
+        //投稿データが空の場合
         console.log("No documents found with the specified condition");
-        setLoading(false);
+        setLoading(false);  //ローディング状況を更新
       }
     } catch (error) {
+      //エラーキャッチ
       console.error("Error fetching documents: ", error);
     }
   };
 
-  const [markerCords, setMarkerCords] = useState([]);
-  const [photodata, setphotodata] = useState();
+  const [markerCords, setMarkerCords] = useState([]); //スポットの情報を格納
 
   const getPinColor = (marker) => {
+    //スポットの色を指定する関数
     try {
       const distance = calculateDistance(
         position.latitude,
         position.longitude,
         marker.mapLatitude,
         marker.mapLongitude
-      );
-      return distance < marker.areaRadius
-        ? require("../image/pin_orange.png")
-        : require("../image/pin_blue.png");
+      );  //現在地とスポットの距離を測定
+      return distance < marker.areaRadius //距離がそのスポットの範囲に
+        ? require("../image/pin_orange.png")  //入っていればオレンジ
+        : require("../image/pin_blue.png");   //入っていなければ青に変換
     } catch (error) {
+      //エラーをキャッチ
       console.error("Error fetching documents: ", error);
     }
   };
 
-  const setmapfixeds = (
+  const setmapfixeds = (  //マップの移動を許可するか
     latitude,
     longitude,
     LATITUDE_DELTA,
     LONGITUDE_DELTA
   ) => {
     if (mapfixed == true) {
-      setmapfixed(false);
-      setInitialRegion({
+      //マップの移動ができる状態であれば
+      setmapfixed(false); //固定化して
+      setInitialRegion({    //現在地にマップの表示を戻す
         latitude: latitude,
         longitude: longitude,
         latitudeDelta: LATITUDE_DELTA,
         longitudeDelta: LONGITUDE_DELTA,
       });
     } else {
-      setmapfixed(true);
+      setmapfixed(true);  //マップの移動を許可する
     }
   };
 
   const fetchAllMarkerCord = async () => {
-    const fetchResult = [];
-    setLoading(true);
+    const fetchResult = [];   //取得したドキュメントのデータを格納する場所
+    setLoading(true);   //ローディング状態である
     try {
       const querySnapshot = await firestore()
-        .collection("spot")
-        .orderBy("id")
+        .collection("spot")   //spotテーブルから
+        .orderBy("id")      //idの昇順でスポットを取り出す
         .get();
 
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((docs) => {
-          const item = docs.data();
-          fetchResult.push(item);
+      if (!querySnapshot.empty) {   //取得したデータが存在するかの確認
+        querySnapshot.forEach((docs) => {   //querySnapshotのドキュメントを一行ずつ取得、取得したドキュメントはdocsに入る
+          const item = docs.data();     //docs(取得したドキュメント一行)のデータを取り出す(JSON形式のドキュメント)
+          fetchResult.push(item);     //配列に追加
         });
+        console.log("fetchResult=",fetchResult)
 
-        setMarkerCords(fetchResult);
+        setMarkerCords(fetchResult);    //取得したすべてのデータをステートに保存
       } else {
+        //存在しない
         console.log("empty");
       }
     } catch (error) {
+      //エラーのキャッチ
       console.error("Error fetching documents: ", error);
     } finally {
-      setLoading(false);
+      //必ず実行される
+      setLoading(false);  //ローディング状況更新
     }
   };
 
-const [Buttonvisible, setbuttonvisible] = useState(false)
+const [Buttonvisible, setbuttonvisible] = useState(false)   //撮影画面に飛ぶボタンを見えなくする
 
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
-    const watchId = Geolocation.watchPosition(
-      (position) => {
+    const watchId = Geolocation.watchPosition(  //ユーザーの位置情報の監視を始める
+      (position) => {   //位置情報が更新されるたびに呼び出されるコールバック
         try {
-          setPosition(position.coords);
-          if (!initialRegion) {
-            setInitialRegion({
+          console.log("position=",position)
+          //positionはJSON方式になっており、
+          //coords：座標情報
+          //coordsには　accuracy：位置情報の精度、altitude：高度、heading：進行方向、latitude：緯度、longitude：経度、speed：ユーザーの移動速度
+          //extras：追加情報
+          //extrasには　maxCn0：GPS 信号の品質を示す指標、meanCn0：GPSの品質、satellites：GPSの衛星数
+          //mocked：模擬データのフラグ　falseは実際の位置情報を表す。trueは模擬データとなる
+          //timestamp：位置情報を取得した時間をミリ秒単位で示す
+          setPosition(position.coords); //positionステートに座標情報を登録
+          if (!initialRegion) {   //位置情報を始めて取得したタイミングで実行
+            setInitialRegion({      //地図の初期位置の設定
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
-            setbuttonvisible(true)
+            setbuttonvisible(true)    //地図の表示をしたら撮影ボタンも表示する
           } else {
+            //エラーの表示
             setError("Position or coords is undefined");
           }
         } catch (error) {
+          //エラーの表示
           setError(`Error updating position: ${error.message}`);
         }
       },
       (err) => {
+        //エラーの表示
         setError(err.message);
       },
       // { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
