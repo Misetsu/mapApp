@@ -28,10 +28,10 @@ import {
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
 
-const width = Dimensions.get("window");
-const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
+const width = Dimensions.get("window"); //デバイスのウィンドウサイズ取得
+const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);  //アニメーションのプロパティを持つカメラ
 
-export default function CameraScreen() {
+export default function CameraScreen() {  //カメラを表示するためのコンポーネント
   const cameraRef = useRef(null);
   const device = useCameraDevice("back");
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -197,6 +197,8 @@ export default function CameraScreen() {
     </GestureHandlerRootView>
   );
 }
+
+//こっからスタイル
 
 const styles = StyleSheet.create({
   container: {

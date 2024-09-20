@@ -320,71 +320,72 @@ const [Buttonvisible, setbuttonvisible] = useState(false)   //撮影画面に飛
       },
       // { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
       {
-        enableHighAccuracy: false,
-        timeout: 20000,
-        distanceFilter: 5,
-        maximumAge: 1000,
+        enableHighAccuracy: false,  //高精度な位置情報の取得をするか(true:高精度、false:精度を下げる、速い)
+        timeout: 20000, //位置情報取得のタイムアウト
+        distanceFilter: 5,  //位置情報の更新を何メートルおきに行うか
+        maximumAge: 1000,   //取得できる位置情報の最大年齢
       }
     );
-    return () => Geolocation.clearWatch(watchId);
-  }, [initialRegion]);
+    return () => Geolocation.clearWatch(watchId); //位置情報の監視を終了する
+  }, [initialRegion]);    //initialRegionが変更されるたびにこのuseEffectが再実行されます
 
   useEffect(() => {
-    setUser(auth.currentUser);
+    console.log("auth.currentUser=",auth.currentUser)   
+    setUser(auth.currentUser);    //ログインしているユーザーの取得
     fetchAllMarkerCord();
   }, []);
 
-  return (
-    <SafeAreaView style={StyleSheet.absoluteFillObject}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
+  return (  //画面に表示される内容
+    <SafeAreaView style={StyleSheet.absoluteFillObject} /*ステータスバーなどを考慮したビュー*/>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }} /* flex1で利用可能なスペースを全て埋めるビュー、justifyContent: "center", alignItems: "center"ですべて中央へ */>
+        <Text style={{ fontSize: 18, fontWeight: "bold" }} /* ローディングテキスト */>読み込み中...</Text >
       </View>
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
-      {initialRegion && (
+      {initialRegion && (   //initialRegion が存在する場合のみ実行
         <MapView
-          key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          style={StyleSheet.absoluteFillObject}
-          customMapStyle={customMapStyle}
-          initialRegion={initialRegion}
-          region={initialRegion}
-          scrollEnabled={mapfixed}
-          zoomEnabled={mapfixed}
-          rotateEnabled={mapfixed}
-          pitchEnabled={mapfixed}
+          key={`${initialRegion.latitude}-${initialRegion.longitude}`}  //地図上の位置が変更されたときに再描画するためのkey
+          style={StyleSheet.absoluteFillObject} //地図が画面全体を埋めるようにする
+          customMapStyle={customMapStyle} //地図の外観変更
+          initialRegion={initialRegion} //地図の初期位置を設定
+          region={initialRegion}  //地図の表示領域
+          scrollEnabled={mapfixed}  //地図のスクロールの有効化、無効化
+          zoomEnabled={mapfixed}  //地図の拡大有効化無効化
+          rotateEnabled={mapfixed}  //地図の回転有効化、無効化
+          pitchEnabled={mapfixed} //地図の傾き有効化、無効化
         >
-          <Marker
-            coordinate={{
+          <Marker //現在地のピン
+            coordinate={{ //ピンの位置
               latitude: position.latitude,
               longitude: position.longitude,
-            }}
-            initialRegion={{
+            }}  
+            initialRegion={{  //ピンの初期表示領域
               latitude: position.latitude,
               longitude: position.longitude,
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             }}
           >
-            <View style={styles.radius}>
-              <View style={styles.marker} />
+            <View style={styles.radius} /*マーカーの周りの円 */>
+              <View style={styles.marker} /*マーカーの表示*//>
             </View>
           </Marker>
 
-          {markerCords.map((marker) => (
+          {markerCords.map((marker) => (  //スポットの情報を使う、配列の各要素ごとに行う
             <Marker
-              key={marker.id}
-              coordinate={{
-                latitude: parseFloat(marker.mapLatitude),
+              key={marker.id} //スポットごとに識別するためのkey
+              coordinate={{   //マーカーの位置を設定
+                latitude: parseFloat(marker.mapLatitude),   //parseFloatで数値に変換する
                 longitude: parseFloat(marker.mapLongitude),
               }}
-              title={marker.name}
-              onPress={() => setmodal(marker)}
+              title={marker.name} //マーカーをタップしたときに表示される情報
+              onPress={() => setmodal(marker)}    //マーカーがクリックされたときのイベント
             >
               <Image
-                source={getPinColor(marker)}
+                source={getPinColor(marker)}  //現在マーカーの色を取得して反映する
                 style={styles.markerImage} //ピンの色
               />
             </Marker>
@@ -392,18 +393,18 @@ const [Buttonvisible, setbuttonvisible] = useState(false)   //撮影画面に飛
         </MapView>
       )}
 
-      <MyModal
-        visible={modalVisible}
-        empty={emptyPost}
-        postData={postData}
-        spotId={spotId}
-        loading={loading}
-        onClose={() => setModalVisible(false)}
+      <MyModal  //モーダルの表示
+        visible={modalVisible}  //モーダルが表示されるかどうか
+        empty={emptyPost} //投稿データが空でないかの確認
+        postData={postData} //モーダルに表示する投稿データ
+        spotId={spotId} //スポットのID
+        loading={loading} //ローディング中であるかどうか
+        onClose={() => setModalVisible(false)}  //モーダルを閉じるときの動き
       />
 
-      {user ? (
-        <Link
-          href={{
+      {user ? (   //ユーザーが存在するかの確認
+        <Link //カメラ画面に遷移するためのリンク
+          href={{ //cameraに飛ばす。現在の経緯度スポットIDをリンクに含める
             pathname: "/camera",
             params: {
               latitude: position.latitude,
@@ -411,10 +412,10 @@ const [Buttonvisible, setbuttonvisible] = useState(false)   //撮影画面に飛
               spotId: 0,
             },
           }}
-          asChild
-          visible="false"
+          asChild //Linkをコンポーネントとして使用する
+          visible="false" //リンクの可視性
         >
-          <Pressable
+          <Pressable  //カメラ画面に遷移するボタン
             style={{
               position: "absolute",
               alignSelf: "center",
@@ -423,14 +424,14 @@ const [Buttonvisible, setbuttonvisible] = useState(false)   //撮影画面に飛
               height: 75,
               backgroundColor: "blue",
               borderRadius: 75,
-              display: Buttonvisible ? "flex":"none"
+              display: Buttonvisible ? "flex":"none"  //BUttonvisibleがtrue:falseで表示を扱う
             }}
           ></Pressable>
         </Link>
-      ) : (
+      ) : (//userが存在しない場合の処理
         <Link
           href={{
-            pathname: "/loginForm",
+            pathname: "/loginForm", //リンク先をログインフォームに変更している
           }}
           asChild
         >
@@ -448,21 +449,21 @@ const [Buttonvisible, setbuttonvisible] = useState(false)   //撮影画面に飛
         </Link>
       )}
 
-      {user ? (
+      {user ? ( //ログイン状態であれば
         <View style={styles.loignBtnContainer}>
           {/* <Button title="ログアウト" onPress={signout} /> */}
-          <Link href={{ pathname: "/myPage" }} asChild>
+          <Link href={{ pathname: "/myPage" }} asChild/* リンク先をマイページ画面へ */> 
             <Button title="マイページ" />
           </Link>
         </View>
-      ) : (
+      ) : ( //ログインしていなかったら
         <View style={styles.loignBtnContainer}>
-          <Link href={{ pathname: "/loginForm" }} asChild>
+          <Link href={{ pathname: "/loginForm" }} asChild/*リンク先をログイン画面へ */>
             <Button title="ログイン" />
           </Link>
         </View>
       )}
-      {mapfixed ? (
+      {mapfixed ? ( //マップが移動可能なら
         <View style={styles.mapfixed}>
           <Button
             title="マップ固定"
@@ -476,7 +477,7 @@ const [Buttonvisible, setbuttonvisible] = useState(false)   //撮影画面に飛
             }
           />
         </View>
-      ) : (
+      ) : ( //マップが移動不可なら
         <View style={styles.mapfixed}>
           <Button
             title="マップ移動"
