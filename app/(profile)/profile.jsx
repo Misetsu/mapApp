@@ -190,7 +190,7 @@ const profile = () => {
       firestore()
         .collection("star")
         .doc(auth.currentUser.uid)
-        .set({
+        .update({
           [uid]: uid,
         });
       setIsFav(true);

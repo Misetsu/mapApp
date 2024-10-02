@@ -50,7 +50,7 @@ const TrackUserMapView = () => {
   const [postData, setPostData] = useState([]);
   const [emptyPost, setEmptyPost] = useState(true);
   const [markerCords, setMarkerCords] = useState([]);
-  const [indexStatus, setIndexStatus] = useState("follow");
+  const [indexStatus, setIndexStatus] = useState("star");
 
   const setmodal = (marker) => {
     try {
@@ -304,7 +304,7 @@ const TrackUserMapView = () => {
             let tempObj = {};
             const followSnapshot = queryFollow.docs[cnt];
             const followData = followSnapshot.data();
-            // friendList.push(followData.followeeId);
+
             const queryUser = await firestore()
               .collection("users")
               .where("uid", "==", followData.followeeId)
@@ -334,7 +334,36 @@ const TrackUserMapView = () => {
           .doc(auth.currentUser.uid)
           .get();
 
-        console.log(queryFav.data);
+        const starList = [];
+        for (const [key, value] of Object.entries(queryFav.data())) {
+          if (key == value) {
+            starList.push(value);
+          }
+        }
+        if (!(starList.length == 0)) {
+          let cnt = 0;
+          while (cnt < starList.length) {
+            let tempObj = {};
+
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", starList[cnt])
+              .get();
+            const userSnapshot = queryUser.docs[0];
+            const userData = userSnapshot.data();
+
+            if (!(userData.lastPostAt == "0")) {
+              tempObj[firstKey] = userData.uid;
+              tempObj[secondKey] = userData.displayName;
+              tempObj[thirdKey] = userData.photoURL;
+              tempObj[forthKey] = userData.lastPostAt;
+
+              userList.push(tempObj);
+            }
+
+            cnt = cnt + 1;
+          }
+        }
       } catch (error) {
         console.log("Error fetching documents: ", error);
       }
