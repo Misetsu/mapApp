@@ -43,6 +43,7 @@ const TrackUserMapView = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
+  const [postImage, setPostImage] = useState(false);
   const [user, setUser] = useState(null);
   const [mapfixed, setmapfixed] = useState(false);
   const [postButtonVisible, setPostButtonVisible] = useState(false);
@@ -63,9 +64,13 @@ const TrackUserMapView = () => {
       if (distance < marker.areaRadius) {
         setSpotId(marker.id);
         setModalVisible(true);
+        setPostImage(true);
         fetchPostData(marker.id);
       } else {
-        setModalVisible(false);
+        setSpotId(marker.id);
+        setModalVisible(true);
+        setPostImage(false);
+        fetchPostData(marker.id);
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -485,6 +490,7 @@ const TrackUserMapView = () => {
         visible={modalVisible}
         empty={emptyPost}
         postData={postData}
+        postImage={postImage}
         spotId={spotId}
         loading={loading}
         onClose={() => setModalVisible(false)}

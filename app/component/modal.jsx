@@ -11,9 +11,17 @@ import {
   ScrollView,
 } from "react-native";
 import { Link } from "expo-router";
-import { formatInTimeZone, utcToZonedTime } from "date-fns-tz";
+import { formatInTimeZone } from "date-fns-tz";
 
-const MyModal = ({ visible, empty, postData, spotId, loading, onClose }) => {
+const MyModal = ({
+  visible,
+  empty,
+  postData,
+  postImage,
+  spotId,
+  loading,
+  onClose,
+}) => {
   return (
     <Modal
       animationType="fade"
@@ -47,10 +55,18 @@ const MyModal = ({ visible, empty, postData, spotId, loading, onClose }) => {
                         <Text>{post.username}</Text>
                       </TouchableOpacity>
                     </Link>
-                    <Image
-                      source={{ uri: post.photoUri }}
-                      style={{ width: 300, height: 400 }}
-                    />
+                    {postImage ? (
+                      <Image
+                        source={{ uri: post.photoUri }}
+                        style={{ width: 300, height: 400 }}
+                      />
+                    ) : (
+                      <Image
+                        source={{ uri: post.photoUri }}
+                        style={{ width: 300, height: 400 }}
+                        blurRadius={50}
+                      />
+                    )}
                     <Text>
                       {formatInTimeZone(
                         new Date(post.timestamp),
