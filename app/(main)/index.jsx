@@ -51,7 +51,9 @@ const TrackUserMapView = () => {
   const [postData, setPostData] = useState([]);
   const [emptyPost, setEmptyPost] = useState(true);
   const [markerCords, setMarkerCords] = useState([]);
-  const [indexStatus, setIndexStatus] = useState("star");
+  const [indexStatus, setIndexStatus] = useState("follow");
+  const [indexUser, setIndexUser] = useState([]);
+  const [loadIndex, setLoadIndex] = useState(true);
 
   const setmodal = (marker) => {
     try {
@@ -291,6 +293,7 @@ const TrackUserMapView = () => {
   };
 
   const fetchIndexBar = async () => {
+    setLoadIndex(true);
     const userList = [];
     const firstKey = "userId";
     const secondKey = "username";
@@ -383,7 +386,11 @@ const TrackUserMapView = () => {
       }
       return 0;
     });
+
     console.log(userList);
+    setIndexUser(userList);
+    console.log(indexUser);
+    setLoadIndex(false);
   };
 
   useEffect(() => {
@@ -484,6 +491,19 @@ const TrackUserMapView = () => {
             </TouchableOpacity>
           ))}
         </MapView>
+      )}
+
+      {loadIndex ? (
+        <View style={styles.indexContainer}>
+          {indexUser.map((user) => {
+            <View key={user.userId}>
+              <Image style={styles.listProfileImage} source={user.userIcon} />
+              <Text>{user.username}</Text>
+            </View>;
+          })}
+        </View>
+      ) : (
+        <View style={styles.indexContainer}></View>
       )}
 
       <MyModal

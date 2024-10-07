@@ -104,13 +104,35 @@ export const styles = StyleSheet.create({
   },
   loignBtnContainer: {
     position: "absolute",
-    top: 20,
+    top: "10%",
+    marginTop: 20,
     right: 20,
   },
   mapfixed: {
     position: "absolute",
-    top: 20,
+    top: "10%",
+    marginTop: 20,
     left: 20,
+  },
+  indexContainer: {
+    position: "absolute",
+    top: 0,
+    width: "100%",
+    height: "10%",
+    backgroundColor: "#F2F2F2",
+    padding: 10,
+    justifyContent: "center",
+    display: "flex",
+    flexDirection: "row",
+  },
+  userList: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  listProfileImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
 });
 
