@@ -129,10 +129,20 @@ export const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
   },
+  //インデックスバー上の画像
   listProfileImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignSelf: "center",
+  },
+  //インデックスバーアイコンの幅
+  listProfileNameText: {
+    fontSize: 12,
+    textAlign: "center",
+  },
+  listProfileSize: {
+    margin: 5,
   },
 });
 

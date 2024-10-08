@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  FlatList,
   SafeAreaView,
   View,
   Text,
@@ -52,7 +53,7 @@ const TrackUserMapView = () => {
   const [emptyPost, setEmptyPost] = useState(true);
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
-  const [indexUser, setIndexUser] = useState([]);
+  const [userList, setUserList] = useState([]);
   const [loadIndex, setLoadIndex] = useState(true);
 
   const setmodal = (marker) => {
@@ -294,7 +295,7 @@ const TrackUserMapView = () => {
 
   const fetchIndexBar = async () => {
     setLoadIndex(true);
-    const userList = [];
+    const tempList = [];
     const firstKey = "userId";
     const secondKey = "username";
     const thirdKey = "userIcon";
@@ -326,7 +327,7 @@ const TrackUserMapView = () => {
               tempObj[thirdKey] = userData.photoURL;
               tempObj[forthKey] = userData.lastPostAt;
 
-              userList.push(tempObj);
+              tempList.push(tempObj);
             }
 
             cnt = cnt + 1;
@@ -366,7 +367,7 @@ const TrackUserMapView = () => {
               tempObj[thirdKey] = userData.photoURL;
               tempObj[forthKey] = userData.lastPostAt;
 
-              userList.push(tempObj);
+              tempList.push(tempObj);
             }
 
             cnt = cnt + 1;
@@ -377,7 +378,7 @@ const TrackUserMapView = () => {
       }
     }
 
-    userList.sort((a, b) => {
+    tempList.sort((a, b) => {
       if (b.lastPostAt < a.lastPostAt) {
         return -1;
       }
@@ -387,10 +388,51 @@ const TrackUserMapView = () => {
       return 0;
     });
 
-    console.log(userList);
-    setIndexUser(userList);
-    console.log(indexUser);
+    setUserList(tempList);
     setLoadIndex(false);
+  };
+
+  const handleUserChoose = async (userId) => {
+    const queryPost = await firestore()
+      .collection("post")
+      .where("userId", "==", userId)
+      .orderBy("timeStamp", "desc")
+      .get();
+
+    const tempList = [];
+
+    if (!queryPost.empty) {
+      let cnt = 0;
+      while (cnt < queryPost.size) {
+        const postSnapshot = queryPost.docs[cnt];
+        const postData = postSnapshot.data();
+
+        tempList.push(postData.spotId);
+
+        cnt = cnt + 1;
+      }
+    }
+
+    const spotIdList = [...new Set(tempList)];
+    console.log(spotIdList);
+    console.log(typeof spotIdList);
+
+    const fetchResult = [];
+    const querySpot = await firestore()
+      .collection("spot")
+      .where("id", "in", spotIdList)
+      .get();
+
+    if (!querySpot.empty) {
+      querySpot.forEach((docs) => {
+        const item = docs.data();
+        fetchResult.push(item);
+      });
+      console.log(fetchResult);
+      // setMarkerCords([]);
+      // setMarkerCords(fetchResult);
+      // console.log(markerCords);
+    }
   };
 
   useEffect(() => {
@@ -492,19 +534,38 @@ const TrackUserMapView = () => {
           ))}
         </MapView>
       )}
-
-      {loadIndex ? (
-        <View style={styles.indexContainer}>
-          {indexUser.map((user) => {
-            <View key={user.userId}>
-              <Image style={styles.listProfileImage} source={user.userIcon} />
-              <Text>{user.username}</Text>
-            </View>;
-          })}
-        </View>
-      ) : (
-        <View style={styles.indexContainer}></View>
-      )}
+      {/* タスクバーアイコン */}
+      <SafeAreaView style={styles.indexContainer}>
+        <FlatList
+          horizontal={true}
+          data={userList}
+          keyExtractor={(item) => item.userId}
+          // renderItem={({ item }) => {
+          //   return (
+          //     <TouchableOpacity onPress={onPress}>
+          //       <Image source={{ uri: item.userIcon }} />
+          //       {/* <Text></Text> */}
+          //       <Text>{item.username}</Text>
+          //     </TouchableOpacity>
+          //   );
+          // }}
+          // onPressなしver
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity
+                style={styles.listProfileSize}
+                onPress={() => handleUserChoose(item.userId)}
+              >
+                <Image
+                  source={{ uri: item.userIcon }}
+                  style={styles.listProfileImage}
+                />
+                <Text style={styles.listProfileNameText}>{item.username}</Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      </SafeAreaView>
 
       <MyModal
         visible={modalVisible}
