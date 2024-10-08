@@ -18,6 +18,7 @@ import firestore, { orderBy } from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -54,7 +55,7 @@ const TrackUserMapView = () => {
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
-  const [loadIndex, setLoadIndex] = useState(true);
+  const [userSpot, setUserSpot] = useState([]);
 
   const setmodal = (marker) => {
     try {
@@ -294,7 +295,6 @@ const TrackUserMapView = () => {
   };
 
   const fetchIndexBar = async () => {
-    setLoadIndex(true);
     const tempList = [];
     const firstKey = "userId";
     const secondKey = "username";
@@ -389,7 +389,6 @@ const TrackUserMapView = () => {
     });
 
     setUserList(tempList);
-    setLoadIndex(false);
   };
 
   const handleUserChoose = async (userId) => {
@@ -428,11 +427,10 @@ const TrackUserMapView = () => {
         const item = docs.data();
         fetchResult.push(item);
       });
-      console.log(fetchResult);
-      // setMarkerCords([]);
-      // setMarkerCords(fetchResult);
-      // console.log(markerCords);
     }
+    console.log(fetchResult);
+    setUserSpot(fetchResult);
+    console.log(userSpot);
   };
 
   useEffect(() => {
@@ -540,6 +538,7 @@ const TrackUserMapView = () => {
           horizontal={true}
           data={userList}
           keyExtractor={(item) => item.userId}
+          showsHorizontalScrollIndicator={false}
           // renderItem={({ item }) => {
           //   return (
           //     <TouchableOpacity onPress={onPress}>
@@ -565,6 +564,9 @@ const TrackUserMapView = () => {
             );
           }}
         />
+        <TouchableOpacity style={styles.listProfileIndexButton}>
+          <Icon name="exchange-alt" size={30} color="#000"></Icon>
+        </TouchableOpacity>
       </SafeAreaView>
 
       <MyModal

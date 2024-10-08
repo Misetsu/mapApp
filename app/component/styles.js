@@ -144,6 +144,11 @@ export const styles = StyleSheet.create({
   listProfileSize: {
     margin: 5,
   },
+  listProfileIndexButton: {
+    width: "15%",
+    justifyContent: "center",
+    alignContent: "center",
+  },
 });
 
 export const customMapStyle = [
