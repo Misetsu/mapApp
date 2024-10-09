@@ -54,6 +54,8 @@ const LoginScreen = () => {
         .set({
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
+          lastPostAt: "0", // TODO
+          publicStatus: 0, // TODO
           photoURL: auth.currentUser.photoURL,
         })
         .then()
