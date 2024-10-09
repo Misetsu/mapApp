@@ -14,7 +14,7 @@ import { Link, useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
-import firestore, { orderBy } from "@react-native-firebase/firestore";
+import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
@@ -55,7 +55,6 @@ const TrackUserMapView = () => {
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
-  const [userSpot, setUserSpot] = useState([]);
 
   const setmodal = (marker) => {
     try {
@@ -294,13 +293,13 @@ const TrackUserMapView = () => {
     }
   };
 
-  const fetchIndexBar = async () => {
+  const fetchIndexBar = async (status) => {
     const tempList = [];
     const firstKey = "userId";
     const secondKey = "username";
     const thirdKey = "userIcon";
     const forthKey = "lastPostAt";
-    if (indexStatus == "follow") {
+    if (status == "follow") {
       try {
         const queryFollow = await firestore()
           .collection("follow")
@@ -336,7 +335,7 @@ const TrackUserMapView = () => {
       } catch (error) {
         console.log("Error fetching documents: ", error);
       }
-    } else if (indexStatus == "star") {
+    } else if (status == "star") {
       try {
         const queryFav = await firestore()
           .collection("star")
@@ -413,8 +412,6 @@ const TrackUserMapView = () => {
     }
 
     const spotIdList = [...new Set(tempList)];
-    console.log(spotIdList);
-    console.log(typeof spotIdList);
 
     const fetchResult = [];
     const querySpot = await firestore()
@@ -427,10 +424,23 @@ const TrackUserMapView = () => {
         const item = docs.data();
         fetchResult.push(item);
       });
+      setMarkerCords(fetchResult);
     }
     console.log(fetchResult);
-    setUserSpot(fetchResult);
-    console.log(userSpot);
+    console.log(markerCords);
+  };
+
+  const handleChangeIndex = () => {
+    console.log(indexStatus);
+    let status = "";
+    if (indexStatus == "follow") {
+      status = "star";
+      setIndexStatus("star");
+    } else {
+      status = "follow";
+      setIndexStatus("follow");
+    }
+    fetchIndexBar(status);
   };
 
   useEffect(() => {
@@ -471,7 +481,7 @@ const TrackUserMapView = () => {
   useEffect(() => {
     setUser(auth.currentUser);
     fetchAllMarkerCord();
-    fetchIndexBar();
+    fetchIndexBar(indexStatus);
   }, []);
 
   return (
@@ -539,16 +549,6 @@ const TrackUserMapView = () => {
           data={userList}
           keyExtractor={(item) => item.userId}
           showsHorizontalScrollIndicator={false}
-          // renderItem={({ item }) => {
-          //   return (
-          //     <TouchableOpacity onPress={onPress}>
-          //       <Image source={{ uri: item.userIcon }} />
-          //       {/* <Text></Text> */}
-          //       <Text>{item.username}</Text>
-          //     </TouchableOpacity>
-          //   );
-          // }}
-          // onPressなしver
           renderItem={({ item }) => {
             return (
               <TouchableOpacity
@@ -564,7 +564,10 @@ const TrackUserMapView = () => {
             );
           }}
         />
-        <TouchableOpacity style={styles.listProfileIndexButton}>
+        <TouchableOpacity
+          style={styles.listProfileIndexButton}
+          onPress={handleChangeIndex}
+        >
           <Icon name="exchange-alt" size={30} color="#000"></Icon>
         </TouchableOpacity>
       </SafeAreaView>
