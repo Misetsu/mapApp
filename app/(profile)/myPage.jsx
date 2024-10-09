@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Modal,
   Image,
   StyleSheet,
@@ -23,8 +22,9 @@ const reference = storage();
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
-  const [displayName, setDisplayName] = useState("KENTA"); // ユーザーの表示名
-  const [displayEmail, setDisplayEmail] = useState("kobe@denshi.jp"); // ユーザーの表示名
+  const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
+  const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
+  const [userStatus, setUserStatus] = useState(0);
   const [editable, setEditable] = useState(false);
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
@@ -42,6 +42,12 @@ const myPage = () => {
       setDisplayEmail(auth.currentUser.email);
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
+      const queryUser = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .get();
+      const userData = queryUser.data();
+      setUserStatus(userData.publicStatus);
 
       // フォロー中取得
       const queryFollow = await firestore()
@@ -163,6 +169,22 @@ const myPage = () => {
     await auth.currentUser.updateProfile(update);
 
     return url;
+  };
+
+  const handleStatus = async () => {
+    if (userStatus == 0) {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .update({ publicStatus: 1 });
+      setUserStatus(1);
+    } else {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .update({ publicStatus: 0 });
+      setUserStatus(0);
+    }
   };
 
   const handleProfile = (uid) => {
@@ -306,7 +328,7 @@ const myPage = () => {
         </Modal>
 
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
-        <Text style={styles.displayName}>USERNAME</Text>
+        <Text style={styles.displayName}>Username</Text>
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
@@ -333,6 +355,16 @@ const myPage = () => {
         ) : (
           <TouchableOpacity style={styles.button} onPress={handleEdit}>
             <Text style={styles.buttonText}>EDIT</Text>
+          </TouchableOpacity>
+        )}
+
+        {userStatus == 0 ? (
+          <TouchableOpacity style={styles.button} onPress={handleStatus}>
+            <Text style={styles.buttonText}>Public to Private</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={handleStatus}>
+            <Text style={styles.buttonText}>Private to Public</Text>
           </TouchableOpacity>
         )}
 
