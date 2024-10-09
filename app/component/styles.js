@@ -117,7 +117,7 @@ export const styles = StyleSheet.create({
     position: "absolute",
     top: "90%",
     right: "5%",
-  }
+  },
   indexContainer: {
     position: "absolute",
     top: 0,
