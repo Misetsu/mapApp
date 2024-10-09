@@ -109,9 +109,14 @@ export const styles = StyleSheet.create({
   },
   mapfixed: {
     position: "absolute",
-    top: 20,
-    left: 20,
+    top: "80%",
+    right: "5%",
   },
+  defaultlocation:{
+    position: "absolute",
+    top: "90%",
+    right: "5%",
+  }
 });
 
 export const customMapStyle = [
