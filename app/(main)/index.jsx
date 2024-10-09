@@ -42,7 +42,7 @@ const TrackUserMapView = () => {
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
-  const [Region,setRegion] = useState(null);
+  const [Region, setRegion] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
@@ -262,31 +262,35 @@ const TrackUserMapView = () => {
     }
   };
 
-  const defaultlocation = (latitude,longitude,LATITUDE_DELTA,LONGITUDE_DELTA) => {
-    try{
-      console.log(Region)
-      if(Region.flag == 0){
-      setRegion({
-        latitude:latitude,
-        longitude:longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA,
-        flag: 1
-    })
-  }
-  else{
-    setRegion({
-      latitude:latitude,
-      longitude:longitude,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA,
-      flag: 0
-  })
-}
+  const defaultlocation = (
+    latitude,
+    longitude,
+    LATITUDE_DELTA,
+    LONGITUDE_DELTA
+  ) => {
+    try {
+      console.log(Region);
+      if (Region.flag == 0) {
+        setRegion({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+          flag: 1,
+        });
+      } else {
+        setRegion({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+          flag: 0,
+        });
+      }
     } catch (error) {
       console.error("Error fetching documents:", error);
     }
-  }
+  };
 
   const fetchAllMarkerCord = async () => {
     const fetchResult = [];
@@ -468,7 +472,7 @@ const TrackUserMapView = () => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
-        console.log(position)
+        console.log(position);
         try {
           setPosition(position.coords);
           if (!initialRegion) {
@@ -485,7 +489,7 @@ const TrackUserMapView = () => {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
               flag: 0,
-            })
+            });
             setPostButtonVisible(true);
           } else {
             setError("Position or coords is undefined");
@@ -506,8 +510,6 @@ const TrackUserMapView = () => {
     );
     return () => Geolocation.clearWatch(watchId);
   }, [initialRegion]);
-
-  
 
   useEffect(() => {
     setUser(auth.currentUser);
@@ -536,7 +538,7 @@ const TrackUserMapView = () => {
           zoomEnabled={mapfixed}
           rotateEnabled={mapfixed}
           pitchEnabled={mapfixed}
-          >
+        >
           <Marker
             coordinate={{
               latitude: position.latitude,
@@ -696,12 +698,7 @@ const TrackUserMapView = () => {
               )
             }
           >
-            <Image style={{
-              width:30,
-              height:30,
-              
-            }}
-             source={require("../image/cursor2.png")}/>
+            <Icon name="arrows-alt" size={24} color="#28b6b8" />
           </TouchableOpacity>
         </View>
       ) : (
@@ -717,33 +714,25 @@ const TrackUserMapView = () => {
               )
             }
           >
-            <Image style={{
-              width:30,
-              height:30,
-            }}
-             source={require("../image/cursor.png")}/>
+            <Icon name="arrows-alt" size={24} color="#000" />
           </TouchableOpacity>
         </View>
       )}
       <View style={styles.defaultlocation}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() =>
-              defaultlocation( 
-                position.latitude,
-                position.longitude,
-                LATITUDE_DELTA,
-                LONGITUDE_DELTA
-              )
-            }
-          >
-            <Image style={{
-              width:30,
-              height:30,
-            }}
-             source={require("../image/pin_blue.png")}/>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() =>
+            defaultlocation(
+              position.latitude,
+              position.longitude,
+              LATITUDE_DELTA,
+              LONGITUDE_DELTA
+            )
+          }
+        >
+          <Icon name="crosshairs" size={24} color="#3333ff" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
