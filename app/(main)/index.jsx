@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
+  FlatList,
   SafeAreaView,
   View,
   Text,
   Image,
-  Button,
   Pressable,
   TouchableOpacity,
   Dimensions,
@@ -18,11 +18,12 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
-const ASPECT_RATIO = width / height; //アスペクト比
+const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.01;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO; //地図の表示範囲
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -42,15 +43,18 @@ const TrackUserMapView = () => {
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
 
-  const [modalVisible, setModalVisible] = useState(false); // モーダルの表示状態を管理するステート
+  const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
-  const [user, setUser] = useState(null); //ユーザー情報を保持する
+  const [postImage, setPostImage] = useState(false);
+  const [user, setUser] = useState(null);
   const [mapfixed, setmapfixed] = useState(false);
   const [postButtonVisible, setPostButtonVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [postData, setPostData] = useState([]);
   const [emptyPost, setEmptyPost] = useState(true);
   const [markerCords, setMarkerCords] = useState([]);
+  const [indexStatus, setIndexStatus] = useState("follow");
+  const [userList, setUserList] = useState([]);
 
   const setmodal = (marker) => {
     try {
@@ -61,12 +65,15 @@ const TrackUserMapView = () => {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
-        //距離が50m以上離れているかのチェック
         setSpotId(marker.id);
         setModalVisible(true);
+        setPostImage(true);
         fetchPostData(marker.id);
       } else {
-        setModalVisible(false);
+        setSpotId(marker.id);
+        setModalVisible(true);
+        setPostImage(false);
+        fetchPostData(marker.id);
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -125,43 +132,30 @@ const TrackUserMapView = () => {
       } else {
         friendList.push("");
       }
+
       const querySnapshot = await firestore()
         .collection("post")
         .where("spotId", "==", spotId)
-        .where("userId", "in", friendList) // 特定の条件を指定
+        .orderBy("timeStamp", "desc")
+        .limit(10)
         .get();
+
       if (!querySnapshot.empty) {
         const size = querySnapshot.size;
         let cnt = 0;
+        const firstKey = "userId";
+        const secondKey = "username";
+        const thirdKey = "userIcon";
+        const forthKey = "postId";
+        const fifthKey = "postText";
+        const sixthKey = "photoUri";
+        const seventhKey = "timestamp";
         while (cnt < size) {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
           const postData = documentSnapshot.data();
 
           let photoUri = "";
           let tempObj = {};
-          const firstKey = "userId";
-          const secondKey = "username";
-          const thirdKey = "userIcon";
-          const forthKey = "postId";
-          const fifthKey = "postText";
-          const sixthKey = "photoUri";
-          const seventhKey = "timestamp";
-
-          const queryPhoto = await firestore()
-            .collection("photo")
-            .where("postId", "==", postData.id) // 特定の条件を指定
-            .get();
-          if (!queryPhoto.empty) {
-            const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
-            const photoData = photoSnapshot.data();
-
-            if (photoData.imagePath) {
-              const url = await storage()
-                .ref(photoData.imagePath)
-                .getDownloadURL();
-              photoUri = url;
-            }
-          }
 
           const queryUser = await firestore()
             .collection("users")
@@ -170,25 +164,67 @@ const TrackUserMapView = () => {
           const userSnapshot = queryUser.docs[0];
           const userData = userSnapshot.data();
 
-          tempObj[firstKey] = postData.userId;
-          tempObj[secondKey] = userData.displayName;
-          tempObj[thirdKey] = userData.photoURL;
-          tempObj[forthKey] = postData.id;
-          tempObj[fifthKey] = postData.postTxt;
-          tempObj[sixthKey] = photoUri;
-          tempObj[seventhKey] = postData.timeStamp;
+          if (userData.publicStatus == 0) {
+            const queryPhoto = await firestore()
+              .collection("photo")
+              .where("postId", "==", postData.id) // 特定の条件を指定
+              .get();
+            if (!queryPhoto.empty) {
+              const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+              const photoData = photoSnapshot.data();
 
-          postArray.push(tempObj);
+              if (photoData.imagePath) {
+                const url = await storage()
+                  .ref(photoData.imagePath)
+                  .getDownloadURL();
+                photoUri = url;
+              }
+            }
+
+            tempObj[firstKey] = postData.userId;
+            tempObj[secondKey] = userData.displayName;
+            tempObj[thirdKey] = userData.photoURL;
+            tempObj[forthKey] = postData.id;
+            tempObj[fifthKey] = postData.postTxt;
+            tempObj[sixthKey] = photoUri;
+            tempObj[seventhKey] = postData.timeStamp;
+
+            postArray.push(tempObj);
+            setEmptyPost(false);
+          } else if (friendList.includes(userData.uid)) {
+            const queryPhoto = await firestore()
+              .collection("photo")
+              .where("postId", "==", postData.id) // 特定の条件を指定
+              .get();
+            if (!queryPhoto.empty) {
+              const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+              const photoData = photoSnapshot.data();
+
+              if (photoData.imagePath) {
+                const url = await storage()
+                  .ref(photoData.imagePath)
+                  .getDownloadURL();
+                photoUri = url;
+              }
+            }
+
+            tempObj[firstKey] = postData.userId;
+            tempObj[secondKey] = userData.displayName;
+            tempObj[thirdKey] = userData.photoURL;
+            tempObj[forthKey] = postData.id;
+            tempObj[fifthKey] = postData.postTxt;
+            tempObj[sixthKey] = photoUri;
+            tempObj[seventhKey] = postData.timeStamp;
+
+            postArray.push(tempObj);
+            setEmptyPost(false);
+          }
 
           cnt = cnt + 1;
         }
-        let empty = false;
-
         setPostData(postArray);
-        setEmptyPost(empty);
         setLoading(false);
       } else {
-        console.log("No documents found with the specified condition");
         setLoading(false);
       }
     } catch (error) {
@@ -257,6 +293,156 @@ const TrackUserMapView = () => {
     }
   };
 
+  const fetchIndexBar = async (status) => {
+    const tempList = [];
+    const firstKey = "userId";
+    const secondKey = "username";
+    const thirdKey = "userIcon";
+    const forthKey = "lastPostAt";
+    if (status == "follow") {
+      try {
+        const queryFollow = await firestore()
+          .collection("follow")
+          .where("followerId", "==", auth.currentUser.uid)
+          .get();
+
+        if (!queryFollow.empty) {
+          let cnt = 0;
+          while (cnt < queryFollow.size) {
+            let tempObj = {};
+            const followSnapshot = queryFollow.docs[cnt];
+            const followData = followSnapshot.data();
+
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", followData.followeeId)
+              .get();
+            const userSnapshot = queryUser.docs[0];
+            const userData = userSnapshot.data();
+
+            if (!(userData.lastPostAt == "0")) {
+              tempObj[firstKey] = userData.uid;
+              tempObj[secondKey] = userData.displayName;
+              tempObj[thirdKey] = userData.photoURL;
+              tempObj[forthKey] = userData.lastPostAt;
+
+              tempList.push(tempObj);
+            }
+
+            cnt = cnt + 1;
+          }
+        }
+      } catch (error) {
+        console.log("Error fetching documents: ", error);
+      }
+    } else if (status == "star") {
+      try {
+        const queryFav = await firestore()
+          .collection("star")
+          .doc(auth.currentUser.uid)
+          .get();
+
+        const starList = [];
+        for (const [key, value] of Object.entries(queryFav.data())) {
+          if (key == value) {
+            starList.push(value);
+          }
+        }
+        if (!(starList.length == 0)) {
+          let cnt = 0;
+          while (cnt < starList.length) {
+            let tempObj = {};
+
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", starList[cnt])
+              .get();
+            const userSnapshot = queryUser.docs[0];
+            const userData = userSnapshot.data();
+
+            if (!(userData.lastPostAt == "0")) {
+              tempObj[firstKey] = userData.uid;
+              tempObj[secondKey] = userData.displayName;
+              tempObj[thirdKey] = userData.photoURL;
+              tempObj[forthKey] = userData.lastPostAt;
+
+              tempList.push(tempObj);
+            }
+
+            cnt = cnt + 1;
+          }
+        }
+      } catch (error) {
+        console.log("Error fetching documents: ", error);
+      }
+    }
+
+    tempList.sort((a, b) => {
+      if (b.lastPostAt < a.lastPostAt) {
+        return -1;
+      }
+      if (b.lastPostAt > a.lastPostAt) {
+        return 1;
+      }
+      return 0;
+    });
+
+    setUserList(tempList);
+  };
+
+  const handleUserChoose = async (userId) => {
+    const queryPost = await firestore()
+      .collection("post")
+      .where("userId", "==", userId)
+      .orderBy("timeStamp", "desc")
+      .get();
+
+    const tempList = [];
+
+    if (!queryPost.empty) {
+      let cnt = 0;
+      while (cnt < queryPost.size) {
+        const postSnapshot = queryPost.docs[cnt];
+        const postData = postSnapshot.data();
+
+        tempList.push(postData.spotId);
+
+        cnt = cnt + 1;
+      }
+    }
+
+    const spotIdList = [...new Set(tempList)];
+
+    const fetchResult = [];
+    const querySpot = await firestore()
+      .collection("spot")
+      .where("id", "in", spotIdList)
+      .get();
+
+    if (!querySpot.empty) {
+      querySpot.forEach((docs) => {
+        const item = docs.data();
+        fetchResult.push(item);
+      });
+      setMarkerCords(fetchResult);
+    }
+    console.log(fetchResult);
+    console.log(markerCords);
+  };
+
+  const handleChangeIndex = () => {
+    console.log(indexStatus);
+    let status = "";
+    if (indexStatus == "follow") {
+      status = "star";
+      setIndexStatus("star");
+    } else {
+      status = "follow";
+      setIndexStatus("follow");
+    }
+    fetchIndexBar(status);
+  };
+
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
@@ -282,9 +468,8 @@ const TrackUserMapView = () => {
       (err) => {
         setError(err.message);
       },
-      // { enableHighAccuracy: true, timeout: 10000, distanceFilter: 1 }
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
@@ -296,6 +481,7 @@ const TrackUserMapView = () => {
   useEffect(() => {
     setUser(auth.currentUser);
     fetchAllMarkerCord();
+    fetchIndexBar(indexStatus);
   }, []);
 
   return (
@@ -356,11 +542,41 @@ const TrackUserMapView = () => {
           ))}
         </MapView>
       )}
+      {/* タスクバーアイコン */}
+      <SafeAreaView style={styles.indexContainer}>
+        <FlatList
+          horizontal={true}
+          data={userList}
+          keyExtractor={(item) => item.userId}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity
+                style={styles.listProfileSize}
+                onPress={() => handleUserChoose(item.userId)}
+              >
+                <Image
+                  source={{ uri: item.userIcon }}
+                  style={styles.listProfileImage}
+                />
+                <Text style={styles.listProfileNameText}>{item.username}</Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
+        <TouchableOpacity
+          style={styles.listProfileIndexButton}
+          onPress={handleChangeIndex}
+        >
+          <Icon name="exchange-alt" size={30} color="#000"></Icon>
+        </TouchableOpacity>
+      </SafeAreaView>
 
       <MyModal
         visible={modalVisible}
         empty={emptyPost}
         postData={postData}
+        postImage={postImage}
         spotId={spotId}
         loading={loading}
         onClose={() => setModalVisible(false)}

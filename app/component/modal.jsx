@@ -13,7 +13,15 @@ import {
 import { Link } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 
-const MyModal = ({ visible, empty, postData = [], spotId, loading, onClose }) => {
+const MyModal = ({
+  visible,
+  empty,
+  postData,
+  postImage,
+  spotId,
+  loading,
+  onClose,
+}) => {
   const [likes, setLikes] = useState({});
 
   const handleLikePress = (postId) => {
@@ -34,9 +42,7 @@ const MyModal = ({ visible, empty, postData = [], spotId, loading, onClose }) =>
         <View style={styles.modalView}>
           {/* ✖ ボタン */}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>{/* スタイルを設定 */}
-              ✖
-            </Text>
+            <Text style={styles.closeButtonText}>{/* スタイルを設定 */}✖</Text>
           </TouchableOpacity>
 
           <ScrollView>
@@ -64,10 +70,18 @@ const MyModal = ({ visible, empty, postData = [], spotId, loading, onClose }) =>
                         <Text>{post.username}</Text>
                       </TouchableOpacity>
                     </Link>
-                    <Image
-                      source={{ uri: post.photoUri }}
-                      style={{ width: 300, height: 400 }}
-                    />
+                    {postImage ? (
+                      <Image
+                        source={{ uri: post.photoUri }}
+                        style={{ width: 300, height: 400 }}
+                      />
+                    ) : (
+                      <Image
+                        source={{ uri: post.photoUri }}
+                        style={{ width: 300, height: 400 }}
+                        blurRadius={50}
+                      />
+                    )}
 
                     {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
@@ -82,9 +96,12 @@ const MyModal = ({ visible, empty, postData = [], spotId, loading, onClose }) =>
                       {/* いいねボタン */}
                       <TouchableOpacity
                         style={styles.likeButton}
-                        onPress={() => handleLikePress(post.postId)}/* ポストIDごとにボタンが押されたか保存　*/
+                        onPress={() =>
+                          handleLikePress(post.postId)
+                        } /* ポストIDごとにボタンが押されたか保存　*/
                       >
-                        <Text style={{ color: isLiked ? "red" : "black" }}>{/* isLikedでtrue,falseで色変換 */}
+                        <Text style={{ color: isLiked ? "red" : "black" }}>
+                          {/* isLikedでtrue,falseで色変換 */}
                           {isLiked ? "❤️ いいね" : "♡ いいね"}
                         </Text>
                       </TouchableOpacity>
