@@ -12,6 +12,10 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
+import FirebaseAuth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+
+const auth = FirebaseAuth();
 
 const MyModal = ({
   visible,
@@ -24,10 +28,14 @@ const MyModal = ({
 }) => {
   const handleUnlike = (postId, index) => {
     console.log("unlike" + postId + "no." + index);
+    postData[index].likeFlag = false;
+    postData[index].likeCount = postData[index].likeCount - 1;
   };
 
   const handleLike = (postId, index) => {
     console.log("like" + postId + "no." + index);
+    postData[index].likeFlag = true;
+    postData[index].likeCount = postData[index].likeCount + 1;
   };
 
   return (
