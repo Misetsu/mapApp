@@ -152,6 +152,8 @@ const TrackUserMapView = () => {
         const sixthKey = "photoUri";
         const seventhKey = "timestamp";
         const eighthKey = "likeCount";
+        const ninthKey = "likeFlag";
+
         while (cnt < size) {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
           const postData = documentSnapshot.data();
@@ -190,6 +192,12 @@ const TrackUserMapView = () => {
 
             const likeSnapshot = queryLike.docs[0];
             const likeData = likeSnapshot.data();
+            let likeFlag;
+            if (likeData[auth.currentUser.uid] !== undefined) {
+              likeFlag = true;
+            } else {
+              likeFlag = false;
+            }
 
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
@@ -199,6 +207,7 @@ const TrackUserMapView = () => {
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
             tempObj[eighthKey] = likeData.count;
+            tempObj[ninthKey] = likeFlag;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -226,6 +235,12 @@ const TrackUserMapView = () => {
 
             const likeSnapshot = queryLike.docs[0];
             const likeData = likeSnapshot.data();
+            let likeFlag;
+            if (likeData[auth.currentUser.uid] !== undefined) {
+              likeFlag = true;
+            } else {
+              likeFlag = false;
+            }
 
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
@@ -235,6 +250,7 @@ const TrackUserMapView = () => {
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
             tempObj[eighthKey] = likeData.count;
+            tempObj[ninthKey] = likeFlag;
 
             postArray.push(tempObj);
             setEmptyPost(false);
