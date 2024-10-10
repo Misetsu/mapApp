@@ -102,7 +102,9 @@ const MyModal = ({
                       >
                         <Text style={{ color: isLiked ? "red" : "black" }}>
                           {/* isLikedでtrue,falseで色変換 */}
-                          {isLiked ? "❤️ いいね" : "♡ いいね"}
+                          {isLiked
+                            ? "❤️ " + post.likeCount
+                            : "♡ " + post.likeCount}
                         </Text>
                       </TouchableOpacity>
                     </View>

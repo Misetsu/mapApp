@@ -151,6 +151,7 @@ const TrackUserMapView = () => {
         const fifthKey = "postText";
         const sixthKey = "photoUri";
         const seventhKey = "timestamp";
+        const eighthKey = "likeCount";
         while (cnt < size) {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
           const postData = documentSnapshot.data();
@@ -182,6 +183,14 @@ const TrackUserMapView = () => {
               }
             }
 
+            const queryLike = await firestore()
+              .collection("like")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const likeSnapshot = queryLike.docs[0];
+            const likeData = likeSnapshot.data();
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -189,6 +198,7 @@ const TrackUserMapView = () => {
             tempObj[fifthKey] = postData.postTxt;
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
+            tempObj[eighthKey] = likeData.count;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -209,6 +219,14 @@ const TrackUserMapView = () => {
               }
             }
 
+            const queryLike = await firestore()
+              .collection("like")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const likeSnapshot = queryLike.docs[0];
+            const likeData = likeSnapshot.data();
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -216,6 +234,7 @@ const TrackUserMapView = () => {
             tempObj[fifthKey] = postData.postTxt;
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
+            tempObj[eighthKey] = likeData.count;
 
             postArray.push(tempObj);
             setEmptyPost(false);
