@@ -284,12 +284,7 @@ const TrackUserMapView = () => {
     }
   };
 
-  const setmapfixeds = (
-    latitude,
-    longitude,
-    LATITUDE_DELTA,
-    LONGITUDE_DELTA
-  ) => {
+  const setmapfixeds = () => {
     if (mapfixed == true) {
       setmapfixed(false);
     } else {
@@ -724,14 +719,7 @@ const TrackUserMapView = () => {
         <View style={styles.mapfixed}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() =>
-              setmapfixeds(
-                position.latitude,
-                position.longitude,
-                LATITUDE_DELTA,
-                LONGITUDE_DELTA
-              )
-            }
+            onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#28b6b8" />
           </TouchableOpacity>
@@ -740,14 +728,7 @@ const TrackUserMapView = () => {
         <View style={styles.mapfixed}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() =>
-              setmapfixeds(
-                position.latitude,
-                position.longitude,
-                LATITUDE_DELTA,
-                LONGITUDE_DELTA
-              )
-            }
+            onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#000" />
           </TouchableOpacity>
