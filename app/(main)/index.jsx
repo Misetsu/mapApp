@@ -502,7 +502,7 @@ const TrackUserMapView = () => {
         setError(err.message);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: true,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,

@@ -223,7 +223,7 @@ const myPage = () => {
 
   return (
     <ScrollView>
-<View style={{ 
+      <View style={{ 
       flexDirection: 'row', // 横並びに配置
       justifyContent: 'space-between', // 左右にスペースを均等に配置
       alignItems: 'center', // 縦方向の中央揃え
@@ -231,7 +231,7 @@ const myPage = () => {
       height: 50 // 高さを指定
     }}>
             <TouchableOpacity 
-          onPress={() => router.push({ pathname: '/' })}
+          onPress={() => router.push("/myPage")}
           style={{
           width: 50,   // 横幅を設定
           height: 50,  // 高さを設定
@@ -240,18 +240,6 @@ const myPage = () => {
         }}>
         {/* 右側のアイコンやテキストをここに追加 */}
         <Icon name="angle-left" size={24} color="#000" />
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        onPress={() => router.push("/setting")}
-        style={{
-          width: 50,   // 横幅を設定
-          height: 50,  // 高さを設定
-          justifyContent: 'center', // 縦中央揃え
-          alignItems: 'center', // 横中央揃え
-        }}>
-        {/* 左側のアイコンやテキストをここに追加 */}
-        <Icon name="cog" size={24} color="#000" />
       </TouchableOpacity>
     </View>
       <View style={styles.container}>
@@ -360,12 +348,49 @@ const myPage = () => {
         </Modal>
 
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
+        <Text style={styles.displayName}>Username</Text>
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
           style={styles.textInput}
           editable={editable}
         />
+        {/* メールアドレスを表示し、テキストボックスに入力でメールアドレス変更*/}
+        <Text style={styles.displayName}>Email</Text>
+        <TextInput
+          value={displayEmail}
+          onChangeText={setDisplayEmail}
+          style={styles.textInput}
+          editable={false}
+        />
+
+        <Link href={{ pathname: "/" }} asChild>
+          <Text style={styles.linklabel}>Change password?</Text>
+        </Link>
+
+        {editable ? (
+          <TouchableOpacity style={styles.submit} onPress={handleSave}>
+            <Text style={styles.submitText}>SAVE</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={handleEdit}>
+            <Text style={styles.buttonText}>EDIT</Text>
+          </TouchableOpacity>
+        )}
+
+        {userStatus == 0 ? (
+          <TouchableOpacity style={styles.button} onPress={handleStatus}>
+            <Text style={styles.buttonText}>Public to Private</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={handleStatus}>
+            <Text style={styles.buttonText}>Private to Public</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity style={styles.button} onPress={signout}>
+          <Text style={styles.buttonText}>LOGOUT</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
