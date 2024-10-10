@@ -87,6 +87,18 @@ export default function edit() {
           timeStamp: currentTime,
         })
         .catch((error) => console.log(error));
+
+      await firestore()
+        .collection("like")
+        .add({
+          count: 0,
+          postId: maxPostId,
+        })
+        .catch((error) => console.log(error));
+
+      await firestore().collection("users").doc(auth.currentUser.uid).update({
+        lastPostAt: currentTime,
+      });
     } else {
       const queryPost = await firestore()
         .collection("post")
@@ -103,7 +115,6 @@ export default function edit() {
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,
         })
-        .then()
         .catch((error) => console.log(error));
 
       const currentTime = new Date().toISOString();
@@ -117,8 +128,18 @@ export default function edit() {
           userId: auth.currentUser.uid,
           timeStamp: currentTime,
         })
-        .then()
         .catch((error) => console.log(error));
+
+      await firestore()
+        .collection("like")
+        .add({
+          count: 0,
+          postId: maxPostId,
+        })
+        .catch((error) => console.log(error));
+      await firestore().collection("users").doc(auth.currentUser.uid).update({
+        lastPostAt: currentTime,
+      });
     }
 
     setIsoading(false);
