@@ -26,16 +26,25 @@ const MyModal = ({
   loading,
   onClose,
 }) => {
+  const [likes, setLikes] = useState({});
+  const [likeCount, setLikeCount] = useState({});
+  postData.map((post) => {
+    setLikes((likes) => ({
+      ...likes,
+      [post.postId]: post.likeFlag,
+    }));
+    setLikeCount((likeCount) => ({
+      ...likeCount,
+      [post.postId]: post.likeCount,
+    }));
+  });
+
   const handleUnlike = (postId, index) => {
     console.log("unlike" + postId + "no." + index);
-    postData[index]["likeFlag"] = false;
-    postData[index]["likeCount"] = postData[index]["likeCount"] - 1;
   };
 
   const handleLike = (postId, index) => {
     console.log("like" + postId + "no." + index);
-    postData[index]["likeFlag"] = true;
-    postData[index]["likeCount"] = postData[index]["likeCount"] + 1;
   };
 
   return (
@@ -57,17 +66,19 @@ const MyModal = ({
               <Text>読み込み中...</Text>
             ) : !empty && postData.length > 0 ? (
               postData.map((post, index) => {
-                const handleUnlike = (postId, index) => {
-                  console.log("unlike" + postId + "no." + index);
-                  post.likeFlag = false;
-                  post.likeCount = post.likeCount - 1;
-                };
+                const isLiked = likes[post.postId];
+                const count = likeCount[post.postId];
+                // const handleUnlike = (postId, index) => {
+                //   console.log("unlike" + postId + "no." + index);
+                //   post.likeFlag = false;
+                //   post.likeCount = post.likeCount - 1;
+                // };
 
-                const handleLike = (postId, index) => {
-                  console.log("like" + postId + "no." + index);
-                  post.likeFlag = true;
-                  post.likeCount = post.likeCount + 1;
-                };
+                // const handleLike = (postId, index) => {
+                //   console.log("like" + postId + "no." + index);
+                //   post.likeFlag = true;
+                //   post.likeCount = post.likeCount + 1;
+                // };
                 return (
                   <View key={post.postId}>
                     <Link
@@ -112,23 +123,19 @@ const MyModal = ({
 
                       {/* いいねボタン */}
 
-                      {post.likeFlag ? (
+                      {isLiked ? (
                         <TouchableOpacity
                           style={styles.likeButton}
                           onPress={() => handleUnlike(post.postId, index)}
                         >
-                          <Text style={{ color: "red" }}>
-                            {"❤️" + post.likeCount}
-                          </Text>
+                          <Text style={{ color: "red" }}>{"❤️ " + count}</Text>
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
                           style={styles.likeButton}
                           onPress={() => handleLike(post.postId, index)}
                         >
-                          <Text style={{ color: "black" }}>
-                            {"♡ " + post.likeCount}
-                          </Text>
+                          <Text style={{ color: "black" }}>{"♡ " + count}</Text>
                         </TouchableOpacity>
                       )}
                     </View>
