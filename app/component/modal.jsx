@@ -28,14 +28,14 @@ const MyModal = ({
 }) => {
   const handleUnlike = (postId, index) => {
     console.log("unlike" + postId + "no." + index);
-    postData[index].likeFlag = false;
-    postData[index].likeCount = postData[index].likeCount - 1;
+    postData[index]["likeFlag"] = false;
+    postData[index]["likeCount"] = postData[index]["likeCount"] - 1;
   };
 
   const handleLike = (postId, index) => {
     console.log("like" + postId + "no." + index);
-    postData[index].likeFlag = true;
-    postData[index].likeCount = postData[index].likeCount + 1;
+    postData[index]["likeFlag"] = true;
+    postData[index]["likeCount"] = postData[index]["likeCount"] + 1;
   };
 
   return (
@@ -57,6 +57,17 @@ const MyModal = ({
               <Text>読み込み中...</Text>
             ) : !empty && postData.length > 0 ? (
               postData.map((post, index) => {
+                const handleUnlike = (postId, index) => {
+                  console.log("unlike" + postId + "no." + index);
+                  post.likeFlag = false;
+                  post.likeCount = post.likeCount - 1;
+                };
+
+                const handleLike = (postId, index) => {
+                  console.log("like" + postId + "no." + index);
+                  post.likeFlag = true;
+                  post.likeCount = post.likeCount + 1;
+                };
                 return (
                   <View key={post.postId}>
                     <Link
