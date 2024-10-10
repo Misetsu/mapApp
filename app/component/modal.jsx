@@ -22,13 +22,12 @@ const MyModal = ({
   loading,
   onClose,
 }) => {
-  const [likes, setLikes] = useState({});
+  const handleUnlike = (postId, index) => {
+    console.log("unlike" + postId + "no." + index);
+  };
 
-  const handleLikePress = (postId) => {
-    setLikes((prevLikes) => ({
-      ...prevLikes,
-      [postId]: !prevLikes[postId],
-    }));
+  const handleLike = (postId, index) => {
+    console.log("like" + postId + "no." + index);
   };
 
   return (
@@ -49,8 +48,7 @@ const MyModal = ({
             {loading ? (
               <Text>読み込み中...</Text>
             ) : !empty && postData.length > 0 ? (
-              postData.map((post) => {
-                const isLiked = likes[post.postId];
+              postData.map((post, index) => {
                 return (
                   <View key={post.postId}>
                     <Link
@@ -94,19 +92,26 @@ const MyModal = ({
                       </Text>
 
                       {/* いいねボタン */}
-                      <TouchableOpacity
-                        style={styles.likeButton}
-                        onPress={() =>
-                          handleLikePress(post.postId)
-                        } /* ポストIDごとにボタンが押されたか保存　*/
-                      >
-                        <Text style={{ color: isLiked ? "red" : "black" }}>
-                          {/* isLikedでtrue,falseで色変換 */}
-                          {isLiked
-                            ? "❤️ " + post.likeCount
-                            : "♡ " + post.likeCount}
-                        </Text>
-                      </TouchableOpacity>
+
+                      {post.likeFlag ? (
+                        <TouchableOpacity
+                          style={styles.likeButton}
+                          onPress={() => handleUnlike(post.postId, index)}
+                        >
+                          <Text style={{ color: "red" }}>
+                            {"❤️" + post.likeCount}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.likeButton}
+                          onPress={() => handleLike(post.postId, index)}
+                        >
+                          <Text style={{ color: "black" }}>
+                            {"♡ " + post.likeCount}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
 
                     <Text>{post.postText}</Text>
