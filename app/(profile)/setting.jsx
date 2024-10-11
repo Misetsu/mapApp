@@ -15,10 +15,49 @@ import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import {Animated, PanResponder } from 'react-native';
 
 const auth = FirebaseAuth();
 const router = useRouter();
 const reference = storage();
+
+const SlideButton = ({ onComplete, slideBtn }) => {
+  const [slideAnim] = useState(new Animated.Value(0)); // スライド位置のアニメーション値
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: (e, gestureState) => {
+      const { dx } = gestureState;
+      // 左右の制限を設定（ボタンの幅を考慮）
+      if (dx >= 0 && dx <= 250) {
+        slideAnim.setValue(dx);
+      }
+    },
+    onPanResponderRelease: (e, gestureState) => {
+      if (gestureState.dx >= 250) {
+        // スライドが成功した場合のアクション
+        onComplete(); // handleStatus を呼び出し
+      } else {
+        // スライドが不十分の場合、元に戻す
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: false,
+        }).start();
+      }
+    },
+  });
+
+  return (
+    <View style={styles.track}>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
+      >
+      </Animated.View>
+      <Text style={styles.slideBtn}>{slideBtn}</Text>
+    </View>
+  );
+};
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
@@ -188,6 +227,13 @@ const myPage = () => {
     }
   };
 
+  // const [userStatus, setUserStatus] = useState(0); // userStatusの状態
+
+  // const handleStatus = () => {
+  //   // userStatusを切り替える
+  //   setUserStatus(prevStatus => (prevStatus === 0 ? 1 : 0));
+  // };
+
   const handleProfile = (uid) => {
     if (uid == auth.currentUser.uid) {
       router.push({ pathname: "/myPage" });
@@ -258,15 +304,19 @@ const myPage = () => {
           </TouchableOpacity>
         )}
 
-        {userStatus == 0 ? (
-          <TouchableOpacity style={styles.button} onPress={handleStatus}>
-            <Text style={styles.buttonText}>Public to Private</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handleStatus}>
-            <Text style={styles.buttonText}>Private to Public</Text>
-          </TouchableOpacity>
-        )}
+<View style={styles.container}>
+      {userStatus === 0 ? (
+        <SlideButton
+          onComplete={handleStatus}
+          slideBtn="Public to Private"
+        />
+      ) : (
+        <SlideButton
+          onComplete={handleStatus}
+          slideBtn="Private to Public"
+        />
+      )}
+    </View>
 
       <TouchableOpacity style={[styles.button, { backgroundColor: '#FF6666' }]} onPress={signout}>
         <Text style={styles.buttonText}>LOGOUT</Text>
@@ -411,6 +461,42 @@ const styles = StyleSheet.create({
     color: "black",
     textAlign: "center",
     fontWeight: "300",
+  },
+  // 
+  //
+  //
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  track: {
+    width: 300,
+    height: 50,
+    backgroundColor: '#ddd',
+    borderRadius: 25,
+    justifyContent: 'center',
+    padding: 5,
+    position: 'relative',
+  },
+  slider: {
+    width: 50,
+    height: 40,
+    backgroundColor: '#ff6347',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+  },
+  sliderText: {
+    color: '#fff',
+    fontSize: 20,
+  },
+  slideBtn: {
+    position: 'absolute',
+    left: '50%',
+    transform: [{ translateX: -75 }],
+    color: '#333',
+    fontSize: 16,
   },
 });
 
