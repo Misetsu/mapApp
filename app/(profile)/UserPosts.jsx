@@ -55,7 +55,7 @@ export default function UserPosts() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading...</Text>
+        <Text>読み込み中...</Text>
       </View>
     );
   }
