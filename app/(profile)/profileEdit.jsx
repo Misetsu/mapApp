@@ -223,45 +223,149 @@ const myPage = () => {
 
   return (
     <ScrollView>
-      <View style={{ 
+<View style={{ 
       flexDirection: 'row', // 横並びに配置
       justifyContent: 'space-between', // 左右にスペースを均等に配置
       alignItems: 'center', // 縦方向の中央揃え
       padding: 10, // パディングを追加
       height: 50 // 高さを指定
     }}>
+            <TouchableOpacity 
+          onPress={() => router.push({ pathname: '/' })}
+          style={{
+          width: 50,   // 横幅を設定
+          height: 50,  // 高さを設定
+          justifyContent: 'center', // 縦中央揃え
+          alignItems: 'center', // 横中央揃え
+        }}>
+        {/* 右側のアイコンやテキストをここに追加 */}
+        <Icon name="angle-left" size={24} color="#000" />
+      </TouchableOpacity>
 
+      <TouchableOpacity 
+        onPress={() => router.push("/setting")}
+        style={{
+          width: 50,   // 横幅を設定
+          height: 50,  // 高さを設定
+          justifyContent: 'center', // 縦中央揃え
+          alignItems: 'center', // 横中央揃え
+        }}>
+        {/* 左側のアイコンやテキストをここに追加 */}
+        <Icon name="cog" size={24} color="#000" />
+      </TouchableOpacity>
     </View>
-    
       <View style={styles.container}>
-
-        <Link href={{ pathname: "/" }} asChild>
-          <Text style={styles.linklabel}>Change password?</Text>
+        {/* フォロワーの検索へのボタン */}
+        <Link href={{ pathname: "/search" }} asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>SEARCH</Text>
+          </TouchableOpacity>
         </Link>
 
-        {editable ? (
-          <TouchableOpacity style={styles.submit} onPress={handleSave}>
-            <Text style={styles.submitText}>SAVE</Text>
+        <Text style={styles.pagetitle}>Profile Edit</Text>
+        <View style={styles.profileContainer}>
+          {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
+          <TouchableOpacity onPress={handlePickImage}>
+            {photoUri ? (
+              <Image source={{ uri: photoUri }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.profileImagePlaceholder} />
+            )}
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={() => router.push("/profileEdit")}>
-            <Text style={styles.buttonText}>EDIT</Text>
-          </TouchableOpacity>
-        )}
+        </View>
 
-        {userStatus == 0 ? (
-          <TouchableOpacity style={styles.button} onPress={handleStatus}>
-            <Text style={styles.buttonText}>Public to Private</Text>
+        {/* フォロー、フォロワーを表示 */}
+        <View style={styles.FFcontainer}>
+          <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
+            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handleStatus}>
-            <Text style={styles.buttonText}>Private to Public</Text>
-          </TouchableOpacity>
-        )}
 
-        <TouchableOpacity style={styles.button} onPress={signout}>
-          <Text style={styles.buttonText}>LOGOUT</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
+            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* フォローモーダル */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isFollowModalVisible}
+          onRequestClose={handleCloseFollowModal} // Androidの戻るボタンで閉じるために必要
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text>Follow</Text>
+              {followList.map((follow) => {
+                return (
+                  <TouchableOpacity
+                    key={follow.uid}
+                    style={styles.followList}
+                    onPress={() => {
+                      handleProfile(follow.uid);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: follow.photoURL }}
+                      style={styles.listProfileImage}
+                    />
+                    <Text>{follow.displayName}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseFollowModal}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* フォロワーモーダル */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isFollowerModalVisible}
+          onRequestClose={handleCloseFollowerModal} // Androidの戻るボタンで閉じるために必要
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text>Follower</Text>
+              {followerList.map((follower) => {
+                return (
+                  <TouchableOpacity
+                    key={follower.uid}
+                    style={styles.followList}
+                    onPress={() => {
+                      handleProfile(follower.uid);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: follower.photoURL }}
+                      style={styles.listProfileImage}
+                    />
+                    <Text>{follower.displayName}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseFollowerModal}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
+        <TextInput
+          value={displayName}
+          onChangeText={setDisplayName}
+          style={styles.textInput}
+          editable={editable}
+        />
       </View>
     </ScrollView>
   );
