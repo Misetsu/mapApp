@@ -26,7 +26,7 @@ const myPage = () => {
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
   const [userStatus, setUserStatus] = useState(0);
-  const [editable, setEditable] = useState(false);
+  const [editable, setEditable] = useState(true);
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
@@ -118,9 +118,9 @@ const myPage = () => {
     fetchUserData();
   }, []);
 
-  const handleEdit = () => {
-    setEditable(true);
-  };
+  // const handleEdit = () => {
+  //   setEditable(true);
+  // };
 
   // ユーザーの表示名を保存する関数
   const handleSave = async () => {
@@ -129,7 +129,7 @@ const myPage = () => {
         displayName: displayName,
       });
       await auth.currentUser.updateProfile({ displayName: displayName });
-      setEditable(false); // 編集モードを終了
+      setEditable(true); // 編集モードを終了
     }
   };
 
@@ -223,15 +223,8 @@ const myPage = () => {
 
   return (
     <ScrollView>
-<View style={{ 
-      flexDirection: 'row', // 横並びに配置
-      justifyContent: 'space-between', // 左右にスペースを均等に配置
-      alignItems: 'center', // 縦方向の中央揃え
-      padding: 10, // パディングを追加
-      height: 50 // 高さを指定
-    }}>
-            <TouchableOpacity 
-          onPress={() => router.push({ pathname: '/' })}
+      <TouchableOpacity 
+          onPress={() => router.push({ pathname: '/setting' })}
           style={{
           width: 50,   // 横幅を設定
           height: 50,  // 高さを設定
@@ -242,25 +235,7 @@ const myPage = () => {
         <Icon name="angle-left" size={24} color="#000" />
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        onPress={() => router.push("/setting")}
-        style={{
-          width: 50,   // 横幅を設定
-          height: 50,  // 高さを設定
-          justifyContent: 'center', // 縦中央揃え
-          alignItems: 'center', // 横中央揃え
-        }}>
-        {/* 左側のアイコンやテキストをここに追加 */}
-        <Icon name="cog" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
       <View style={styles.container}>
-        {/* フォロワーの検索へのボタン */}
-        <Link href={{ pathname: "/search" }} asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>SEARCH</Text>
-          </TouchableOpacity>
-        </Link>
 
         <Text style={styles.pagetitle}>Profile Edit</Text>
         <View style={styles.profileContainer}>
@@ -274,98 +249,38 @@ const myPage = () => {
           </TouchableOpacity>
         </View>
 
-        {/* フォロー、フォロワーを表示 */}
-        <View style={styles.FFcontainer}>
-          <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
-            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
-            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* フォローモーダル */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isFollowModalVisible}
-          onRequestClose={handleCloseFollowModal} // Androidの戻るボタンで閉じるために必要
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text>Follow</Text>
-              {followList.map((follow) => {
-                return (
-                  <TouchableOpacity
-                    key={follow.uid}
-                    style={styles.followList}
-                    onPress={() => {
-                      handleProfile(follow.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follow.displayName}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseFollowModal}
-              >
-                <Text style={styles.buttonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* フォロワーモーダル */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isFollowerModalVisible}
-          onRequestClose={handleCloseFollowerModal} // Androidの戻るボタンで閉じるために必要
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text>Follower</Text>
-              {followerList.map((follower) => {
-                return (
-                  <TouchableOpacity
-                    key={follower.uid}
-                    style={styles.followList}
-                    onPress={() => {
-                      handleProfile(follower.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follower.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follower.displayName}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseFollowerModal}
-              >
-                <Text style={styles.buttonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
+        <Text style={styles.displayName}>Username</Text>
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
           style={styles.textInput}
-          editable={editable}
+          editable={true}
         />
+        {/* メールアドレスを表示し、テキストボックスに入力でメールアドレス変更*/}
+        <Text style={styles.displayName}>Email</Text>
+        <TextInput
+          value={displayEmail}
+          onChangeText={setDisplayEmail}
+          style={styles.textInput}
+          editable={true}
+        />
+
+        <Link href={{ pathname: "/" }} asChild>
+          <Text style={styles.linklabel}>Change password?</Text>
+        </Link>
+
+        {editable && (
+          <TouchableOpacity
+          style={styles.submit}
+          onPress={() => {
+            handleSave(); // まず handleSave を実行
+            router.push({ pathname: '/myPage' }); // 次にページ遷移
+          }}
+        >
+          <Text style={styles.submitText}>SAVE</Text>
+        </TouchableOpacity>        
+        )}
       </View>
     </ScrollView>
   );

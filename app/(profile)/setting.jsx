@@ -220,9 +220,22 @@ const myPage = () => {
     await auth.signOut();
     router.replace({ pathname: "/" });
   };
+  
+  //
 
   return (
     <ScrollView>
+      <TouchableOpacity 
+          onPress={() => router.push({ pathname: '/' })}
+          style={{
+          width: 50,   // 横幅を設定
+          height: 50,  // 高さを設定
+          justifyContent: 'center', // 縦中央揃え
+          alignItems: 'center', // 横中央揃え
+        }}>
+        {/* 右側のアイコンやテキストをここに追加 */}
+        <Icon name="angle-left" size={24} color="#000" />
+      </TouchableOpacity>
       <View style={{ 
       flexDirection: 'row', // 横並びに配置
       justifyContent: 'space-between', // 左右にスペースを均等に配置
@@ -234,10 +247,6 @@ const myPage = () => {
     </View>
     
       <View style={styles.container}>
-
-        <Link href={{ pathname: "/" }} asChild>
-          <Text style={styles.linklabel}>Change password?</Text>
-        </Link>
 
         {editable ? (
           <TouchableOpacity style={styles.submit} onPress={handleSave}>
@@ -259,9 +268,10 @@ const myPage = () => {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.button} onPress={signout}>
-          <Text style={styles.buttonText}>LOGOUT</Text>
-        </TouchableOpacity>
+      <TouchableOpacity style={[styles.button, { backgroundColor: '#FF6666' }]} onPress={signout}>
+        <Text style={styles.buttonText}>LOGOUT</Text>
+      </TouchableOpacity>
+
       </View>
     </ScrollView>
   );
