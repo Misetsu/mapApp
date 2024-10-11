@@ -1,5 +1,5 @@
 // MyModal.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import { Link } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import firestore, { FieldValue } from "@react-native-firebase/firestore";
 
 const auth = FirebaseAuth();
 
@@ -27,24 +27,68 @@ const MyModal = ({
   onClose,
 }) => {
   const [likes, setLikes] = useState({});
-  const [likeCount, setLikeCount] = useState({});
+  const handleLikePress = (postId) => {
+    setLikes((prevLikes) => ({
+      ...prevLikes,
+      [postId]: !prevLikes[postId],
+    }));
+  };
+  const tempObj1 = {};
+  const tempObj2 = {};
   postData.map((post) => {
-    setLikes((likes) => ({
-      ...likes,
-      [post.postId]: post.likeFlag,
-    }));
-    setLikeCount((likeCount) => ({
-      ...likeCount,
-      [post.postId]: post.likeCount,
-    }));
+    console.log("ee");
+    tempObj1[post.postId] = post.likeFlag;
+    tempObj2[post.postId] = post.likeCount;
   });
 
-  const handleUnlike = (postId, index) => {
-    console.log("unlike" + postId + "no." + index);
+  const handleUnlike = async (postId, index) => {
+    console.log(tempObj1[postId]);
+    if (tempObj1[postId] === false) {
+      console.log("c");
+      handleLike(postId, index);
+    } else {
+      console.log("a");
+      handleLikePress(postId);
+      tempObj1[postId] = !tempObj1[postId];
+      tempObj2[postId] = tempObj2[postId] - 1;
+      const querylike = await firestore()
+        .collection("like")
+        .where("postId", "==", postId)
+        .get();
+      const queryId = querylike.docs[0].ref._documentPath._parts[1];
+      await firestore()
+        .collection("like")
+        .doc(queryId)
+        .update({
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: FieldValue.delete(),
+        });
+    }
   };
 
-  const handleLike = (postId, index) => {
-    console.log("like" + postId + "no." + index);
+  const handleLike = async (postId, index) => {
+    console.log(tempObj1[postId]);
+    if (tempObj1[postId] === true) {
+      console.log("d");
+      handleUnlike(postId, index);
+    } else {
+      console.log("b");
+      handleLikePress(postId);
+      tempObj1[postId] = !tempObj1[postId];
+      tempObj2[postId] = tempObj2[postId] + 1;
+      const querylike = await firestore()
+        .collection("like")
+        .where("postId", "==", postId)
+        .get();
+      const queryId = querylike.docs[0].ref._documentPath._parts[1];
+      await firestore()
+        .collection("like")
+        .doc(queryId)
+        .update({
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: auth.currentUser.uid,
+        });
+    }
   };
 
   return (
@@ -67,7 +111,8 @@ const MyModal = ({
             ) : !empty && postData.length > 0 ? (
               postData.map((post, index) => {
                 const isLiked = likes[post.postId];
-                const count = likeCount[post.postId];
+                const flag = tempObj1[post.postId];
+                const count = tempObj2[post.postId];
                 // const handleUnlike = (postId, index) => {
                 //   console.log("unlike" + postId + "no." + index);
                 //   post.likeFlag = false;
@@ -123,19 +168,23 @@ const MyModal = ({
 
                       {/* いいねボタン */}
 
-                      {isLiked ? (
+                      {flag ? (
                         <TouchableOpacity
                           style={styles.likeButton}
                           onPress={() => handleUnlike(post.postId, index)}
                         >
-                          <Text style={{ color: "red" }}>{"❤️ " + count}</Text>
+                          <Text style={{ color: isLiked ? "black" : "red" }}>
+                            {isLiked ? "♡ " + (count - 1) : "❤️ " + count}
+                          </Text>
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
                           style={styles.likeButton}
                           onPress={() => handleLike(post.postId, index)}
                         >
-                          <Text style={{ color: "black" }}>{"♡ " + count}</Text>
+                          <Text style={{ color: isLiked ? "red" : "black" }}>
+                            {isLiked ? "❤️ " + (count + 1) : "♡ " + count}
+                          </Text>
                         </TouchableOpacity>
                       )}
                     </View>
