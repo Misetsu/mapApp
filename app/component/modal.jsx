@@ -1,5 +1,5 @@
 // MyModal.js
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -36,20 +36,15 @@ const MyModal = ({
   const tempObj1 = {};
   const tempObj2 = {};
   postData.map((post) => {
-    console.log("ee");
     tempObj1[post.postId] = post.likeFlag;
     tempObj2[post.postId] = post.likeCount;
   });
 
   const handleUnlike = async (postId, index) => {
-    console.log(tempObj1[postId]);
-    if (tempObj1[postId] === false) {
-      console.log("c");
-      handleLike(postId, index);
+    if (likes[postId] == true) {
+      handleSimpleLike(postId, index);
     } else {
-      console.log("a");
       handleLikePress(postId);
-      tempObj1[postId] = !tempObj1[postId];
       tempObj2[postId] = tempObj2[postId] - 1;
       const querylike = await firestore()
         .collection("like")
@@ -66,15 +61,27 @@ const MyModal = ({
     }
   };
 
+  const handleSimpleUnlike = async (postId, index) => {
+    handleLikePress(postId);
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", postId)
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: tempObj2[postId],
+        [auth.currentUser.uid]: FieldValue.delete(),
+      });
+  };
+
   const handleLike = async (postId, index) => {
-    console.log(tempObj1[postId]);
-    if (tempObj1[postId] === true) {
-      console.log("d");
-      handleUnlike(postId, index);
+    if (likes[postId] == true) {
+      handleSimpleUnlike(postId, index);
     } else {
-      console.log("b");
       handleLikePress(postId);
-      tempObj1[postId] = !tempObj1[postId];
       tempObj2[postId] = tempObj2[postId] + 1;
       const querylike = await firestore()
         .collection("like")
@@ -89,6 +96,22 @@ const MyModal = ({
           [auth.currentUser.uid]: auth.currentUser.uid,
         });
     }
+  };
+
+  const handleSimpleLike = async (postId, index) => {
+    handleLikePress(postId);
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", postId)
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: tempObj2[postId],
+        [auth.currentUser.uid]: auth.currentUser.uid,
+      });
   };
 
   return (
@@ -113,17 +136,6 @@ const MyModal = ({
                 const isLiked = likes[post.postId];
                 const flag = tempObj1[post.postId];
                 const count = tempObj2[post.postId];
-                // const handleUnlike = (postId, index) => {
-                //   console.log("unlike" + postId + "no." + index);
-                //   post.likeFlag = false;
-                //   post.likeCount = post.likeCount - 1;
-                // };
-
-                // const handleLike = (postId, index) => {
-                //   console.log("like" + postId + "no." + index);
-                //   post.likeFlag = true;
-                //   post.likeCount = post.likeCount + 1;
-                // };
                 return (
                   <View key={post.postId}>
                     <Link
