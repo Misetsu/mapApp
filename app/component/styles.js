@@ -113,7 +113,7 @@ export const styles = StyleSheet.create({
     top: "80%",
     right: "5%",
   },
-  defaultlocation:{
+  defaultlocation: {
     position: "absolute",
     top: "90%",
     right: "5%",
@@ -152,6 +152,23 @@ export const styles = StyleSheet.create({
     width: "15%",
     justifyContent: "center",
     alignContent: "center",
+  },
+  newButtonContainer: {
+    alignItems: "center", // 新しいボタンを中央に配置
+    bottom: 100,
+  },
+  roundButton: {
+    backgroundColor: "#007AFF", // ボタンの背景色
+    borderRadius: 25, // ボタンを丸くするために大きめの値を指定
+    width: 50, // ボタンの幅
+    height: 50, // ボタンの高さ
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+    marginBottom: 10, // ボタン間の余白
+  },
+  buttonText: {
+    color: "#fff", // テキストの色
+    fontSize: 12,
   },
 });
 
