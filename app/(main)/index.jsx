@@ -713,7 +713,7 @@ const TrackUserMapView = () => {
               router.push("/myPage");
             }}
           >
-            <Text>MY PAGE</Text>
+            <Icon name="user-alt" size={24} color="#000" />
           </TouchableOpacity>
         </View>
       ) : (
@@ -724,7 +724,7 @@ const TrackUserMapView = () => {
               router.push("/loginForm");
             }}
           >
-            <Text>LOGIN</Text>
+            <Icon name="user-alt" size={24} color="#000" />
           </TouchableOpacity>
         </View>
       )}
