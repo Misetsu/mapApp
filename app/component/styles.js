@@ -110,12 +110,12 @@ export const styles = StyleSheet.create({
   },
   mapfixed: {
     position: "absolute",
-    top: "80%",
+    bottom: "17%",
     right: "5%",
   },
   defaultlocation: {
     position: "absolute",
-    top: "90%",
+    bottom: "10%",
     right: "5%",
   },
   indexContainer: {

@@ -272,7 +272,6 @@ const TrackUserMapView = () => {
     LONGITUDE_DELTA
   ) => {
     try {
-      console.log(Region);
       if (Region.flag == 0) {
         setRegion({
           latitude: latitude,
@@ -454,12 +453,9 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
-    console.log(fetchResult);
-    console.log(markerCords);
   };
 
   const handleChangeIndex = () => {
-    console.log(indexStatus);
     let status = "";
     if (indexStatus == "follow") {
       status = "star";
@@ -496,7 +492,6 @@ const TrackUserMapView = () => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
-        console.log(position);
         try {
           setPosition(position.coords);
           if (!initialRegion) {
