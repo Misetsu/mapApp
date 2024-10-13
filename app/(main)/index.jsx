@@ -151,6 +151,9 @@ const TrackUserMapView = () => {
         const fifthKey = "postText";
         const sixthKey = "photoUri";
         const seventhKey = "timestamp";
+        const eighthKey = "likeCount";
+        const ninthKey = "likeFlag";
+
         while (cnt < size) {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
           const postData = documentSnapshot.data();
@@ -182,6 +185,20 @@ const TrackUserMapView = () => {
               }
             }
 
+            const queryLike = await firestore()
+              .collection("like")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const likeSnapshot = queryLike.docs[0];
+            const likeData = likeSnapshot.data();
+            let likeFlag;
+            if (likeData[auth.currentUser.uid] !== undefined) {
+              likeFlag = true;
+            } else {
+              likeFlag = false;
+            }
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -189,6 +206,8 @@ const TrackUserMapView = () => {
             tempObj[fifthKey] = postData.postTxt;
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
+            tempObj[eighthKey] = likeData.count;
+            tempObj[ninthKey] = likeFlag;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -209,6 +228,20 @@ const TrackUserMapView = () => {
               }
             }
 
+            const queryLike = await firestore()
+              .collection("like")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const likeSnapshot = queryLike.docs[0];
+            const likeData = likeSnapshot.data();
+            let likeFlag;
+            if (likeData[auth.currentUser.uid] !== undefined) {
+              likeFlag = true;
+            } else {
+              likeFlag = false;
+            }
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -216,6 +249,8 @@ const TrackUserMapView = () => {
             tempObj[fifthKey] = postData.postTxt;
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
+            tempObj[eighthKey] = likeData.count;
+            tempObj[ninthKey] = likeFlag;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -249,12 +284,7 @@ const TrackUserMapView = () => {
     }
   };
 
-  const setmapfixeds = (
-    latitude,
-    longitude,
-    LATITUDE_DELTA,
-    LONGITUDE_DELTA
-  ) => {
+  const setmapfixeds = () => {
     if (mapfixed == true) {
       setmapfixed(false);
     } else {
@@ -269,7 +299,6 @@ const TrackUserMapView = () => {
     LONGITUDE_DELTA
   ) => {
     try {
-      console.log(Region);
       if (Region.flag == 0) {
         setRegion({
           latitude: latitude,
@@ -451,12 +480,9 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
-    console.log(fetchResult);
-    console.log(markerCords);
   };
 
   const handleChangeIndex = () => {
-    console.log(indexStatus);
     let status = "";
     if (indexStatus == "follow") {
       status = "star";
@@ -472,7 +498,6 @@ const TrackUserMapView = () => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
-        console.log(position);
         try {
           setPosition(position.coords);
           if (!initialRegion) {
@@ -689,14 +714,7 @@ const TrackUserMapView = () => {
         <View style={styles.mapfixed}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() =>
-              setmapfixeds(
-                position.latitude,
-                position.longitude,
-                LATITUDE_DELTA,
-                LONGITUDE_DELTA
-              )
-            }
+            onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#28b6b8" />
           </TouchableOpacity>
@@ -705,14 +723,7 @@ const TrackUserMapView = () => {
         <View style={styles.mapfixed}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() =>
-              setmapfixeds(
-                position.latitude,
-                position.longitude,
-                LATITUDE_DELTA,
-                LONGITUDE_DELTA
-              )
-            }
+            onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#000" />
           </TouchableOpacity>
