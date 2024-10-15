@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions } from "react-native";
+import { View, StyleSheet, Pressable, Dimensions,Image } from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -28,6 +28,9 @@ import {
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
 
+import FirebaseAuth from "@react-native-firebase/auth";
+
+const auth = FirebaseAuth();
 const width = Dimensions.get("window");
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
@@ -40,8 +43,8 @@ export default function CameraScreen() {
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
-  const { latitude, longitude, spotId } = params;
-  console.log(spotId);
+  const { latitude, longitude, spotId, photoUri } = params;
+  console.log(photoUri);
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
@@ -103,12 +106,13 @@ export default function CameraScreen() {
       const photo = await cameraRef.current.takePhoto();
       console.log(photo);
       router.navigate({
-        pathname: "/edit",
+        pathname: "/editComposition",
         params: {
           imageUri: "file://" + photo.path,
           latitude: latitude,
           longitude: longitude,
           spotId: spotId,
+          Composition: encodeURIComponent(photoUri)
         },
       });
     } catch (error) {
@@ -125,7 +129,7 @@ export default function CameraScreen() {
 
     if (!result.canceled) {
       router.navigate({
-        pathname: "/edit",
+        pathname: "/editComposition",
         params: {
           imageUri: result.assets[0].uri,
           latitude: latitude,
@@ -151,9 +155,11 @@ export default function CameraScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
+      
         <Stack.Screen options={{ headerShown: false }} />
-
+        
         <View style={styles.cameraContainer}>
+        
           <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
             <ReanimatedCamera
               ref={cameraRef}
@@ -165,7 +171,13 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
+          <Image
+              source={{ uri: photoUri }}
+              style={{ width: 100, height: 100 }}
+          />
+          
         </View>
+       
         {showSlider && (
           <View style={styles.sliderContainer}>
             <Slider
@@ -193,7 +205,9 @@ export default function CameraScreen() {
             {exposureSlider.value.toFixed(1)} {/* スライダーの値を表示 */}
           </Reanimated.Text>
         </Pressable>
+        
       </View>
+      
     </GestureHandlerRootView>
   );
 }

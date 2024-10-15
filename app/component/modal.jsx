@@ -66,14 +66,29 @@ const MyModal = ({
                         <Image
                           source={{ uri: post.userIcon }}
                           style={styles.userIcon}
+                          
                         />
                         <Text>{post.username}</Text>
                       </TouchableOpacity>
                     </Link>
+                    <Link
+                      href={{
+                        pathname: "/cameraComposition",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: spotId,
+                          photoUri: encodeURIComponent(post.photoUri)
+                        },
+                      }}
+                      asChild
+                    >
+                      <TouchableOpacity style={styles.userInfo}>
                     {postImage ? (
                       <Image
                         source={{ uri: post.photoUri }}
                         style={{ width: 300, height: 400 }}
+                        onPress={console.log(post.photoUri)}
                       />
                     ) : (
                       <Image
@@ -82,6 +97,8 @@ const MyModal = ({
                         blurRadius={50}
                       />
                     )}
+                    </TouchableOpacity>
+                    </Link>
 
                     {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
