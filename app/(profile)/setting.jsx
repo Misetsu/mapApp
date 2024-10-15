@@ -15,7 +15,7 @@ import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import {Animated, PanResponder } from 'react-native';
+import { Animated, PanResponder } from "react-native";
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -60,8 +60,7 @@ const SlideButton = ({ onComplete, slideBtn }) => {
       <Animated.View
         {...panResponder.panHandlers}
         style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
-      >
-      </Animated.View>
+      ></Animated.View>
       <Text style={styles.slideBtn}>{slideBtn}</Text>
     </View>
   );
@@ -234,7 +233,6 @@ const myPage = () => {
       setUserStatus(1); // 非公開状態に設定
     }
   };
-  
 
   // const [userStatus, setUserStatus] = useState(0); // userStatusの状態
 
@@ -275,62 +273,58 @@ const myPage = () => {
     await auth.signOut();
     router.replace({ pathname: "/" });
   };
-  
+
   //
 
   return (
     <ScrollView>
-      <TouchableOpacity 
-          onPress={() => router.push({ pathname: '/myPage' })}
-          style={{
-          width: 50,   // 横幅を設定
-          height: 50,  // 高さを設定
-          justifyContent: 'center', // 縦中央揃え
-          alignItems: 'center', // 横中央揃え
-        }}>
+      <TouchableOpacity
+        onPress={() => router.push({ pathname: "/myPage" })}
+        style={{
+          width: 50, // 横幅を設定
+          height: 50, // 高さを設定
+          justifyContent: "center", // 縦中央揃え
+          alignItems: "center", // 横中央揃え
+        }}
+      >
         {/* 右側のアイコンやテキストをここに追加 */}
         <Icon name="angle-left" size={24} color="#000" />
       </TouchableOpacity>
-      <View style={{ 
-      flexDirection: 'row', // 横並びに配置
-      justifyContent: 'space-between', // 左右にスペースを均等に配置
-      alignItems: 'center', // 縦方向の中央揃え
-      padding: 10, // パディングを追加
-      height: 50 // 高さを指定
-    }}>
 
-    </View>
-    
       <View style={styles.container}>
-
         {editable ? (
           <TouchableOpacity style={styles.submit} onPress={handleSave}>
             <Text style={styles.submitText}>SAVE</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.button} onPress={() => router.push("/profileEdit")}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push("/profileEdit")}
+          >
             <Text style={styles.buttonText}>EDIT</Text>
           </TouchableOpacity>
         )}
 
-<View style={styles.container}>
-      {userStatus === 0 ? (
-        <SlideButton
-          onComplete={handleStatus}
-          slideBtn="Public to Private"
-        />
-      ) : (
-        <SlideButton
-          onComplete={handleStatus}
-          slideBtn="Private to Public"
-        />
-      )}
-    </View>
+        <View style={styles.container}>
+          {userStatus === 0 ? (
+            <SlideButton
+              onComplete={handleStatus}
+              slideBtn="Public to Private"
+            />
+          ) : (
+            <SlideButton
+              onComplete={handleStatus}
+              slideBtn="Private to Public"
+            />
+          )}
+        </View>
 
-      <TouchableOpacity style={[styles.button, { backgroundColor: '#FF6666' }]} onPress={signout}>
-        <Text style={styles.buttonText}>LOGOUT</Text>
-      </TouchableOpacity>
-
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#FF6666" }]}
+          onPress={signout}
+        >
+          <Text style={styles.buttonText}>LOGOUT</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -471,7 +465,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "300",
   },
-  // 
+  //
   //
   //
   container: {
@@ -481,30 +475,30 @@ const styles = StyleSheet.create({
   track: {
     width: 300,
     height: 50,
-    backgroundColor: '#ddd',
+    backgroundColor: "#ddd",
     borderRadius: 25,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 5,
-    position: 'relative',
+    position: "relative",
   },
   slider: {
     width: 50,
     height: 40,
-    backgroundColor: '#ff6347',
+    backgroundColor: "#ff6347",
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
   },
   sliderText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
   },
   slideBtn: {
-    position: 'absolute',
-    left: '50%',
+    position: "absolute",
+    left: "50%",
     transform: [{ translateX: -75 }],
-    color: '#333',
+    color: "#333",
     fontSize: 16,
   },
 });
