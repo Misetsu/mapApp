@@ -171,10 +171,6 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
-          <Image
-              source={{ uri: photoUri }}
-              style={{ width: 100, height: 100 }}
-          />
           
         </View>
        
