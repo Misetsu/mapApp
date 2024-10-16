@@ -3,13 +3,10 @@ import {
   ScrollView,
   View,
   Text,
-  TextInput,
-  Modal,
-  Image,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -22,62 +19,54 @@ const auth = FirebaseAuth();
 const router = useRouter();
 const reference = storage();
 
-const SlideButton = ({ onComplete, slideBtn }) => {
-  const [slideAnim] = useState(new Animated.Value(0)); // スライド位置のアニメーション値
+// const SlideButton = ({ onComplete, slideBtn }) => {
+//   const [slideAnim] = useState(new Animated.Value(0)); // スライド位置のアニメーション値
 
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderMove: (e, gestureState) => {
-      const { dx } = gestureState;
+//   const panResponder = PanResponder.create({
+//     onMoveShouldSetPanResponder: () => true,
+//     onPanResponderMove: (e, gestureState) => {
+//       const { dx } = gestureState;
 
-      // 左右の制限を設定（ボタンの幅を考慮）
-      if (dx >= 0 && dx <= 250) {
-        slideAnim.setValue(dx);
-      } else if (dx < 0) {
-        slideAnim.setValue(0); // 左にスライドしたときは元の位置に戻す
-      }
-    },
-    onPanResponderRelease: (e, gestureState) => {
-      const { dx } = gestureState;
+//       // 左右の制限を設定（ボタンの幅を考慮）
+//       if (dx >= 0 && dx <= 250) {
+//         slideAnim.setValue(dx);
+//       } else if (dx < 0) {
+//         slideAnim.setValue(0); // 左にスライドしたときは元の位置に戻す
+//       }
+//     },
+//     onPanResponderRelease: (e, gestureState) => {
+//       const { dx } = gestureState;
 
-      if (dx >= 250) {
-        // スライドが成功した場合のアクション（右から左へのスライド）
-        onComplete();
-      } else if (dx <= -250) {
-        // スライドが成功した場合のアクション（左から右へのスライド）
-        onComplete();
-      } else {
-        // スライドが不十分の場合、元に戻す
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          useNativeDriver: false,
-        }).start();
-      }
-    },
-  });
+//       if (dx >= 250) {
+//         // スライドが成功した場合のアクション（右から左へのスライド）
+//         onComplete();
+//       } else if (dx <= -250) {
+//         // スライドが成功した場合のアクション（左から右へのスライド）
+//         onComplete();
+//       } else {
+//         // スライドが不十分の場合、元に戻す
+//         Animated.spring(slideAnim, {
+//           toValue: 0,
+//           useNativeDriver: false,
+//         }).start();
+//       }
+//     },
+//   });
 
-  return (
-    <View style={styles.track}>
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
-      ></Animated.View>
-      <Text style={styles.slideBtn}>{slideBtn}</Text>
-    </View>
-  );
-};
+//   return (
+//     <View style={styles.track}>
+//       <Animated.View
+//         {...panResponder.panHandlers}
+//         style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
+//       ></Animated.View>
+//       <Text style={styles.slideBtn}>{slideBtn}</Text>
+//     </View>
+//   );
+// };
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
-  const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
-  const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
-  const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
   const [userStatus, setUserStatus] = useState(0);
-  const [editable, setEditable] = useState(false);
-  const [followerList, setFollowerList] = useState([]);
-  const [followList, setFollowList] = useState([]);
-  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
-  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
@@ -87,137 +76,16 @@ const myPage = () => {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
       setUser(auth.currentUser);
-      setDisplayEmail(auth.currentUser.email);
-      setDisplayName(auth.currentUser.displayName);
-      setPhotoUri(auth.currentUser.photoURL);
       const queryUser = await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
         .get();
       const userData = queryUser.data();
       setUserStatus(userData.publicStatus);
-
-      // フォロー中取得
-      const queryFollow = await firestore()
-        .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
-        .get();
-
-      if (!queryFollow.empty) {
-        let cnt = 0;
-        let followArray = [];
-        const firstKey = "uid";
-        const secondKey = "displayName";
-        const thirdKey = "photoURL";
-        while (cnt < queryFollow.size) {
-          let tempObj = {};
-          const followData = queryFollow.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followData.followeeId)
-            .get();
-          const userData = queryUser.docs[0].data();
-
-          tempObj[firstKey] = userData.uid;
-          tempObj[secondKey] = userData.displayName;
-          tempObj[thirdKey] = userData.photoURL;
-
-          followArray.push(tempObj);
-
-          cnt = cnt + 1;
-        }
-        setFollowList(followArray);
-      }
-
-      // フォロー中取得
-      const queryFollower = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", auth.currentUser.uid)
-        .get();
-
-      if (!queryFollower.empty) {
-        let cnt = 0;
-        let followerArray = [];
-        const firstKey = "uid";
-        const secondKey = "displayName";
-        const thirdKey = "photoURL";
-        while (cnt < queryFollower.size) {
-          let tempObj = {};
-          const followerData = queryFollower.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followerData.followerId)
-            .get();
-          const userData = queryUser.docs[0].data();
-
-          tempObj[firstKey] = userData.uid;
-          tempObj[secondKey] = userData.displayName;
-          tempObj[thirdKey] = userData.photoURL;
-
-          followerArray.push(tempObj);
-
-          cnt = cnt + 1;
-        }
-        setFollowerList(followerArray);
-      }
     };
 
     fetchUserData();
   }, []);
-
-  const handleEdit = () => {
-    setEditable(true);
-  };
-
-  // ユーザーの表示名を保存する関数
-  const handleSave = async () => {
-    if (user) {
-      await firestore().collection("users").doc(user.uid).update({
-        displayName: displayName,
-      });
-      await auth.currentUser.updateProfile({ displayName: displayName });
-      setEditable(false); // 編集モードを終了
-    }
-  };
-
-  // 画像ピッカーを開いて画像を選択する関数
-  const handlePickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const { uri } = result.assets[0];
-      const photoUri = await uploadPhoto(uri); // 画像をアップロードし、URLを取得
-      setPhotoUri(photoUri);
-    }
-  };
-
-  // 画像をアップロードする関数
-  const uploadPhoto = async (uri) => {
-    const uploadUri = uri;
-    const randomNumber = Math.floor(Math.random() * 100) + 1;
-    const imagePath =
-      "profile/photo" + new Date().getTime().toString() + randomNumber;
-    await reference.ref(imagePath).putFile(uploadUri);
-
-    const url = await reference.ref(imagePath).getDownloadURL();
-
-    await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .update({ photoURL: url });
-
-    const update = {
-      photoURL: url,
-    };
-    await auth.currentUser.updateProfile(update);
-
-    return url;
-  };
 
   const handleStatus = async () => {
     if (userStatus == 1) {
@@ -233,41 +101,6 @@ const myPage = () => {
         .update({ publicStatus: 1 });
       setUserStatus(1); // 非公開状態に設定
     }
-  };
-
-  // const [userStatus, setUserStatus] = useState(0); // userStatusの状態
-
-  // const handleStatus = () => {
-  //   // userStatusを切り替える
-  //   setUserStatus(prevStatus => (prevStatus === 0 ? 1 : 0));
-  // };
-
-  const handleProfile = (uid) => {
-    if (uid == auth.currentUser.uid) {
-      router.push({ pathname: "/myPage" });
-    } else {
-      router.push({ pathname: "/profile", params: { uid: uid } });
-    }
-  };
-
-  const handleFollowPress = () => {
-    // Followテキストが押されたときにフォローモーダルを表示
-    setIsFollowModalVisible(true);
-  };
-
-  const handleFollowerPress = () => {
-    // Followerテキストが押されたときにフォロワーモーダルを表示
-    setIsFollowerModalVisible(true);
-  };
-
-  const handleCloseFollowModal = () => {
-    // フォローモーダルを閉じる
-    setIsFollowModalVisible(false);
-  };
-
-  const handleCloseFollowerModal = () => {
-    // フォロワーモーダルを閉じる
-    setIsFollowerModalVisible(false);
   };
 
   const signout = async () => {
@@ -303,17 +136,6 @@ const myPage = () => {
         <View>
           <Text>公開非公開</Text>
           <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
-          {/* {userStatus === 0 ? (
-            <SlideButton
-              onComplete={handleStatus}
-              slideBtn="Public to Private"
-            />
-          ) : (
-            <SlideButton
-              onComplete={handleStatus}
-              slideBtn="Private to Public"
-            />
-          )} */}
         </View>
 
         <TouchableOpacity

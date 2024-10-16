@@ -27,10 +27,6 @@ const myPage = () => {
   const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
   const [userStatus, setUserStatus] = useState(0);
   const [editable, setEditable] = useState(true);
-  const [followerList, setFollowerList] = useState([]);
-  const [followList, setFollowList] = useState([]);
-  const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
-  const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
@@ -118,10 +114,6 @@ const myPage = () => {
     fetchUserData();
   }, []);
 
-  // const handleEdit = () => {
-  //   setEditable(true);
-  // };
-
   // ユーザーの表示名を保存する関数
   const handleSave = async () => {
     if (user) {
@@ -172,71 +164,22 @@ const myPage = () => {
     return url;
   };
 
-  const handleStatus = async () => {
-    if (userStatus == 0) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
-      setUserStatus(1);
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 0 });
-      setUserStatus(0);
-    }
-  };
-
-  const handleProfile = (uid) => {
-    if (uid == auth.currentUser.uid) {
-      router.push({ pathname: "/myPage" });
-    } else {
-      router.push({ pathname: "/profile", params: { uid: uid } });
-    }
-  };
-
-  const handleFollowPress = () => {
-    // Followテキストが押されたときにフォローモーダルを表示
-    setIsFollowModalVisible(true);
-  };
-
-  const handleFollowerPress = () => {
-    // Followerテキストが押されたときにフォロワーモーダルを表示
-    setIsFollowerModalVisible(true);
-  };
-
-  const handleCloseFollowModal = () => {
-    // フォローモーダルを閉じる
-    setIsFollowModalVisible(false);
-  };
-
-  const handleCloseFollowerModal = () => {
-    // フォロワーモーダルを閉じる
-    setIsFollowerModalVisible(false);
-  };
-
-  const signout = async () => {
-    await auth.signOut();
-    router.replace({ pathname: "/" });
-  };
-
   return (
     <ScrollView>
-      <TouchableOpacity 
-          onPress={() => router.push({ pathname: '/setting' })}
-          style={{
-          width: 50,   // 横幅を設定
-          height: 50,  // 高さを設定
-          justifyContent: 'center', // 縦中央揃え
-          alignItems: 'center', // 横中央揃え
-        }}>
+      <TouchableOpacity
+        onPress={handleBackPress}
+        style={{
+          width: 50, // 横幅を設定
+          height: 50, // 高さを設定
+          justifyContent: "center", // 縦中央揃え
+          alignItems: "center", // 横中央揃え
+        }}
+      >
         {/* 右側のアイコンやテキストをここに追加 */}
         <Icon name="angle-left" size={24} color="#000" />
       </TouchableOpacity>
 
       <View style={styles.container}>
-
         <Text style={styles.pagetitle}>Profile Edit</Text>
         <View style={styles.profileContainer}>
           {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
@@ -272,14 +215,14 @@ const myPage = () => {
 
         {editable && (
           <TouchableOpacity
-          style={styles.submit}
-          onPress={() => {
-            handleSave(); // まず handleSave を実行
-            router.push({ pathname: '/myPage' }); // 次にページ遷移
-          }}
-        >
-          <Text style={styles.submitText}>SAVE</Text>
-        </TouchableOpacity>        
+            style={styles.submit}
+            onPress={() => {
+              handleSave(); // まず handleSave を実行
+              router.push({ pathname: "/myPage" }); // 次にページ遷移
+            }}
+          >
+            <Text style={styles.submitText}>SAVE</Text>
+          </TouchableOpacity>
         )}
       </View>
     </ScrollView>
