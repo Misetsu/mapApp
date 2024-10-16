@@ -191,7 +191,6 @@ export default function edit() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={{ flex: 1 }}>
             <ViewShot ref={viewRef} options={{ format: 'png', quality: 1 }} style={ {width: 300, height: 400, alignItems: 'center',marginTop: 20,marginLeft:'auto',marginRight:'auto'}}>
                 <Svg height="400" width="300">
                 {/* 画像1の左半分 */}
@@ -204,6 +203,10 @@ export default function edit() {
                     height="400"
                     preserveAspectRatio="xMidYMid slice"
                     clipPath="url(#clipLeft)"
+                    onLoad={(event) => {
+                      console.log("画像１＝",tests)
+                     }}
+                    onError={(error) => console.log('Error loading image:', error)}
                 />
 
                 {/* 画像2の右半分 */}
@@ -216,6 +219,11 @@ export default function edit() {
                     height="400"
                     preserveAspectRatio="xMidYMid slice"
                     clipPath="url(#clipRight)"
+                    resizeMode="cover"
+                    onLoad={(event) => {
+                      console.log("画像２＝",tests2)
+                    }}
+                    onError={(error) => console.log('Error loading image:', error)}
                 />
             </Svg>
         </ViewShot>
@@ -263,7 +271,6 @@ export default function edit() {
                 Upload
               </Text>
             </Pressable>
-          </View>
         </ScrollView>
       )}
     </KeyboardAvoidingView>
