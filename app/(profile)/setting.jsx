@@ -14,12 +14,58 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
-import UserPosts from "./UserPosts";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import { Animated, PanResponder } from "react-native";
+import SwitchWithIcons from "react-native-switch-with-icons";
 
 const auth = FirebaseAuth();
 const router = useRouter();
 const reference = storage();
+
+const SlideButton = ({ onComplete, slideBtn }) => {
+  const [slideAnim] = useState(new Animated.Value(0)); // スライド位置のアニメーション値
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: (e, gestureState) => {
+      const { dx } = gestureState;
+
+      // 左右の制限を設定（ボタンの幅を考慮）
+      if (dx >= 0 && dx <= 250) {
+        slideAnim.setValue(dx);
+      } else if (dx < 0) {
+        slideAnim.setValue(0); // 左にスライドしたときは元の位置に戻す
+      }
+    },
+    onPanResponderRelease: (e, gestureState) => {
+      const { dx } = gestureState;
+
+      if (dx >= 250) {
+        // スライドが成功した場合のアクション（右から左へのスライド）
+        onComplete();
+      } else if (dx <= -250) {
+        // スライドが成功した場合のアクション（左から右へのスライド）
+        onComplete();
+      } else {
+        // スライドが不十分の場合、元に戻す
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: false,
+        }).start();
+      }
+    },
+  });
+
+  return (
+    <View style={styles.track}>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
+      ></Animated.View>
+      <Text style={styles.slideBtn}>{slideBtn}</Text>
+    </View>
+  );
+};
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
@@ -174,20 +220,27 @@ const myPage = () => {
   };
 
   const handleStatus = async () => {
-    if (userStatus == 0) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
-      setUserStatus(1);
-    } else {
+    if (userStatus == 1) {
       await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
         .update({ publicStatus: 0 });
-      setUserStatus(0);
+      setUserStatus(0); // 公開状態に設定
+    } else {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .update({ publicStatus: 1 });
+      setUserStatus(1); // 非公開状態に設定
     }
   };
+
+  // const [userStatus, setUserStatus] = useState(0); // userStatusの状態
+
+  // const handleStatus = () => {
+  //   // userStatusを切り替える
+  //   setUserStatus(prevStatus => (prevStatus === 0 ? 1 : 0));
+  // };
 
   const handleProfile = (uid) => {
     if (uid == auth.currentUser.uid) {
@@ -222,158 +275,54 @@ const myPage = () => {
     router.replace({ pathname: "/" });
   };
 
+  //
+
   return (
     <ScrollView>
-      <View
+      <TouchableOpacity
+        onPress={() => router.push({ pathname: "/myPage" })}
         style={{
-          flexDirection: "row", // 横並びに配置
-          justifyContent: "space-between", // 左右にスペースを均等に配置
-          alignItems: "center", // 縦方向の中央揃え
-          padding: 10, // パディングを追加
-          height: 50, // 高さを指定
+          width: 50, // 横幅を設定
+          height: 50, // 高さを設定
+          justifyContent: "center", // 縦中央揃え
+          alignItems: "center", // 横中央揃え
         }}
       >
-        <TouchableOpacity
-          onPress={() => router.push({ pathname: "/" })}
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        >
-          {/* 右側のアイコンやテキストをここに追加 */}
-          <Icon name="angle-left" size={24} color="#000" />
-        </TouchableOpacity>
+        {/* 右側のアイコンやテキストをここに追加 */}
+        <Icon name="angle-left" size={24} color="#000" />
+      </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => router.push("/setting")}
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        >
-          {/* 左側のアイコンやテキストをここに追加 */}
-          <Icon name="cog" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
       <View style={styles.container}>
-        {/* フォロワーの検索へのボタン */}
-        <Link href={{ pathname: "/search" }} asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>SEARCH</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/profileEdit")}
+        >
+          <Text style={styles.buttonText}>EDIT</Text>
+        </TouchableOpacity>
 
-        <Text style={styles.pagetitle}>MY PAGE</Text>
-        <View style={styles.profileContainer}>
-          {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
-          <TouchableOpacity onPress={handlePickImage}>
-            {photoUri ? (
-              <Image source={{ uri: photoUri }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.profileImagePlaceholder} />
-            )}
-          </TouchableOpacity>
+        <View>
+          <Text>公開非公開</Text>
+          <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+          {/* {userStatus === 0 ? (
+            <SlideButton
+              onComplete={handleStatus}
+              slideBtn="Public to Private"
+            />
+          ) : (
+            <SlideButton
+              onComplete={handleStatus}
+              slideBtn="Private to Public"
+            />
+          )} */}
         </View>
 
-        {/* フォロー、フォロワーを表示 */}
-        <View style={styles.FFcontainer}>
-          <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
-            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
-            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* フォローモーダル */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isFollowModalVisible}
-          onRequestClose={handleCloseFollowModal} // Androidの戻るボタンで閉じるために必要
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#FF6666" }]}
+          onPress={signout}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text>Follow</Text>
-              {followList.map((follow) => {
-                return (
-                  <TouchableOpacity
-                    key={follow.uid}
-                    style={styles.followList}
-                    onPress={() => {
-                      handleProfile(follow.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follow.displayName}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseFollowModal}
-              >
-                <Text style={styles.buttonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* フォロワーモーダル */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isFollowerModalVisible}
-          onRequestClose={handleCloseFollowerModal} // Androidの戻るボタンで閉じるために必要
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text>Follower</Text>
-              {followerList.map((follower) => {
-                return (
-                  <TouchableOpacity
-                    key={follower.uid}
-                    style={styles.followList}
-                    onPress={() => {
-                      handleProfile(follower.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follower.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follower.displayName}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseFollowerModal}
-              >
-                <Text style={styles.buttonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
-        <TextInput
-          value={displayName}
-          onChangeText={setDisplayName}
-          style={styles.textInput}
-          editable={editable}
-        />
+          <Text style={styles.buttonText}>LOGOUT</Text>
+        </TouchableOpacity>
       </View>
-
-      <UserPosts />
     </ScrollView>
   );
 };
@@ -512,6 +461,42 @@ const styles = StyleSheet.create({
     color: "black",
     textAlign: "center",
     fontWeight: "300",
+  },
+  //
+  //
+  //
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  track: {
+    width: 300,
+    height: 50,
+    backgroundColor: "#ddd",
+    borderRadius: 25,
+    justifyContent: "center",
+    padding: 5,
+    position: "relative",
+  },
+  slider: {
+    width: 50,
+    height: 40,
+    backgroundColor: "#ff6347",
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+  },
+  sliderText: {
+    color: "#fff",
+    fontSize: 20,
+  },
+  slideBtn: {
+    position: "absolute",
+    left: "50%",
+    transform: [{ translateX: -75 }],
+    color: "#333",
+    fontSize: 16,
   },
 });
 

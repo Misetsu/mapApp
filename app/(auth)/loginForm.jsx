@@ -40,6 +40,7 @@ const LoginScreen = () => {
 
     // 取得した認証情報 (ID トークン) を元にサインインする
     const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
+    
     await auth.signInWithCredential(credential);
 
     const querySnapshot = await firestore()
@@ -68,11 +69,12 @@ const LoginScreen = () => {
   };
 
   const signInWithEmail = async () => {
-    const credential = await auth.signInWithEmailAndPassword(
+    console.log("a")
+    await auth.signInWithEmailAndPassword(
       userEmail,
       userPassword
     );
-
+    console.log("a")
     router.replace({ pathname: "/" });
   };
 
