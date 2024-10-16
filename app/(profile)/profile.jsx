@@ -4,11 +4,9 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Modal,
   Image,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
 } from "react-native";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
@@ -190,7 +188,7 @@ const profile = () => {
       firestore()
         .collection("star")
         .doc(auth.currentUser.uid)
-        .set({
+        .update({
           [uid]: uid,
         });
       setIsFav(true);
@@ -357,7 +355,7 @@ const profile = () => {
         </Modal>
 
         {/* ユーザーネームを表示するだけ */}
-        <Text style={styles.displayName}>USERNAME</Text>
+        <Text style={styles.displayName}>Username</Text>
         <TextInput
           value={displayName}
           style={styles.textInput}

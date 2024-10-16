@@ -104,13 +104,54 @@ export const styles = StyleSheet.create({
   },
   loignBtnContainer: {
     position: "absolute",
-    top: 20,
+    top: "10%",
+    marginTop: 20,
     right: 20,
   },
   mapfixed: {
     position: "absolute",
-    top: 20,
-    left: 20,
+    top: "80%",
+    right: "5%",
+  },
+  defaultlocation:{
+    position: "absolute",
+    top: "90%",
+    right: "5%",
+  },
+  indexContainer: {
+    position: "absolute",
+    top: 0,
+    width: "100%",
+    height: "10%",
+    backgroundColor: "#F2F2F2",
+    padding: 10,
+    justifyContent: "center",
+    display: "flex",
+    flexDirection: "row",
+  },
+  userList: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  //インデックスバー上の画像
+  listProfileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignSelf: "center",
+  },
+  //インデックスバーアイコンの幅
+  listProfileNameText: {
+    fontSize: 12,
+    textAlign: "center",
+  },
+  listProfileSize: {
+    margin: 5,
+  },
+  listProfileIndexButton: {
+    width: "15%",
+    justifyContent: "center",
+    alignContent: "center",
   },
 });
 

@@ -45,6 +45,8 @@ const SignupScreen = () => {
         .set({
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
+          lastPostAt: "0", // TODO
+          publicStatus: 0, // TODO
           photoURL:
             "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
         })
