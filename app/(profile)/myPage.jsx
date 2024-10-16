@@ -14,6 +14,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
+import UserPosts from "./UserPosts";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
@@ -223,37 +224,41 @@ const myPage = () => {
 
   return (
     <ScrollView>
-<View style={{ 
-      flexDirection: 'row', // 横並びに配置
-      justifyContent: 'space-between', // 左右にスペースを均等に配置
-      alignItems: 'center', // 縦方向の中央揃え
-      padding: 10, // パディングを追加
-      height: 50 // 高さを指定
-    }}>
-            <TouchableOpacity 
-          onPress={() => router.push({ pathname: '/' })}
-          style={{
-          width: 50,   // 横幅を設定
-          height: 50,  // 高さを設定
-          justifyContent: 'center', // 縦中央揃え
-          alignItems: 'center', // 横中央揃え
-        }}>
-        {/* 右側のアイコンやテキストをここに追加 */}
-        <Icon name="angle-left" size={24} color="#000" />
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        onPress={() => router.push("/setting")}
+      <View
         style={{
-          width: 50,   // 横幅を設定
-          height: 50,  // 高さを設定
-          justifyContent: 'center', // 縦中央揃え
-          alignItems: 'center', // 横中央揃え
-        }}>
-        {/* 左側のアイコンやテキストをここに追加 */}
-        <Icon name="cog" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
+          flexDirection: "row", // 横並びに配置
+          justifyContent: "space-between", // 左右にスペースを均等に配置
+          alignItems: "center", // 縦方向の中央揃え
+          padding: 10, // パディングを追加
+          height: 50, // 高さを指定
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: "/" })}
+          style={{
+            width: 50, // 横幅を設定
+            height: 50, // 高さを設定
+            justifyContent: "center", // 縦中央揃え
+            alignItems: "center", // 横中央揃え
+          }}
+        >
+          {/* 右側のアイコンやテキストをここに追加 */}
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push("/setting")}
+          style={{
+            width: 50, // 横幅を設定
+            height: 50, // 高さを設定
+            justifyContent: "center", // 縦中央揃え
+            alignItems: "center", // 横中央揃え
+          }}
+        >
+          {/* 左側のアイコンやテキストをここに追加 */}
+          <Icon name="cog" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.container}>
         {/* フォロワーの検索へのボタン */}
         <Link href={{ pathname: "/search" }} asChild>
@@ -367,6 +372,8 @@ const myPage = () => {
           editable={editable}
         />
       </View>
+
+      <UserPosts />
     </ScrollView>
   );
 };

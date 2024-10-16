@@ -11,10 +11,7 @@ import {
 } from "react-native";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/FontAwesome";
-import firestore, {
-  deleteField,
-  FieldValue,
-} from "@react-native-firebase/firestore";
+import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 
 const auth = FirebaseAuth();

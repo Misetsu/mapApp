@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  Animated,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -56,6 +57,8 @@ const TrackUserMapView = () => {
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
+  const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
+  const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
   const setmodal = (marker) => {
     try {
@@ -151,6 +154,9 @@ const TrackUserMapView = () => {
         const fifthKey = "postText";
         const sixthKey = "photoUri";
         const seventhKey = "timestamp";
+        const eighthKey = "likeCount";
+        const ninthKey = "likeFlag";
+
         while (cnt < size) {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
           const postData = documentSnapshot.data();
@@ -182,6 +188,20 @@ const TrackUserMapView = () => {
               }
             }
 
+            const queryLike = await firestore()
+              .collection("like")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const likeSnapshot = queryLike.docs[0];
+            const likeData = likeSnapshot.data();
+            let likeFlag;
+            if (likeData[auth.currentUser.uid] !== undefined) {
+              likeFlag = true;
+            } else {
+              likeFlag = false;
+            }
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -189,6 +209,8 @@ const TrackUserMapView = () => {
             tempObj[fifthKey] = postData.postTxt;
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
+            tempObj[eighthKey] = likeData.count;
+            tempObj[ninthKey] = likeFlag;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -209,6 +231,20 @@ const TrackUserMapView = () => {
               }
             }
 
+            const queryLike = await firestore()
+              .collection("like")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const likeSnapshot = queryLike.docs[0];
+            const likeData = likeSnapshot.data();
+            let likeFlag;
+            if (likeData[auth.currentUser.uid] !== undefined) {
+              likeFlag = true;
+            } else {
+              likeFlag = false;
+            }
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -216,6 +252,8 @@ const TrackUserMapView = () => {
             tempObj[fifthKey] = postData.postTxt;
             tempObj[sixthKey] = photoUri;
             tempObj[seventhKey] = postData.timeStamp;
+            tempObj[eighthKey] = likeData.count;
+            tempObj[ninthKey] = likeFlag;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -249,12 +287,7 @@ const TrackUserMapView = () => {
     }
   };
 
-  const setmapfixeds = (
-    latitude,
-    longitude,
-    LATITUDE_DELTA,
-    LONGITUDE_DELTA
-  ) => {
+  const setmapfixeds = () => {
     if (mapfixed == true) {
       setmapfixed(false);
     } else {
@@ -269,7 +302,6 @@ const TrackUserMapView = () => {
     LONGITUDE_DELTA
   ) => {
     try {
-      console.log(Region);
       if (Region.flag == 0) {
         setRegion({
           latitude: latitude,
@@ -451,12 +483,9 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
-    console.log(fetchResult);
-    console.log(markerCords);
   };
 
   const handleChangeIndex = () => {
-    console.log(indexStatus);
     let status = "";
     if (indexStatus == "follow") {
       status = "star";
@@ -468,11 +497,31 @@ const TrackUserMapView = () => {
     fetchIndexBar(status);
   };
 
+  // ボタンを表示してフェードイン
+  const showAnimatedButtons = () => {
+    setShowButtons(true);
+    Animated.timing(fadeAnim, {
+      toValue: 1, // 完全に表示
+      duration: 500, // 0.5秒でフェードイン
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // 新しいボタン1を押したときにボタンをフェードアウトして非表示
+  const hideButtons = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0, // 完全に非表示
+      duration: 500, // 0.5秒でフェードアウト
+      useNativeDriver: true,
+    }).start(() => {
+      setShowButtons(false); // フェードアウト完了後にボタンを非表示
+    });
+  };
+
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
-        console.log(position);
         try {
           setPosition(position.coords);
           if (!initialRegion) {
@@ -615,32 +664,51 @@ const TrackUserMapView = () => {
         onClose={() => setModalVisible(false)}
       />
 
-      {user ? (
-        <Link
-          href={{
-            pathname: "/camera",
-            params: {
-              latitude: position.latitude,
-              longitude: position.longitude,
-              spotId: 0,
-            },
-          }}
-          asChild
+      {/* 新しいボタンを表示 */}
+      {showButtons && (
+        <Animated.View
+          style={[styles.newButtonContainer, { opacity: fadeAnim }]}
         >
-          <Pressable
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              bottom: 50,
-              width: 75,
-              height: 75,
-              backgroundColor: "blue",
-              borderRadius: 75,
-              display: postButtonVisible ? "flex" : "none",
+          <TouchableOpacity style={styles.roundButton} onPress={hideButtons}>
+            <Icon name="times" size={25} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.roundButton} onPress={() => {}}>
+            <Icon name="map-marked-alt" size={25} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.roundButton}
+            onPress={() => {
+              router.push({
+                pathname: "/camera",
+                params: {
+                  latitude: position.latitude,
+                  longitude: position.longitude,
+                  spotId: 0,
+                },
+              });
             }}
-          ></Pressable>
-        </Link>
+          >
+            <Icon name="map-marker-alt" size={25} color="#000" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {user ? (
+        <Pressable
+          style={{
+            position: "absolute",
+            alignSelf: "center",
+            bottom: 30,
+            width: 70,
+            height: 70,
+            backgroundColor: "blue",
+            borderRadius: 35,
+            display: postButtonVisible ? "flex" : "none",
+          }}
+          onPress={showAnimatedButtons}
+        />
       ) : (
+        // </Link>
         <Link
           href={{
             pathname: "/loginForm",
@@ -651,11 +719,11 @@ const TrackUserMapView = () => {
             style={{
               position: "absolute",
               alignSelf: "center",
-              bottom: 50,
-              width: 75,
-              height: 75,
+              bottom: 30,
+              width: 70,
+              height: 70,
               backgroundColor: "blue",
-              borderRadius: 75,
+              borderRadius: 35,
               display: postButtonVisible ? "flex" : "none",
             }}
           ></Pressable>
@@ -670,7 +738,7 @@ const TrackUserMapView = () => {
               router.push("/myPage");
             }}
           >
-            <Text>MY PAGE</Text>
+            <Icon name="user-alt" size={24} color="#000" />
           </TouchableOpacity>
         </View>
       ) : (
@@ -681,7 +749,7 @@ const TrackUserMapView = () => {
               router.push("/loginForm");
             }}
           >
-            <Text>LOGIN</Text>
+            <Icon name="user-alt" size={24} color="#000" />
           </TouchableOpacity>
         </View>
       )}
@@ -689,14 +757,7 @@ const TrackUserMapView = () => {
         <View style={styles.mapfixed}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() =>
-              setmapfixeds(
-                position.latitude,
-                position.longitude,
-                LATITUDE_DELTA,
-                LONGITUDE_DELTA
-              )
-            }
+            onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#28b6b8" />
           </TouchableOpacity>
@@ -705,14 +766,7 @@ const TrackUserMapView = () => {
         <View style={styles.mapfixed}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() =>
-              setmapfixeds(
-                position.latitude,
-                position.longitude,
-                LATITUDE_DELTA,
-                LONGITUDE_DELTA
-              )
-            }
+            onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#000" />
           </TouchableOpacity>
