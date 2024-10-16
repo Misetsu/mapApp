@@ -16,6 +16,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { Animated, PanResponder } from "react-native";
+import SwitchWithIcons from "react-native-switch-with-icons";
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -292,21 +293,17 @@ const myPage = () => {
       </TouchableOpacity>
 
       <View style={styles.container}>
-        {editable ? (
-          <TouchableOpacity style={styles.submit} onPress={handleSave}>
-            <Text style={styles.submitText}>SAVE</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => router.push("/profileEdit")}
-          >
-            <Text style={styles.buttonText}>EDIT</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/profileEdit")}
+        >
+          <Text style={styles.buttonText}>EDIT</Text>
+        </TouchableOpacity>
 
-        <View style={styles.container}>
-          {userStatus === 0 ? (
+        <View>
+          <Text>公開非公開</Text>
+          <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+          {/* {userStatus === 0 ? (
             <SlideButton
               onComplete={handleStatus}
               slideBtn="Public to Private"
@@ -316,7 +313,7 @@ const myPage = () => {
               onComplete={handleStatus}
               slideBtn="Private to Public"
             />
-          )}
+          )} */}
         </View>
 
         <TouchableOpacity
