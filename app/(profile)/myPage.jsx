@@ -14,7 +14,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
-
+import UserPosts from "./UserPosts";
 const auth = FirebaseAuth();
 const router = useRouter();
 const reference = storage();
@@ -376,9 +376,13 @@ const myPage = () => {
           <Text style={styles.backButtonText}>{"<"} Back</Text>
         </TouchableOpacity>
       </View>
+
+      <UserPosts />
     </ScrollView>
   );
+  
 };
+
 
 const styles = StyleSheet.create({
   container: {
