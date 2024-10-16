@@ -37,15 +37,8 @@ const myPage = () => {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
       setUser(auth.currentUser);
-      setDisplayEmail(auth.currentUser.email);
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
-      const userData = queryUser.data();
-      setUserStatus(userData.publicStatus);
 
       // フォロー中取得
       const queryFollow = await firestore()
