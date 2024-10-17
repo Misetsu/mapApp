@@ -9,7 +9,7 @@ const auth = FirebaseAuth();
 export default function UserPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const userId = auth.currentUser?.uid;
+  const userId = auth.currentUser.uid;
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -30,14 +30,16 @@ export default function UserPosts() {
         while (cnt < size) {
           const Photodesu = querySnapshot.docs[cnt].data();
           if (Photodesu.imagePath) {
-            const url = await storage().ref(Photodesu.imagePath).getDownloadURL();
+            const url = await storage()
+              .ref(Photodesu.imagePath)
+              .getDownloadURL();
             photoUri = url;
           }
           const tempObj = {
             [firstKey]: Photodesu.id,
             [secondKey]: photoUri,
           };
-          PhotoArray.push(tempObj);  // ループ内で追加
+          PhotoArray.push(tempObj); // ループ内で追加
           cnt++;
         }
         setPosts(PhotoArray);
@@ -69,10 +71,7 @@ export default function UserPosts() {
           {posts.map((post) => (
             <View key={post.id} style={styles.postContainer}>
               {post.photoUri ? (
-                <Image
-                  source={{ uri: post.photoUri }}
-                  style={styles.image}
-                />
+                <Image source={{ uri: post.photoUri }} style={styles.image} />
               ) : (
                 <Text>画像がありません。</Text>
               )}

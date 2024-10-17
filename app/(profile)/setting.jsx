@@ -19,51 +19,6 @@ const auth = FirebaseAuth();
 const router = useRouter();
 const reference = storage();
 
-// const SlideButton = ({ onComplete, slideBtn }) => {
-//   const [slideAnim] = useState(new Animated.Value(0)); // スライド位置のアニメーション値
-
-//   const panResponder = PanResponder.create({
-//     onMoveShouldSetPanResponder: () => true,
-//     onPanResponderMove: (e, gestureState) => {
-//       const { dx } = gestureState;
-
-//       // 左右の制限を設定（ボタンの幅を考慮）
-//       if (dx >= 0 && dx <= 250) {
-//         slideAnim.setValue(dx);
-//       } else if (dx < 0) {
-//         slideAnim.setValue(0); // 左にスライドしたときは元の位置に戻す
-//       }
-//     },
-//     onPanResponderRelease: (e, gestureState) => {
-//       const { dx } = gestureState;
-
-//       if (dx >= 250) {
-//         // スライドが成功した場合のアクション（右から左へのスライド）
-//         onComplete();
-//       } else if (dx <= -250) {
-//         // スライドが成功した場合のアクション（左から右へのスライド）
-//         onComplete();
-//       } else {
-//         // スライドが不十分の場合、元に戻す
-//         Animated.spring(slideAnim, {
-//           toValue: 0,
-//           useNativeDriver: false,
-//         }).start();
-//       }
-//     },
-//   });
-
-//   return (
-//     <View style={styles.track}>
-//       <Animated.View
-//         {...panResponder.panHandlers}
-//         style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
-//       ></Animated.View>
-//       <Text style={styles.slideBtn}>{slideBtn}</Text>
-//     </View>
-//   );
-// };
-
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [userStatus, setUserStatus] = useState(0);

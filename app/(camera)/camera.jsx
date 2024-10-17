@@ -27,6 +27,7 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
+import Icon from "react-native-vector-icons/Entypo";
 
 const width = Dimensions.get("window");
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
@@ -189,9 +190,10 @@ export default function CameraScreen() {
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
         >
-          <Reanimated.Text style={styles.exposureButtonText}>
-            {exposureSlider.value.toFixed(1)} {/* スライダーの値を表示 */}
-          </Reanimated.Text>
+          {/* <Reanimated.Text style={styles.exposureButtonText}>
+            {exposureSlider.value.toFixed(1)} 
+          </Reanimated.Text> */}
+          <Icon name="light-up" size={24} color="#FFF" />
         </Pressable>
       </View>
     </GestureHandlerRootView>
