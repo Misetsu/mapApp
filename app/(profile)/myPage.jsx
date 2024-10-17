@@ -14,18 +14,16 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
+import UserPosts from "./UserPosts";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 const router = useRouter();
-const reference = storage();
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
-  const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
-  const [userStatus, setUserStatus] = useState(0);
-  const [editable, setEditable] = useState(false);
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
@@ -39,15 +37,8 @@ const myPage = () => {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
       setUser(auth.currentUser);
-      setDisplayEmail(auth.currentUser.email);
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
-      const userData = queryUser.data();
-      setUserStatus(userData.publicStatus);
 
       // フォロー中取得
       const queryFollow = await firestore()
@@ -117,76 +108,6 @@ const myPage = () => {
     fetchUserData();
   }, []);
 
-  const handleEdit = () => {
-    setEditable(true);
-  };
-
-  // ユーザーの表示名を保存する関数
-  const handleSave = async () => {
-    if (user) {
-      await firestore().collection("users").doc(user.uid).update({
-        displayName: displayName,
-      });
-      await auth.currentUser.updateProfile({ displayName: displayName });
-      setEditable(false); // 編集モードを終了
-    }
-  };
-
-  // 画像ピッカーを開いて画像を選択する関数
-  const handlePickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const { uri } = result.assets[0];
-      const photoUri = await uploadPhoto(uri); // 画像をアップロードし、URLを取得
-      setPhotoUri(photoUri);
-    }
-  };
-
-  // 画像をアップロードする関数
-  const uploadPhoto = async (uri) => {
-    const uploadUri = uri;
-    const randomNumber = Math.floor(Math.random() * 100) + 1;
-    const imagePath =
-      "profile/photo" + new Date().getTime().toString() + randomNumber;
-    await reference.ref(imagePath).putFile(uploadUri);
-
-    const url = await reference.ref(imagePath).getDownloadURL();
-
-    await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .update({ photoURL: url });
-
-    const update = {
-      photoURL: url,
-    };
-    await auth.currentUser.updateProfile(update);
-
-    return url;
-  };
-
-  const handleStatus = async () => {
-    if (userStatus == 0) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
-      setUserStatus(1);
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 0 });
-      setUserStatus(0);
-    }
-  };
-
   const handleProfile = (uid) => {
     if (uid == auth.currentUser.uid) {
       router.push({ pathname: "/myPage" });
@@ -215,13 +136,43 @@ const myPage = () => {
     setIsFollowerModalVisible(false);
   };
 
-  const signout = async () => {
-    await auth.signOut();
-    router.replace({ pathname: "/" });
-  };
-
   return (
     <ScrollView>
+      <View
+        style={{
+          flexDirection: "row", // 横並びに配置
+          justifyContent: "space-between", // 左右にスペースを均等に配置
+          alignItems: "center", // 縦方向の中央揃え
+          padding: 10, // パディングを追加
+          height: 50, // 高さを指定
+        }}
+      >
+        <TouchableOpacity
+          onPress={handleBackPress}
+          style={{
+            width: 50, // 横幅を設定
+            height: 50, // 高さを設定
+            justifyContent: "center", // 縦中央揃え
+            alignItems: "center", // 横中央揃え
+          }}
+        >
+          {/* 右側のアイコンやテキストをここに追加 */}
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push("/setting")}
+          style={{
+            width: 50, // 横幅を設定
+            height: 50, // 高さを設定
+            justifyContent: "center", // 縦中央揃え
+            alignItems: "center", // 横中央揃え
+          }}
+        >
+          {/* 左側のアイコンやテキストをここに追加 */}
+          <Icon name="cog" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.container}>
         {/* フォロワーの検索へのボタン */}
         <Link href={{ pathname: "/search" }} asChild>
@@ -233,13 +184,11 @@ const myPage = () => {
         <Text style={styles.pagetitle}>MY PAGE</Text>
         <View style={styles.profileContainer}>
           {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
-          <TouchableOpacity onPress={handlePickImage}>
-            {photoUri ? (
-              <Image source={{ uri: photoUri }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.profileImagePlaceholder} />
-            )}
-          </TouchableOpacity>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.profileImagePlaceholder} />
+          )}
         </View>
 
         {/* フォロー、フォロワーを表示 */}
@@ -328,54 +277,15 @@ const myPage = () => {
         </Modal>
 
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
-        <Text style={styles.displayName}>Username</Text>
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
           style={styles.textInput}
-          editable={editable}
-        />
-        {/* メールアドレスを表示し、テキストボックスに入力でメールアドレス変更*/}
-        <Text style={styles.displayName}>Email</Text>
-        <TextInput
-          value={displayEmail}
-          onChangeText={setDisplayEmail}
-          style={styles.textInput}
           editable={false}
         />
-
-        <Link href={{ pathname: "/" }} asChild>
-          <Text style={styles.linklabel}>Change password?</Text>
-        </Link>
-
-        {editable ? (
-          <TouchableOpacity style={styles.submit} onPress={handleSave}>
-            <Text style={styles.submitText}>SAVE</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handleEdit}>
-            <Text style={styles.buttonText}>EDIT</Text>
-          </TouchableOpacity>
-        )}
-
-        {userStatus == 0 ? (
-          <TouchableOpacity style={styles.button} onPress={handleStatus}>
-            <Text style={styles.buttonText}>Public to Private</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handleStatus}>
-            <Text style={styles.buttonText}>Private to Public</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity style={styles.button} onPress={signout}>
-          <Text style={styles.buttonText}>LOGOUT</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Text style={styles.backButtonText}>{"<"} Back</Text>
-        </TouchableOpacity>
       </View>
+
+      <UserPosts />
     </ScrollView>
   );
 };
