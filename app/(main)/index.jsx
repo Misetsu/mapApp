@@ -59,6 +59,7 @@ const TrackUserMapView = () => {
   const [userList, setUserList] = useState([]);
   const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
+  const [iconName, setIconName] = useState("exchange-alt"); // 初期アイコン名
 
   const setmodal = (marker) => {
     try {
@@ -332,13 +333,11 @@ const TrackUserMapView = () => {
         .collection("spot")
         .orderBy("id")
         .get();
-
       if (!querySnapshot.empty) {
         querySnapshot.forEach((docs) => {
           const item = docs.data();
           fetchResult.push(item);
         });
-
         setMarkerCords(fetchResult);
       } else {
         console.log("empty");
@@ -447,6 +446,16 @@ const TrackUserMapView = () => {
     setUserList(tempList);
   };
 
+  const handleIconPress = () => {
+    if (iconName === "not-equal") {
+      fetchAllMarkerCord();
+      setIconName("exchange-alt"); // アイコン名を元に戻す
+    } else {
+      handleChangeIndex();
+      setIconName("exchange-alt"); // アイコン名を "not-equal" に変更
+    }
+  };
+
   const handleUserChoose = async (userId) => {
     const queryPost = await firestore()
       .collection("post")
@@ -483,6 +492,7 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
+    setIconName("not-equal");
   };
 
   const handleChangeIndex = () => {
@@ -648,9 +658,9 @@ const TrackUserMapView = () => {
         />
         <TouchableOpacity
           style={styles.listProfileIndexButton}
-          onPress={handleChangeIndex}
+          onPress={handleIconPress} // 変更した関数を呼び出す
         >
-          <Icon name="exchange-alt" size={30} color="#000"></Icon>
+          <Icon name={iconName} size={30} color="#000"></Icon>
         </TouchableOpacity>
       </SafeAreaView>
 

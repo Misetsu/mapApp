@@ -150,9 +150,10 @@ export const styles = StyleSheet.create({
   },
   listProfileIndexButton: {
     width: "15%",
-    justifyContent: "center",
-    alignContent: "center",
+    justifyContent: "center", // 縦方向の中央揃え
+    alignItems: "center", // 横方向の中央揃え
   },
+
   newButtonContainer: {
     alignItems: "center", // 新しいボタンを中央に配置
     bottom: 100,
