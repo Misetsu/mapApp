@@ -184,13 +184,6 @@ export default function CameraScreen() {
             />
           </View>
         )}
-        <View style={styles.cameraDisplayContainer}>
-          <Image
-            style={styles.cameraDisplay}
-            source={require("../image/image-172558706210767.jpg")}
-            resizeMode="cover"
-          />
-        </View>
         <Pressable
           onPress={onTakePicturePressed}
           style={styles.captureButton}
@@ -220,11 +213,13 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     // flex: 0.8,
-    // width: "100%",
-    // height: "100%",
-    // position: "relative",
-    left: 0,
+    width: "100%",
+    height: "80%",
+    // position: "absolute",
+    // left: 0,
     // top: "10%",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   camera: {
     flex: 0.8,
@@ -284,11 +279,9 @@ const styles = StyleSheet.create({
   },
   cameraDisplayContainer: {
     position: "absolute",
-    left: 0,
-    top: "10%",
+    // left: "50%",
+    backgroundColor: "black",
     width: "50%", // 左半分
-    height: "64%",
-    // flex: 1,
-    // aspectRatio: 3 / 4,
+    height: "80%",
   },
 });
