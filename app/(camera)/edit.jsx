@@ -22,6 +22,8 @@ const imageWidth = width * 0.75;
 const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
+
+
 export default function edit() {
   const [text, setText] = useState("");
   const [post, setPost] = useState("");
@@ -147,6 +149,9 @@ export default function edit() {
   };
 
   useEffect(() => {
+
+    console.log("imageWidth=",imageWidth)
+    console.log("imageHeight=",imageHeight)
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardStatus(true);
     });
