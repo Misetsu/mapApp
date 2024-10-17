@@ -23,13 +23,13 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const auth = FirebaseAuth();
 const router = useRouter();
 
-const MapView = () => {
+const SelectSpot = () => {
   const params = useLocalSearchParams();
   const { latitude, longitude } = params;
   const [position, setPosition] = useState({
     //ユーザーの位置情報を保持
-    latitude: latitude,
-    longitude: longitude,
+    latitude: 0,
+    longitude: 0,
     accuracy: 0,
     altitude: 0,
     altitudeAccuracy: 0,
@@ -38,12 +38,7 @@ const MapView = () => {
   });
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
-  const [initialRegion, setInitialRegion] = useState({
-    latitude: latitude,
-    longitude: longitude,
-    latitudeDelta: LATITUDE_DELTA,
-    longitudeDelta: LONGITUDE_DELTA,
-  });
+  const [initialRegion, setInitialRegion] = useState(null);
   const [Region, setRegion] = useState(null);
 
   const [spotId, setSpotId] = useState(0);
@@ -61,6 +56,10 @@ const MapView = () => {
       );
       if (distance < marker.areaRadius) {
         setSpotId(marker.id);
+        router.push({
+          pathname: "/camera",
+          params: { latitude: 0, longitude: 0, spotId: marker.id },
+        });
       } else {
         setSpotId(marker.id);
       }
@@ -246,4 +245,4 @@ const MapView = () => {
   );
 };
 
-export default MapView;
+export default SelectSpot;
