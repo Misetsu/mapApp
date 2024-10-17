@@ -219,10 +219,12 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   cameraContainer: {
-    flex: 0.8,
-    width: "100%",
-    height: "100%",
-    position: "relative",
+    // flex: 0.8,
+    // width: "100%",
+    // height: "100%",
+    // position: "relative",
+    left: 0,
+    // top: "10%",
   },
   camera: {
     flex: 0.8,
@@ -283,8 +285,10 @@ const styles = StyleSheet.create({
   cameraDisplayContainer: {
     position: "absolute",
     left: 0,
-    top: 0,
+    top: "10%",
     width: "50%", // 左半分
-    height: "100%",
+    height: "64%",
+    // flex: 1,
+    // aspectRatio: 3 / 4,
   },
 });
