@@ -447,12 +447,12 @@ const TrackUserMapView = () => {
   };
 
   const handleIconPress = () => {
-    if (iconName === "not-equal") {
+    if (iconName === "times") {
       fetchAllMarkerCord();
       setIconName("exchange-alt"); // アイコン名を元に戻す
     } else {
       handleChangeIndex();
-      setIconName("exchange-alt"); // アイコン名を "not-equal" に変更
+      setIconName("exchange-alt"); // アイコン名を "times" に変更
     }
   };
 
@@ -492,7 +492,7 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
-    setIconName("not-equal");
+    setIconName("times");
   };
 
   const handleChangeIndex = () => {
