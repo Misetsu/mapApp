@@ -1,5 +1,5 @@
 // MyModal.js
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -239,7 +239,7 @@ const MyModal = ({
 
           <View style={styles.toolView}>
             {showButtons && (
-              <Animated.View style={{ opacity: fadeAnim }}>
+              <Animated.View style={[styles.buttonView, { opacity: fadeAnim }]}>
                 <Pressable style={styles.roundButton} onPress={hideButtons}>
                   <Icon name="times" size={25} color="#000" />
                 </Pressable>
@@ -310,6 +310,10 @@ const styles = StyleSheet.create({
   },
   toolView: {
     marginTop: 10,
+    flexDirection: "row", // 横方向に要素を配置
+    justifyContent: "flex-end", // 右寄せにする
+  },
+  buttonView: {
     flexDirection: "row", // 横方向に要素を配置
     justifyContent: "flex-end", // 右寄せにする
   },
