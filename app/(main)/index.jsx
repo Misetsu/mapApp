@@ -11,7 +11,7 @@ import {
   StyleSheet,
   Animated,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -561,7 +561,7 @@ const TrackUserMapView = () => {
         setError(err.message);
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
@@ -707,6 +707,8 @@ const TrackUserMapView = () => {
           style={{
             position: "absolute",
             alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
             bottom: 30,
             width: 70,
             height: 70,
@@ -715,28 +717,29 @@ const TrackUserMapView = () => {
             display: postButtonVisible ? "flex" : "none",
           }}
           onPress={showAnimatedButtons}
-        />
-      ) : (
-        // </Link>
-        <Link
-          href={{
-            pathname: "/loginForm",
-          }}
-          asChild
         >
-          <Pressable
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              bottom: 30,
-              width: 70,
-              height: 70,
-              backgroundColor: "blue",
-              borderRadius: 35,
-              display: postButtonVisible ? "flex" : "none",
-            }}
-          ></Pressable>
-        </Link>
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
+      ) : (
+        <Pressable
+          style={{
+            position: "absolute",
+            alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
+            bottom: 30,
+            width: 70,
+            height: 70,
+            backgroundColor: "blue",
+            borderRadius: 35,
+            display: postButtonVisible ? "flex" : "none",
+          }}
+          onPress={() => {
+            router.push({ pathname: "/loginForm" });
+          }}
+        >
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
       )}
 
       {user ? (

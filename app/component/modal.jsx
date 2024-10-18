@@ -9,13 +9,16 @@ import {
   TouchableOpacity,
   Pressable,
   ScrollView,
+  Animated,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
+const router = useRouter();
 
 const MyModal = ({
   visible,
@@ -27,6 +30,9 @@ const MyModal = ({
   onClose,
 }) => {
   const [likes, setLikes] = useState({});
+  const [showButtons, setShowButtons] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
+
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
       ...prevLikes,
@@ -112,6 +118,27 @@ const MyModal = ({
         count: tempObj2[postId],
         [auth.currentUser.uid]: auth.currentUser.uid,
       });
+  };
+
+  // ボタンを表示してフェードイン
+  const showAnimatedButtons = () => {
+    setShowButtons(true);
+    Animated.timing(fadeAnim, {
+      toValue: 1, // 完全に表示
+      duration: 500, // 0.5秒でフェードイン
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // 新しいボタン1を押したときにボタンをフェードアウトして非表示
+  const hideButtons = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0, // 完全に非表示
+      duration: 500, // 0.5秒でフェードアウト
+      useNativeDriver: true,
+    }).start(() => {
+      setShowButtons(false); // フェードアウト完了後にボタンを非表示
+    });
   };
 
   return (
@@ -211,21 +238,46 @@ const MyModal = ({
           </ScrollView>
 
           <View style={styles.toolView}>
-            <Link
-              href={{
-                pathname: "/camera",
-                params: {
-                  latitude: 0,
-                  longitude: 0,
-                  spotId: spotId,
-                },
-              }}
-              asChild
-            >
-              <Pressable style={styles.postButton}>
-                <Text style={styles.postButtonText}>投稿</Text>
-              </Pressable>
-            </Link>
+            {showButtons && (
+              <Animated.View style={{ opacity: fadeAnim }}>
+                <Pressable style={styles.roundButton} onPress={hideButtons}>
+                  <Icon name="times" size={25} color="#000" />
+                </Pressable>
+                <Pressable
+                  style={styles.roundButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/cameraComposition",
+                      params: {
+                        latitude: 0,
+                        longitude: 0,
+                        spotId: spotId,
+                      },
+                    });
+                  }}
+                >
+                  <Icon name="images" size={25} color="#000" />
+                </Pressable>
+                <Pressable
+                  style={styles.roundButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/camera",
+                      params: {
+                        latitude: 0,
+                        longitude: 0,
+                        spotId: spotId,
+                      },
+                    });
+                  }}
+                >
+                  <Icon name="camera" size={25} color="#000" />
+                </Pressable>
+              </Animated.View>
+            )}
+            <Pressable style={styles.roundButton} onPress={showAnimatedButtons}>
+              <Icon name="map-marked-alt" size={25} color="#000" />
+            </Pressable>
           </View>
         </View>
       </View>
@@ -300,6 +352,15 @@ const styles = StyleSheet.create({
     flexDirection: "row", //右端に配置
     alignItems: "center",
     marginTop: 10,
+  },
+  roundButton: {
+    backgroundColor: "#007AFF", // ボタンの背景色
+    borderRadius: 25, // ボタンを丸くするために大きめの値を指定
+    width: 50, // ボタンの幅
+    height: 50, // ボタンの高さ
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+    marginBottom: 10, // ボタン間の余白
   },
 });
 
