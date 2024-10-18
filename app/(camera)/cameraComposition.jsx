@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions,Image } from "react-native";
+import { View, StyleSheet, Pressable, Dimensions, Image } from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -112,7 +112,7 @@ export default function CameraScreen() {
           latitude: latitude,
           longitude: longitude,
           spotId: spotId,
-          Composition: encodeURIComponent(photoUri)
+          Composition: encodeURIComponent(photoUri),
         },
       });
     } catch (error) {
@@ -155,11 +155,9 @@ export default function CameraScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
-      
         <Stack.Screen options={{ headerShown: false }} />
-        
+
         <View style={styles.cameraContainer}>
-        
           <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
             <ReanimatedCamera
               ref={cameraRef}
@@ -171,9 +169,15 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
-          
+          <View style={styles.cameraDisplayContainer}>
+            <Image
+              style={styles.cameraDisplay}
+              source={require("../image/image-172558706210767.jpg")}
+              resizeMode="cover"
+            />
+          </View>
         </View>
-       
+
         {showSlider && (
           <View style={styles.sliderContainer}>
             <Slider
@@ -201,9 +205,7 @@ export default function CameraScreen() {
             {exposureSlider.value.toFixed(1)} {/* スライダーの値を表示 */}
           </Reanimated.Text>
         </Pressable>
-        
       </View>
-      
     </GestureHandlerRootView>
   );
 }
@@ -216,8 +218,14 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   cameraContainer: {
-    // height: "auto",
-    width: "auto",
+    // flex: 0.8,
+    width: "100%",
+    height: "80%",
+    // position: "absolute",
+    // left: 0,
+    // top: "10%",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   camera: {
     flex: 0.8,
@@ -270,5 +278,16 @@ const styles = StyleSheet.create({
   exposureButtonText: {
     color: "white",
     fontSize: 16,
+  },
+  cameraDisplay: {
+    width: "100%",
+    height: "100%",
+  },
+  cameraDisplayContainer: {
+    position: "absolute",
+    // left: "50%",
+    backgroundColor: "black",
+    width: "50%", // 左半分
+    height: "80%",
   },
 });
