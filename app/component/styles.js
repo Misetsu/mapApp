@@ -306,7 +306,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#66bb66",
+        color: "#A3DE83",
       },
     ],
   },
@@ -315,7 +315,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#e0ffe0",
+        color: "#A3DE83",
       },
     ],
   },
@@ -324,7 +324,7 @@ export const customMapStyle = [
     elementType: "geometry.fill",
     stylers: [
       {
-        color: "#6699ff", // 水の色を青色に変更
+        color: "#90CDFF", // 水の色を青色に変更
       },
     ],
   },
@@ -333,7 +333,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#404040",
+        color: "#E8E8A6",
       },
     ],
   },
@@ -342,8 +342,8 @@ export const customMapStyle = [
     elementType: "geometry.stroke",
     stylers: [
       {
-        color: "#fcfcfc",
-        weight: 1,
+        color: "#239D60",
+        weight: 2,
       },
     ],
   },
@@ -352,7 +352,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#808080",
+        color: "#E8E8A6",
       },
     ],
   },
@@ -361,8 +361,8 @@ export const customMapStyle = [
     elementType: "geometry.stroke",
     stylers: [
       {
-        color: "#fcfcfc",
-        weight: 1,
+        color: "#239D60",
+        weight: 2,
       },
     ],
   },
@@ -371,7 +371,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#99dd66",
+        color: "#F2F5C8",
       },
     ],
   },
@@ -380,7 +380,8 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#33ccff",
+        color: "#1A73E8",
+        weight: 2,
       },
     ],
   },
@@ -390,7 +391,7 @@ export const customMapStyle = [
     stylers: [
       {
         color: "#ffffff",
-        weight: 1,
+        weight: 2,
       },
     ],
   },
@@ -399,17 +400,17 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#ffeecc",
+        color: "#F2F5C8",
       },
     ],
   },
   {
-    // 医療機関の背景色を指定（例: 薄いピンク色）
+    // 医療機関の背景色を指定
     featureType: "poi.medical",
     elementType: "geometry",
     stylers: [
       {
-        color: "#ffdddd",
+        color: "#F2F5C8",
       },
     ],
   },
