@@ -616,21 +616,20 @@ const TrackUserMapView = () => {
           </Marker>
 
           {markerCords.map((marker) => (
-            <TouchableOpacity style={styles.hitSlop} key={marker.id}>
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(marker.mapLatitude),
-                  longitude: parseFloat(marker.mapLongitude),
-                }}
-                title={marker.name}
-                onPress={() => setmodal(marker)}
-              >
-                <Image
-                  source={getPinColor(marker)}
-                  style={styles.markerImage} //ピンの色
-                />
-              </Marker>
-            </TouchableOpacity>
+            <Marker
+              key={marker.id}
+              coordinate={{
+                latitude: parseFloat(marker.mapLatitude),
+                longitude: parseFloat(marker.mapLongitude),
+              }}
+              title={marker.name}
+              onPress={() => setmodal(marker)}
+            >
+              <Image
+                source={getPinColor(marker)}
+                style={styles.markerImage} //ピンの色
+              />
+            </Marker>
           ))}
         </MapView>
       )}
