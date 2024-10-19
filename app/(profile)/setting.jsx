@@ -126,6 +126,7 @@ const myPage = () => {
       </TouchableOpacity>
 
       <View style={styles.container}>
+        <Text style={styles.pagetitle}>SETTING</Text>
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.push("/profileEdit")}
@@ -133,11 +134,27 @@ const myPage = () => {
           <Text style={styles.buttonText}>EDIT</Text>
         </TouchableOpacity>
 
-        <View>
+        <View style={styles.FFcontainer}>
           <Text>公開非公開</Text>
-          <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+          <View style={style=styles.SwitchBtn}>
+            <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+          </View>
         </View>
 
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/myPage")}
+        >
+          <Text style={styles.buttonText}>USER POLICY</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/myPage")}
+        >
+          <Text style={styles.buttonText}>HELP</Text>
+        </TouchableOpacity>
+        
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#FF6666" }]}
           onPress={signout}
@@ -179,7 +196,7 @@ const styles = StyleSheet.create({
   },
   pagetitle: {
     fontSize: 30,
-    margin: 10,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
   },
@@ -219,11 +236,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   FFcontainer: {
+    justifyContent: 'space-between',
     flexDirection: "row", // 子要素を横並びに配置
-    justifyContent: "space-between", // 子要素間にスペースを空ける
     alignItems: "center", // 垂直方向の中央に揃える
-    width: "80%", // 横幅を80%に設定（任意）
     padding: 5, // 全体にパディング
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
+  },
+  SwitchBtn:
+  { 
   },
   FFnum: {
     padding: 10,

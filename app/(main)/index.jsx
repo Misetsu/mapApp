@@ -59,6 +59,7 @@ const TrackUserMapView = () => {
   const [userList, setUserList] = useState([]);
   const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
+  const [iconName, setIconName] = useState("exchange-alt"); // 初期アイコン名
 
   const setmodal = (marker) => {
     try {
@@ -332,13 +333,11 @@ const TrackUserMapView = () => {
         .collection("spot")
         .orderBy("id")
         .get();
-
       if (!querySnapshot.empty) {
         querySnapshot.forEach((docs) => {
           const item = docs.data();
           fetchResult.push(item);
         });
-
         setMarkerCords(fetchResult);
       } else {
         console.log("empty");
@@ -447,6 +446,16 @@ const TrackUserMapView = () => {
     setUserList(tempList);
   };
 
+  const handleIconPress = () => {
+    if (iconName === "times") {
+      fetchAllMarkerCord();
+      setIconName("exchange-alt"); // アイコン名を元に戻す
+    } else {
+      handleChangeIndex();
+      setIconName("exchange-alt"); // アイコン名を "times" に変更
+    }
+  };
+
   const handleUserChoose = async (userId) => {
     const queryPost = await firestore()
       .collection("post")
@@ -483,6 +492,7 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
+    setIconName("times");
   };
 
   const handleChangeIndex = () => {
@@ -606,21 +616,20 @@ const TrackUserMapView = () => {
           </Marker>
 
           {markerCords.map((marker) => (
-            <TouchableOpacity style={styles.hitSlop} key={marker.id}>
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(marker.mapLatitude),
-                  longitude: parseFloat(marker.mapLongitude),
-                }}
-                title={marker.name}
-                onPress={() => setmodal(marker)}
-              >
-                <Image
-                  source={getPinColor(marker)}
-                  style={styles.markerImage} //ピンの色
-                />
-              </Marker>
-            </TouchableOpacity>
+            <Marker
+              key={marker.id}
+              coordinate={{
+                latitude: parseFloat(marker.mapLatitude),
+                longitude: parseFloat(marker.mapLongitude),
+              }}
+              title={marker.name}
+              onPress={() => setmodal(marker)}
+            >
+              <Image
+                source={getPinColor(marker)}
+                style={styles.markerImage} //ピンの色
+              />
+            </Marker>
           ))}
         </MapView>
       )}
@@ -648,9 +657,9 @@ const TrackUserMapView = () => {
         />
         <TouchableOpacity
           style={styles.listProfileIndexButton}
-          onPress={handleChangeIndex}
+          onPress={handleIconPress} // 変更した関数を呼び出す
         >
-          <Icon name="exchange-alt" size={30} color="#000"></Icon>
+          <Icon name={iconName} size={30} color="#000"></Icon>
         </TouchableOpacity>
       </SafeAreaView>
 
