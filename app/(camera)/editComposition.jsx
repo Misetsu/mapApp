@@ -16,8 +16,10 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
-import { Canvas, Image as CanvasImage } from 'react-native-canvas';
 import Svg, { Image,ClipPath, Rect } from 'react-native-svg';
+import RNEXIF from 'react-native-exif';
+import ImageResizer from 'react-native-image-resizer';
+
 
 
 const { width } = Dimensions.get("window");
@@ -28,6 +30,7 @@ const auth = FirebaseAuth();
 export default function edit() {
   const [text, setText] = useState("");
   const [post, setPost] = useState("");
+  const [newimageuri,setnewimageuri] = useState(null)
   const [compositionuri,setCompositionuri] = useState(null);
   const [focusedInput, setFocusedInput] = useState(null);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
@@ -42,6 +45,22 @@ export default function edit() {
   const viewRef = useRef();
   console.log("imageuri=",imageUri)
   console.log("Composition=",Composition)
+
+
+    const [orientation, setOrientation] = useState('');
+  
+  
+
+    const resizeImage = async (uri) => {
+      try {
+        const newImage = await ImageResizer.createResizedImage(uri, 4000, 3000, 'JPEG', 100);
+        console.log('リサイズされた画像のURI:', newImage.uri);
+        settest(newImage.uri); // 新しいURIを返す
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
   const uploadPost = async () => {
     setIsoading(true);
     const randomNumber = Math.floor(Math.random() * 100) + 1;
@@ -177,11 +196,26 @@ export default function edit() {
       setKeyboardStatus(false);
       setFocusedInput(null);
     });
-
+    RNEXIF.getExif(imageUri)
+        .then((exifData) => {
+          if (exifData && exifData.Orientation) {
+            const orientationValue = exifData.Orientation;
+            console.log(orientationValue)
+            if (orientationValue === 1 || orientationValue === 3) {
+                settest(imageUri)    
+            } else {
+                resizeImage(imageUri)
+            }
+          }
+          
+          
+        })
+        .catch((error) => console.log('Error getting EXIF data:', error));
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
+    
   }, []);
 
   const handleFocus = (inputName) => {
@@ -197,6 +231,7 @@ export default function edit() {
     const compositionuri = await viewRef.current.capture(); //viewRefをキャプチャする
     setCompositionuri(compositionuri)   //uriを保存
   }
+  
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -213,14 +248,14 @@ export default function edit() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <ViewShot ref={viewRef} options={{ format: 'png', quality: 1 }} style={ {width: 300, height: 400, alignItems: 'center',marginTop: 20,marginLeft:'auto',marginRight:'auto'}}>
-                <Svg height="400" width="300">
+            <ViewShot ref={viewRef} options={{ format: 'jpg', quality: 1 }} style={styles.imageContainer}>
+                <Svg height="100%" width="100%">
                 {/* 画像1の左半分 */}
                     <ClipPath id="clipLeft">
-                        <Rect x="0" y="0" width="150" height="400" />
+                        <Rect x="0%" y="0%" width={imageWidth / 2} height={imageHeight} fill="blue" />
                     </ClipPath>
                 <Image
-                    href={{ uri:tests }} // 画像1のURL
+                    href={{ uri:tests2 }} // 画像1のURL
                     width="300"
                     height="400"
                     preserveAspectRatio="xMidYMid slice"
@@ -233,10 +268,10 @@ export default function edit() {
 
                 {/* 画像2の右半分 */}
                 <ClipPath id="clipRight">
-                    <Rect x="150" y="0" width="150" height="400" />
+                    <Rect x="50%" y="0%" width={imageWidth / 2} height={imageHeight} fill="blue" />
                 </ClipPath>
                 <Image
-                    href={{ uri: tests2 }} // 画像2のURL
+                    href={{ uri: tests }} // 画像2のURL
                     width="300"
                     height="400"
                     preserveAspectRatio="xMidYMid slice"
@@ -303,8 +338,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: imageWidth,
     height: imageHeight,
-    alignSelf: "center",
+    alignItems: 'center',
     marginTop: 20,
+    marginLeft:'auto',
+    marginRight:'auto'
   },
   displayName: {
     fontSize: 15,
