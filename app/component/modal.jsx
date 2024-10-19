@@ -151,23 +151,34 @@ const MyModal = ({
                         <Image
                           source={{ uri: post.userIcon }}
                           style={styles.userIcon}
+                          
                         />
                         <Text>{post.username}</Text>
                       </TouchableOpacity>
                     </Link>
+                    
                     {postImage ? (
+                      <>
+                      <Link
+                      href={{
+                        pathname: "/cameraComposition",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: spotId,
+                          photoUri: encodeURIComponent(post.photoUri)
+                        },
+                      }}
+                      asChild
+                    >
+                      <TouchableOpacity style={styles.userInfo}>
                       <Image
                         source={{ uri: post.photoUri }}
                         style={{ width: 300, height: 400 }}
+                        onPress={console.log(post.photoUri)}
                       />
-                    ) : (
-                      <Image
-                        source={{ uri: post.photoUri }}
-                        style={{ width: 300, height: 400 }}
-                        blurRadius={50}
-                      />
-                    )}
-
+                      </TouchableOpacity>
+                      </Link>
                     {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
                       <Text>
@@ -179,7 +190,6 @@ const MyModal = ({
                       </Text>
 
                       {/* いいねボタン */}
-
                       {flag ? (
                         <TouchableOpacity
                           style={styles.likeButton}
@@ -199,8 +209,27 @@ const MyModal = ({
                           </Text>
                         </TouchableOpacity>
                       )}
-                    </View>
-
+                      </View>
+                      </>
+                    ) : (
+                      <>
+                      <Image
+                        source={{ uri: post.photoUri }}
+                        style={{ width: 300, height: 400 }}
+                        blurRadius={50}
+                      />
+                      <View style={styles.dateLikeRow}>
+                    <Text>
+                      {formatInTimeZone(
+                        new Date(post.timestamp),
+                        "Asia/Tokyo",
+                        "yyyy/MM/dd HH:mm"
+                      )}
+                    </Text>
+                   
+                  </View>
+                  </>
+                    )}
                     <Text>{post.postText}</Text>
                   </View>
                 );
@@ -209,7 +238,7 @@ const MyModal = ({
               <Text>投稿がありません</Text>
             )}
           </ScrollView>
-
+          {postImage ? (
           <View style={styles.toolView}>
             <Link
               href={{
@@ -227,6 +256,7 @@ const MyModal = ({
               </Pressable>
             </Link>
           </View>
+          ):(<></>)}
         </View>
       </View>
     </Modal>
