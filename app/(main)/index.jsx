@@ -59,7 +59,7 @@ const TrackUserMapView = () => {
   const [userList, setUserList] = useState([]);
   const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
-  const [iconName, setIconName] = useState("exchange-alt"); // 初期アイコン名
+  const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
 
   const setmodal = (marker) => {
     try {
@@ -449,10 +449,13 @@ const TrackUserMapView = () => {
   const handleIconPress = () => {
     if (iconName === "times") {
       fetchAllMarkerCord();
-      setIconName("exchange-alt"); // アイコン名を元に戻す
+      setIconName("user-friends"); // アイコン名を元に戻す
+    } else if (indexStatus == "follow") {
+      handleChangeIndex();
+      setIconName("user-friends"); // アイコン名を "times" に変更
     } else {
       handleChangeIndex();
-      setIconName("exchange-alt"); // アイコン名を "times" に変更
+      setIconName("star");
     }
   };
 
@@ -500,9 +503,11 @@ const TrackUserMapView = () => {
     if (indexStatus == "follow") {
       status = "star";
       setIndexStatus("star");
+      setIconName("star");
     } else {
       status = "follow";
       setIndexStatus("follow");
+      setIconName("user-friends");
     }
     fetchIndexBar(status);
   };
