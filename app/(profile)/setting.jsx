@@ -143,9 +143,16 @@ const myPage = () => {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push("/myPage")}
+          onPress={() => router.push("/userPolicy")}
         >
           <Text style={styles.buttonText}>USER POLICY</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/privacyPolicy")}
+        >
+          <Text style={styles.buttonText}>PRIVACY POLICY</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
