@@ -226,6 +226,15 @@ const MyModal = ({
                         "yyyy/MM/dd HH:mm"
                       )}
                     </Text>
+                    {flag ? (
+                          <Text style={{ color: isLiked ? "black" : "red" }}>
+                            {isLiked ? "♡ " + (count - 1) : "❤️ " + count}
+                          </Text>
+                      ) : (
+                          <Text style={{ color: isLiked ? "red" : "black" }}>
+                            {isLiked ? "❤️ " + (count + 1) : "♡ " + count}
+                          </Text>
+                      )}
                    
                   </View>
                   </>
