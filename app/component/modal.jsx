@@ -206,29 +206,131 @@ const MyModal = ({
                       </Text>
 
                       {/* いいねボタン */}
-
-                      {flag ? (
-                        <TouchableOpacity
-                          style={styles.likeButton}
-                          onPress={() => handleUnlike(post.postId, index)}
-                        >
-                          <Text style={{ color: isLiked ? "black" : "red" }}>
-                            {isLiked ? "♡ " + (count - 1) : "❤️ " + count}
-                          </Text>
-                        </TouchableOpacity>
+                      {postImage ? (
+                        <View>
+                          {flag ? (
+                            <TouchableOpacity
+                              style={styles.likeButton}
+                              onPress={() => handleUnlike(post.postId, index)}
+                            >
+                              {isLiked ? (
+                                <Icon name="heart" size={16} color="#000" />
+                              ) : (
+                                <Icon name="heart" size={16} color="	#ff0000" />
+                              )}
+                              <Text
+                                style={{ color: isLiked ? "black" : "red" }}
+                              >
+                                {isLiked ? count - 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.likeButton}
+                              onPress={() => handleLike(post.postId, index)}
+                            >
+                              {isLiked ? (
+                                <Icon name="heart" size={16} color="#ff0000" />
+                              ) : (
+                                <Icon name="heart" size={16} color="	#000" />
+                              )}
+                              <Text
+                                style={{ color: isLiked ? "red" : "black" }}
+                              >
+                                {isLiked ? count + 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
                       ) : (
-                        <TouchableOpacity
-                          style={styles.likeButton}
-                          onPress={() => handleLike(post.postId, index)}
-                        >
-                          <Text style={{ color: isLiked ? "red" : "black" }}>
-                            {isLiked ? "❤️ " + (count + 1) : "♡ " + count}
-                          </Text>
-                        </TouchableOpacity>
+                        <View>
+                          {flag ? (
+                            <TouchableOpacity style={styles.likeButton}>
+                              {isLiked ? (
+                                <Icon name="heart" size={16} color="#000" />
+                              ) : (
+                                <Icon name="heart" size={16} color="	#ff0000" />
+                              )}
+                              <Text
+                                style={{ color: isLiked ? "black" : "red" }}
+                              >
+                                {isLiked ? count - 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity style={styles.likeButton}>
+                              {isLiked ? (
+                                <Icon name="heart" size={16} color="#ff0000" />
+                              ) : (
+                                <Icon name="heart" size={16} color="	#000" />
+                              )}
+                              <Text
+                                style={{ color: isLiked ? "red" : "black" }}
+                              >
+                                {isLiked ? count + 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
                       )}
                     </View>
 
                     <Text>{post.postText}</Text>
+
+                    {postImage ? (
+                      <View style={styles.toolView}>
+                        {showButtons && (
+                          <Animated.View
+                            style={[styles.buttonView, { opacity: fadeAnim }]}
+                          >
+                            <Pressable
+                              style={styles.roundButton}
+                              onPress={hideButtons}
+                            >
+                              <Icon name="times" size={25} color="#000" />
+                            </Pressable>
+                            <Pressable
+                              style={styles.roundButton}
+                              onPress={() => {
+                                router.push({
+                                  pathname: "/cameraComposition",
+                                  params: {
+                                    latitude: 0,
+                                    longitude: 0,
+                                    spotId: spotId,
+                                  },
+                                });
+                              }}
+                            >
+                              <Icon name="images" size={25} color="#000" />
+                            </Pressable>
+                            <Pressable
+                              style={styles.roundButton}
+                              onPress={() => {
+                                router.push({
+                                  pathname: "/camera",
+                                  params: {
+                                    latitude: 0,
+                                    longitude: 0,
+                                    spotId: spotId,
+                                  },
+                                });
+                              }}
+                            >
+                              <Icon name="camera" size={25} color="#000" />
+                            </Pressable>
+                          </Animated.View>
+                        )}
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={showAnimatedButtons}
+                        >
+                          <Icon name="map-marked-alt" size={25} color="#000" />
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <View style={styles.toolView} />
+                    )}
                   </View>
                 );
               })
@@ -236,49 +338,6 @@ const MyModal = ({
               <Text>投稿がありません</Text>
             )}
           </ScrollView>
-
-          <View style={styles.toolView}>
-            {showButtons && (
-              <Animated.View style={[styles.buttonView, { opacity: fadeAnim }]}>
-                <Pressable style={styles.roundButton} onPress={hideButtons}>
-                  <Icon name="times" size={25} color="#000" />
-                </Pressable>
-                <Pressable
-                  style={styles.roundButton}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/cameraComposition",
-                      params: {
-                        latitude: 0,
-                        longitude: 0,
-                        spotId: spotId,
-                      },
-                    });
-                  }}
-                >
-                  <Icon name="images" size={25} color="#000" />
-                </Pressable>
-                <Pressable
-                  style={styles.roundButton}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/camera",
-                      params: {
-                        latitude: 0,
-                        longitude: 0,
-                        spotId: spotId,
-                      },
-                    });
-                  }}
-                >
-                  <Icon name="camera" size={25} color="#000" />
-                </Pressable>
-              </Animated.View>
-            )}
-            <Pressable style={styles.roundButton} onPress={showAnimatedButtons}>
-              <Icon name="map-marked-alt" size={25} color="#000" />
-            </Pressable>
-          </View>
         </View>
       </View>
     </Modal>
