@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions, Image } from "react-native";
+import { View, StyleSheet, Pressable, Dimensions } from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -27,8 +27,8 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
-
 import FirebaseAuth from "@react-native-firebase/auth";
+import Svg, { Image, ClipPath, Rect } from "react-native-svg";
 
 const auth = FirebaseAuth();
 const width = Dimensions.get("window");
@@ -171,11 +171,21 @@ export default function CameraScreen() {
             />
           </GestureDetector>
           <View style={styles.cameraDisplayContainer}>
-            <Image
-              style={styles.cameraDisplay}
-              source={require("../image/image-172558706210767.jpg")}
-              resizeMode="cover"
-            />
+            <Svg width="100%" height="100%">
+              {/* <ClipPath id="clipLeft">
+                <Rect x="0" y="0" width="400" height="400" />
+              </ClipPath>
+              <ClipPath id="clipRight">
+                <Rect x="50%" y="0%" width="400" height="400"></Rect>
+              </ClipPath> */}
+              <Image
+                href={{ uri: photoUri }}
+                // style={styles.cameraDisplay}
+                // preserveAspectRatio="xMidYMid slice"
+                // clipPath="url(#clip)"
+                // resizeMode="cover"
+              />
+            </Svg>
           </View>
         </View>
 
@@ -281,13 +291,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   cameraDisplay: {
-    width: "100%",
-    height: "100%",
+    width: "150",
+    height: "400",
   },
   cameraDisplayContainer: {
     position: "absolute",
     // left: "50%",
-    backgroundColor: "black",
+    backgroundColor: "red",
     width: "50%", // 左半分
     height: "80%",
   },
