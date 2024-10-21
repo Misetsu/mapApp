@@ -744,7 +744,7 @@ const TrackUserMapView = () => {
       ) : (
         <View style={styles.loignBtnContainer}>
           <TouchableOpacity
-            style={styles.circleButton}
+            style={styles.button}
             onPress={() => {
               router.push("/loginForm");
             }}

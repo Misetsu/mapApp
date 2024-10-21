@@ -159,6 +159,7 @@ export const styles = StyleSheet.create({
     width: 40,
     justifyContent: "center",
     alignContent: "center",
+    marginLeft:10,
   },
   newButtonContainer: {
     alignItems: "center", // 新しいボタンを中央に配置
