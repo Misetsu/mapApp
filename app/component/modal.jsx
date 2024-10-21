@@ -335,7 +335,63 @@ const MyModal = ({
                 );
               })
             ) : (
-              <Text>投稿がありません</Text>
+              <View>
+                <Text>投稿がありません</Text>
+                {postImage ? (
+                  <View style={styles.toolView}>
+                    {showButtons && (
+                      <Animated.View
+                        style={[styles.buttonView, { opacity: fadeAnim }]}
+                      >
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={hideButtons}
+                        >
+                          <Icon name="times" size={25} color="#000" />
+                        </Pressable>
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/cameraComposition",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                              },
+                            });
+                          }}
+                        >
+                          <Icon name="images" size={25} color="#000" />
+                        </Pressable>
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/camera",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                              },
+                            });
+                          }}
+                        >
+                          <Icon name="camera" size={25} color="#000" />
+                        </Pressable>
+                      </Animated.View>
+                    )}
+                    <Pressable
+                      style={styles.roundButton}
+                      onPress={showAnimatedButtons}
+                    >
+                      <Icon name="map-marked-alt" size={25} color="#000" />
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View style={styles.toolView} />
+                )}
+              </View>
             )}
           </ScrollView>
         </View>
@@ -397,6 +453,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   likeButton: {
+    display: "flex",
+    flexDirection: "row",
     marginLeft: 10, // 日付といいねボタンの間のスペース
   },
   closeButton: {

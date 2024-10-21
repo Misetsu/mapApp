@@ -449,13 +449,17 @@ const TrackUserMapView = () => {
   const handleIconPress = () => {
     if (iconName === "times") {
       fetchAllMarkerCord();
-      setIconName("user-friends"); // アイコン名を元に戻す
+      if (indexStatus == "follow") {
+        setIconName("user-friends"); // アイコン名を "times" に変更
+      } else {
+        setIconName("star");
+      }
     } else if (indexStatus == "follow") {
       handleChangeIndex();
-      setIconName("user-friends"); // アイコン名を "times" に変更
+      setIconName("star"); // アイコン名を "times" に変更
     } else {
       handleChangeIndex();
-      setIconName("star");
+      setIconName("user-friends");
     }
   };
 
@@ -503,11 +507,11 @@ const TrackUserMapView = () => {
     if (indexStatus == "follow") {
       status = "star";
       setIndexStatus("star");
-      setIconName("star");
+      setIconName("user-friends");
     } else {
       status = "follow";
       setIndexStatus("follow");
-      setIconName("user-friends");
+      setIconName("star");
     }
     fetchIndexBar(status);
   };
