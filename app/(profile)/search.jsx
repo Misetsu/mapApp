@@ -21,11 +21,28 @@ const SearchScreen = () => {
   const [searchResult, setSearchResult] = useState([]); // 検索結果
   const [following, setFollowing] = useState({}); // フォローしているユーザーの状態
   const [recommendedUsers, setRecommendedUsers] = useState([]); // おすすめユーザーリスト
+  const [officialUser, setOfficialUser] = useState(null); // 公式ユーザー
 
   useEffect(() => {
     fetchFollowingData(); // フォローしているユーザーのデータを取得
     fetchRecommendedUsers(); // おすすめユーザーを取得
+    fetchOfficialUser(); // 公式ユーザーを取得
   }, []);
+
+  // 公式ユーザーを取得
+  const fetchOfficialUser = async () => {
+    try {
+      const officialUid = "2tjGBOa6snXpIpxb2drbSvUAmb83";
+      const userSnapshot = await firestore()
+        .collection("users")
+        .where("uid", "==", officialUid)
+        .get();
+      const officialUserData = userSnapshot.docs[0]?.data();
+      setOfficialUser(officialUserData);
+    } catch (error) {
+      console.error("Error fetching official user data:", error);
+    }
+  };
 
   // 現在のユーザーがフォローしているユーザーを取得
   const fetchFollowingData = async () => {
@@ -217,6 +234,20 @@ const SearchScreen = () => {
           value={searchText}
         />
       </View>
+
+      {/* おすすめ公式ユーザーの表示 */}
+      {officialUser && (
+        <View style={styles.recommendedContainer}>
+          <Text style={styles.sectionTitle}>おすすめ公式ユーザー</Text>
+          <UserItem
+            key={officialUser.uid}
+            user={officialUser}
+            isFollowing={following[officialUser.uid]}
+            onProfilePress={() => handleProfile(officialUser.uid)}
+            onFollowToggle={() => handleFollowToggle(officialUser.uid)}
+          />
+        </View>
+      )}
 
       {/* おすすめユーザーの表示 */}
       {searchText === "" && recommendedUsers.length > 0 && (
