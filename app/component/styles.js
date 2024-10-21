@@ -92,10 +92,10 @@ export const styles = StyleSheet.create({
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F2F2",
-    padding: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+    width: 70,
+    height: 70,
     marginBottom: 10, // ボタン間にスペースを追加
-    borderRadius: 10,
   },
   buttonText: {
     color: "white",
@@ -104,26 +104,32 @@ export const styles = StyleSheet.create({
   },
   loignBtnContainer: {
     position: "absolute",
-    top: "10%",
-    marginTop: 20,
-    right: 20,
+    top: 90,
+    right: 0,
   },
   mapfixed: {
     position: "absolute",
-    bottom: "17%",
-    right: "5%",
+    top: 160,
+    right: 0,
   },
   defaultlocation: {
     position: "absolute",
-    bottom: "10%",
-    right: "5%",
+    top: 230,
+    right: 0,
+  },
+  settingButton: {
+    position: "absolute",
+    top: 300,
+    right: 0,
   },
   indexContainer: {
     position: "absolute",
     top: 0,
     width: "100%",
-    height: "10%",
-    backgroundColor: "#F2F2F2",
+    height: 90,
+    backgroundColor: "#f2f5c8",
+    borderBottomWidth: 3,
+    borderBottomColor: "#404040",
     padding: 10,
     justifyContent: "center",
     display: "flex",
@@ -146,10 +152,11 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   listProfileSize: {
-    margin: 5,
+    marginTop: 7.5,
+    margin: 10,
   },
   listProfileIndexButton: {
-    width: "15%",
+    width: 40,
     justifyContent: "center",
     alignContent: "center",
   },

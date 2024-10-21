@@ -101,9 +101,9 @@ const TrackUserMapView = () => {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-          Math.cos(toRadians(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -672,7 +672,7 @@ const TrackUserMapView = () => {
           <TouchableOpacity style={styles.roundButton} onPress={hideButtons}>
             <Icon name="times" size={25} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.roundButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.roundButton} onPress={() => { }}>
             <Icon name="map-marked-alt" size={25} color="#000" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -744,7 +744,7 @@ const TrackUserMapView = () => {
       ) : (
         <View style={styles.loignBtnContainer}>
           <TouchableOpacity
-            style={styles.button}
+            style={styles.circleButton}
             onPress={() => {
               router.push("/loginForm");
             }}
@@ -787,6 +787,18 @@ const TrackUserMapView = () => {
           <Icon name="crosshairs" size={24} color="#3333ff" />
         </TouchableOpacity>
       </View>
+
+      <View style={styles.settingButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/setting")}
+          style={styles.button}
+        >
+          {/* 左側のアイコンやテキストをここに追加 */}
+          <Icon name="cog" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
+
+
     </SafeAreaView>
   );
 };

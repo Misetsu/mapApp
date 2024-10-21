@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { Animated, PanResponder } from "react-native";
 import SwitchWithIcons from "react-native-switch-with-icons";
+import { useNavigation } from '@react-navigation/native';
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -71,6 +72,8 @@ const myPage = () => {
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
+  
+  const navigation = useNavigation();
 
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
@@ -113,7 +116,7 @@ const myPage = () => {
   return (
     <ScrollView>
       <TouchableOpacity
-        onPress={() => router.push({ pathname: "/myPage" })}
+        onPress={() => navigation.goBack()}
         style={{
           width: 50, // 横幅を設定
           height: 50, // 高さを設定
