@@ -31,7 +31,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import Svg, { ClipPath, Rect } from "react-native-svg";
 
 const auth = FirebaseAuth();
-const width = Dimensions.get("window");
+const height = Dimensions.get("window").height;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
@@ -183,7 +183,7 @@ export default function CameraScreen() {
               style={styles.cameraDisplay}
               // preserveAspectRatio="xMidYMid slice"
               // clipPath="url(#clip)"
-              resizeMode="cover"
+              // resizeMode="cover"
             />
             {/* </Svg> */}
           </View>
@@ -291,10 +291,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   cameraDisplay: {
-    width: "100%",
+    width: "auto",
     height: "100%",
-    objectFit: "cover",
-    objectPosition: "left top",
+    // objectFit: "cover",
+    // objectPosition: "left top",
     // left: 0,
     // top: 0,
   },
@@ -302,7 +302,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     // left: "50%",
     backgroundColor: "red",
-    width: "50%", // 左半分
+    width: "100%", // 左半分
     height: "80%",
+    overflow: "hidden",
   },
 });
