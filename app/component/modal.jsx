@@ -249,7 +249,7 @@ const MyModal = ({
                               {isLiked ? (
                                 <Icon name="heart" size={16} color="#000" />
                               ) : (
-                                <Icon name="heart" size={16} color="	#ff0000" />
+                                <Icon name="heart" size={16} color="#ff0000" />
                               )}
                               <Text
                                 style={{ color: isLiked ? "black" : "red" }}
@@ -262,7 +262,7 @@ const MyModal = ({
                               {isLiked ? (
                                 <Icon name="heart" size={16} color="#ff0000" />
                               ) : (
-                                <Icon name="heart" size={16} color="	#000" />
+                                <Icon name="heart" size={16} color="#000" />
                               )}
                               <Text
                                 style={{ color: isLiked ? "red" : "black" }}

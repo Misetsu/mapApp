@@ -145,6 +145,8 @@ const myPage = () => {
         </TouchableOpacity>
 
         <Text style={styles.pagetitle}>利用規約</Text>
+
+        <TouchableOpacity style={styles.iconButton} />
       </View>
 
       <View style={styles.container}>
@@ -158,7 +160,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row", // 横並びにする
     alignItems: "center", // 縦方向の中央揃え
-    justifyContent: "flex-start", // アイコンを左端に配置
+    justifyContent: "space-between", // アイコンを左端に配置
   },
   iconButton: {
     width: 50, // 横幅を設定
@@ -168,7 +170,6 @@ const styles = StyleSheet.create({
   },
   pagetitle: {
     fontSize: 20, // タイトルのフォントサイズ
-    marginLeft: 110, // アイコンとタイトルの間にスペースを追加
   },
   container: {
     flex: 1,

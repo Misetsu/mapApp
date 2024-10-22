@@ -144,16 +144,15 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   listProfileSize: {
-    marginTop: 7.5,
-    margin: 10,
+    margin: 5,
   },
   listProfileIndexButton: {
     width: 40,
     justifyContent: "center",
     alignContent: "center",
-    marginLeft: 20,
+    alignItems: "center",
+    // marginLeft: 20,
   },
-
   newButtonContainer: {
     alignItems: "center", // 新しいボタンを中央に配置
     bottom: 100,
