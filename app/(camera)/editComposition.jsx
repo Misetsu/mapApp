@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -11,14 +11,14 @@ import {
   Text,
   Keyboard,
 } from "react-native";
-import ViewShot from 'react-native-view-shot';
+import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
-import { Canvas, Image as CanvasImage } from 'react-native-canvas';
-import Svg, { Image,ClipPath, Rect } from 'react-native-svg';
-
+import Svg, { Image, ClipPath, Rect } from "react-native-svg";
+import RNEXIF from "react-native-exif";
+import ImageResizer from "react-native-image-resizer";
 
 const { width } = Dimensions.get("window");
 const imageWidth = width * 0.75;
@@ -28,7 +28,8 @@ const auth = FirebaseAuth();
 export default function edit() {
   const [text, setText] = useState("");
   const [post, setPost] = useState("");
-  const [compositionuri,setCompositionuri] = useState(null);
+  const [newimageuri, setnewimageuri] = useState(null);
+  const [compositionuri, setCompositionuri] = useState(null);
   const [focusedInput, setFocusedInput] = useState(null);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const [isLoading, setIsoading] = useState(false);
@@ -37,24 +38,42 @@ export default function edit() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { imageUri, latitude, longitude, spotId, Composition } = params;
-  const [tests,settest] = useState(imageUri);
-  const [tests2,settest2] = useState(Composition);
+  const [tests, settest] = useState(imageUri);
+  const [tests2, settest2] = useState(Composition);
   const viewRef = useRef();
-  console.log("imageuri=",imageUri)
-  console.log("Composition=",Composition)
+  console.log("imageuri=", imageUri);
+  console.log("Composition=", Composition);
+
+  const [orientation, setOrientation] = useState("");
+
+  const resizeImage = async (uri) => {
+    try {
+      const newImage = await ImageResizer.createResizedImage(
+        uri,
+        4000,
+        3000,
+        "JPEG",
+        100
+      );
+      console.log("リサイズされた画像のURI:", newImage.uri);
+      settest(newImage.uri); // 新しいURIを返す
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const uploadPost = async () => {
     setIsoading(true);
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath =
       "photo/image-" + new Date().getTime().toString() + randomNumber;
-      console.log(compositionuri)
-      try {
-        
-        await reference.ref(imagePath).putFile(compositionuri);
-        console.log("Image uploaded successfully.");
-      } catch (error) {
-        console.error("Error uploading image:", error);
-      }
+    console.log(compositionuri);
+    try {
+      await reference.ref(imagePath).putFile(compositionuri);
+      console.log("Image uploaded successfully.");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
 
     if (spotId == 0) {
       const querySnapshot = await firestore()
@@ -102,7 +121,7 @@ export default function edit() {
         })
         .catch((error) => console.log(error));
 
-        await firestore()
+      await firestore()
         .collection("like")
         .add({
           count: 0,
@@ -145,7 +164,7 @@ export default function edit() {
         .then()
         .catch((error) => console.log(error));
 
-        await firestore()
+      await firestore()
         .collection("like")
         .add({
           count: 0,
@@ -161,13 +180,13 @@ export default function edit() {
     router.replace("/");
   };
 
-  useEffect(() =>{
+  useEffect(() => {
     //compositionuriが設定されたらアップロードの準備をする関数を呼び出すエフェクト(これがないと非同期でキャプチャする前にアップロードしようとしてフリーズする)
-    if(compositionuri != null){
-    //初回実行時には実行sinaiyouni
-    uploadPost()    //アップロードする
-    }  
-  },[compositionuri])
+    if (compositionuri != null) {
+      //初回実行時には実行sinaiyouni
+      uploadPost(); //アップロードする
+    }
+  }, [compositionuri]);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
@@ -177,7 +196,19 @@ export default function edit() {
       setKeyboardStatus(false);
       setFocusedInput(null);
     });
-
+    RNEXIF.getExif(imageUri)
+      .then((exifData) => {
+        if (exifData && exifData.Orientation) {
+          const orientationValue = exifData.Orientation;
+          console.log(orientationValue);
+          if (orientationValue === 1 || orientationValue === 3) {
+            settest(imageUri);
+          } else {
+            resizeImage(imageUri);
+          }
+        }
+      })
+      .catch((error) => console.log("Error getting EXIF data:", error));
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
@@ -192,11 +223,12 @@ export default function edit() {
     setFocusedInput(null); // フォーカスが外れたらリセット
   };
 
-  const Getcompositionuri = async() => {
+  const Getcompositionuri = async () => {
     //合成写真をキャプチャする関数
     const compositionuri = await viewRef.current.capture(); //viewRefをキャプチャする
-    setCompositionuri(compositionuri)   //uriを保存
-  }
+    setCompositionuri(compositionuri); //uriを保存
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -213,86 +245,99 @@ export default function edit() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <ViewShot ref={viewRef} options={{ format: 'png', quality: 1 }} style={ {width: 300, height: 400, alignItems: 'center',marginTop: 20,marginLeft:'auto',marginRight:'auto'}}>
-                <Svg height="400" width="300">
-                {/* 画像1の左半分 */}
-                    <ClipPath id="clipLeft">
-                        <Rect x="0" y="0" width="150" height="400" />
-                    </ClipPath>
-                <Image
-                    href={{ uri:tests }} // 画像1のURL
-                    width="300"
-                    height="400"
-                    preserveAspectRatio="xMidYMid slice"
-                    clipPath="url(#clipLeft)"
-                    onLoad={(event) => {
-                      console.log("画像１＝",tests)
-                     }}
-                    onError={(error) => console.log('Error loading image:', error)}
+          <ViewShot
+            ref={viewRef}
+            options={{ format: "jpg", quality: 1 }}
+            style={styles.imageContainer}
+          >
+            <Svg height="100%" width="100%">
+              {/* 画像1の左半分 */}
+              <ClipPath id="clipLeft">
+                <Rect
+                  x="0%"
+                  y="0%"
+                  width={imageWidth / 2}
+                  height={imageHeight}
+                  fill="blue"
                 />
+              </ClipPath>
+              <Image
+                href={{ uri: tests2 }} // 画像1のURL
+                width="300"
+                height="400"
+                preserveAspectRatio="xMidYMid slice"
+                clipPath="url(#clipLeft)"
+                onLoad={(event) => {
+                  console.log("画像１＝", tests);
+                }}
+                onError={(error) => console.log("Error loading image:", error)}
+              />
 
-                {/* 画像2の右半分 */}
-                <ClipPath id="clipRight">
-                    <Rect x="150" y="0" width="150" height="400" />
-                </ClipPath>
-                <Image
-                    href={{ uri: tests2 }} // 画像2のURL
-                    width="300"
-                    height="400"
-                    preserveAspectRatio="xMidYMid slice"
-                    clipPath="url(#clipRight)"
-                    resizeMode="cover"
-                    onLoad={(event) => {
-                      console.log("画像２＝",tests2)
-                    }}
-                    onError={(error) => console.log('Error loading image:', error)}
+              {/* 画像2の右半分 */}
+              <ClipPath id="clipRight">
+                <Rect
+                  x="50%"
+                  y="0%"
+                  width={imageWidth / 2}
+                  height={imageHeight}
+                  fill="blue"
                 />
+              </ClipPath>
+              <Image
+                href={{ uri: tests }} // 画像2のURL
+                width="300"
+                height="400"
+                preserveAspectRatio="xMidYMid slice"
+                clipPath="url(#clipRight)"
+                resizeMode="cover"
+                onLoad={(event) => {
+                  console.log("画像２＝", tests2);
+                }}
+                onError={(error) => console.log("Error loading image:", error)}
+              />
             </Svg>
-        </ViewShot>
+          </ViewShot>
 
-            {spotId == 0 && focusedInput !== "post" ? (
-              <View>
-                
-                <Text style={styles.displayName}>場所の名前を入力</Text>
-                <TextInput
-                  style={
-                    focusedInput === "name" && keyboardStatus
-                      ? styles.focusedTextbox
-                      : styles.textbox
-                  }
-                  maxLength={30}
-                  onFocus={() => handleFocus("name")}
-                  onBlur={handleBlur}
-                  onChangeText={setText}
-                  value={text}
-                />
-              </View>
-            ) : null}
-            {focusedInput !== "name" ? (
-                
-              <View>
-               
-                <Text style={styles.displayName}>投稿の文章を入力</Text>
-                <TextInput
-                  style={
-                    focusedInput === "post" && keyboardStatus
-                      ? styles.focusedTextbox
-                      : styles.textbox
-                  }
-                  onFocus={() => handleFocus("post")}
-                  onBlur={handleBlur}
-                  onChangeText={setPost}
-                  value={post}
-                />
-              </View>
-            ) : null}
-            <Pressable onPress={Getcompositionuri} style={styles.uploadButton}>
-              <Text
-                style={{ color: "white", textAlign: "center", marginTop: 25 }}
-              >
-                Upload
-              </Text>
-            </Pressable>
+          {spotId == 0 && focusedInput !== "post" ? (
+            <View>
+              <Text style={styles.displayName}>場所の名前を入力</Text>
+              <TextInput
+                style={
+                  focusedInput === "name" && keyboardStatus
+                    ? styles.focusedTextbox
+                    : styles.textbox
+                }
+                maxLength={30}
+                onFocus={() => handleFocus("name")}
+                onBlur={handleBlur}
+                onChangeText={setText}
+                value={text}
+              />
+            </View>
+          ) : null}
+          {focusedInput !== "name" ? (
+            <View>
+              <Text style={styles.displayName}>投稿の文章を入力</Text>
+              <TextInput
+                style={
+                  focusedInput === "post" && keyboardStatus
+                    ? styles.focusedTextbox
+                    : styles.textbox
+                }
+                onFocus={() => handleFocus("post")}
+                onBlur={handleBlur}
+                onChangeText={setPost}
+                value={post}
+              />
+            </View>
+          ) : null}
+          <Pressable onPress={Getcompositionuri} style={styles.uploadButton}>
+            <Text
+              style={{ color: "white", textAlign: "center", marginTop: 25 }}
+            >
+              Upload
+            </Text>
+          </Pressable>
         </ScrollView>
       )}
     </KeyboardAvoidingView>
@@ -303,8 +348,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: imageWidth,
     height: imageHeight,
-    alignSelf: "center",
+    alignItems: "center",
     marginTop: 20,
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   displayName: {
     fontSize: 15,

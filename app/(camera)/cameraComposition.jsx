@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     // left: "50%",
     backgroundColor: "red",
-    width: "100%", // 左半分
+    width: "50%", // 左半分
     height: "80%",
     overflow: "hidden",
   },

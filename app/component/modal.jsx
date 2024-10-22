@@ -178,24 +178,10 @@ const MyModal = ({
                         <Image
                           source={{ uri: post.userIcon }}
                           style={styles.userIcon}
-                          
                         />
                         <Text>{post.username}</Text>
                       </TouchableOpacity>
                     </Link>
-                    <Link
-                      href={{
-                        pathname: "/cameraComposition",
-                        params: {
-                          latitude: 0,
-                          longitude: 0,
-                          spotId: spotId,
-                          photoUri: encodeURIComponent(post.photoUri)
-                        },
-                      }}
-                      asChild
-                    >
-                      <TouchableOpacity style={styles.userInfo}>
                     {postImage ? (
                       <Image
                         source={{ uri: post.photoUri }}
@@ -209,8 +195,6 @@ const MyModal = ({
                         blurRadius={50}
                       />
                     )}
-                    </TouchableOpacity>
-                    </Link>
 
                     {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
@@ -231,9 +215,9 @@ const MyModal = ({
                               onPress={() => handleUnlike(post.postId, index)}
                             >
                               {isLiked ? (
-                                <Icon name="heart" size={16} color="#000" />
+                                <Icon name="heart" size={16} color="#000000" />
                               ) : (
-                                <Icon name="heart" size={16} color="	#ff0000" />
+                                <Icon name="heart" size={16} color="#ff0000" />
                               )}
                               <Text
                                 style={{ color: isLiked ? "black" : "red" }}
@@ -249,7 +233,7 @@ const MyModal = ({
                               {isLiked ? (
                                 <Icon name="heart" size={16} color="#ff0000" />
                               ) : (
-                                <Icon name="heart" size={16} color="	#000" />
+                                <Icon name="heart" size={16} color="#000000" />
                               )}
                               <Text
                                 style={{ color: isLiked ? "red" : "black" }}
@@ -264,7 +248,7 @@ const MyModal = ({
                           {flag ? (
                             <TouchableOpacity style={styles.likeButton}>
                               {isLiked ? (
-                                <Icon name="heart" size={16} color="#000" />
+                                <Icon name="heart" size={16} color="#000000" />
                               ) : (
                                 <Icon name="heart" size={16} color="#ff0000" />
                               )}
@@ -279,7 +263,7 @@ const MyModal = ({
                               {isLiked ? (
                                 <Icon name="heart" size={16} color="#ff0000" />
                               ) : (
-                                <Icon name="heart" size={16} color="#000" />
+                                <Icon name="heart" size={16} color="#000000" />
                               )}
                               <Text
                                 style={{ color: isLiked ? "red" : "black" }}
@@ -315,6 +299,7 @@ const MyModal = ({
                                     latitude: 0,
                                     longitude: 0,
                                     spotId: spotId,
+                                    photoUri: encodeURIComponent(post.photoUri),
                                   },
                                 });
                               }}
@@ -334,7 +319,11 @@ const MyModal = ({
                                 });
                               }}
                             >
-                              <Icon name="camera" size={25} color="#000" />
+                              <Icon
+                                name="map-marked-alt"
+                                size={25}
+                                color="#000"
+                              />
                             </Pressable>
                           </Animated.View>
                         )}
@@ -342,7 +331,7 @@ const MyModal = ({
                           style={styles.roundButton}
                           onPress={showAnimatedButtons}
                         >
-                          <Icon name="map-marked-alt" size={25} color="#000" />
+                          <Icon name="camera" size={25} color="#000" />
                         </Pressable>
                       </View>
                     ) : (
