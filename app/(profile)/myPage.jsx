@@ -40,7 +40,7 @@ const myPage = () => {
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
 
-      // フォロー中取得
+      // フォロー取得
       const queryFollow = await firestore()
         .collection("follow")
         .where("followerId", "==", auth.currentUser.uid)
@@ -72,7 +72,7 @@ const myPage = () => {
         setFollowList(followArray);
       }
 
-      // フォロー中取得
+      // フォロワー取得
       const queryFollower = await firestore()
         .collection("follow")
         .where("followeeId", "==", auth.currentUser.uid)

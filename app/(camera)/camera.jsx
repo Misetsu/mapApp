@@ -27,6 +27,7 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
+import Icon from "react-native-vector-icons/Entypo";
 
 const width = Dimensions.get("window");
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
@@ -41,7 +42,6 @@ export default function CameraScreen() {
 
   const params = useLocalSearchParams();
   const { latitude, longitude, spotId } = params;
-  console.log(spotId);
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
@@ -97,11 +97,9 @@ export default function CameraScreen() {
   const onTakePicturePressed = async () => {
     try {
       if (cameraRef.current == null) {
-        console.log("null");
         return;
       }
       const photo = await cameraRef.current.takePhoto();
-      console.log(photo);
       router.navigate({
         pathname: "/edit",
         params: {
@@ -189,9 +187,10 @@ export default function CameraScreen() {
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
         >
-          <Reanimated.Text style={styles.exposureButtonText}>
-            {exposureSlider.value.toFixed(1)} {/* スライダーの値を表示 */}
-          </Reanimated.Text>
+          {/* <Reanimated.Text style={styles.exposureButtonText}>
+            {exposureSlider.value.toFixed(1)} 
+          </Reanimated.Text> */}
+          <Icon name="light-up" size={24} color="#FFF" />
         </Pressable>
       </View>
     </GestureHandlerRootView>
