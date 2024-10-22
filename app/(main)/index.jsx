@@ -11,7 +11,7 @@ import {
   StyleSheet,
   Animated,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -59,7 +59,7 @@ const TrackUserMapView = () => {
   const [userList, setUserList] = useState([]);
   const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
-  const [iconName, setIconName] = useState("exchange-alt"); // 初期アイコン名
+  const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
 
   const setmodal = (marker) => {
     try {
@@ -447,10 +447,17 @@ const TrackUserMapView = () => {
   const handleIconPress = () => {
     if (iconName === "times") {
       fetchAllMarkerCord();
-      setIconName("exchange-alt"); // アイコン名を元に戻す
+      if (indexStatus == "follow") {
+        setIconName("user-friends"); // アイコン名を "times" に変更
+      } else {
+        setIconName("star");
+      }
+    } else if (indexStatus == "follow") {
+      handleChangeIndex();
+      setIconName("star"); // アイコン名を "times" に変更
     } else {
       handleChangeIndex();
-      setIconName("exchange-alt"); // アイコン名を "times" に変更
+      setIconName("user-friends");
     }
   };
 
@@ -498,9 +505,11 @@ const TrackUserMapView = () => {
     if (indexStatus == "follow") {
       status = "star";
       setIndexStatus("star");
+      setIconName("user-friends");
     } else {
       status = "follow";
       setIndexStatus("follow");
+      setIconName("star");
     }
     fetchIndexBar(status);
   };
@@ -559,7 +568,7 @@ const TrackUserMapView = () => {
         setError(err.message);
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
@@ -705,6 +714,8 @@ const TrackUserMapView = () => {
           style={{
             position: "absolute",
             alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
             bottom: 30,
             width: 70,
             height: 70,
@@ -713,28 +724,29 @@ const TrackUserMapView = () => {
             display: postButtonVisible ? "flex" : "none",
           }}
           onPress={showAnimatedButtons}
-        />
-      ) : (
-        // </Link>
-        <Link
-          href={{
-            pathname: "/loginForm",
-          }}
-          asChild
         >
-          <Pressable
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              bottom: 30,
-              width: 70,
-              height: 70,
-              backgroundColor: "blue",
-              borderRadius: 35,
-              display: postButtonVisible ? "flex" : "none",
-            }}
-          ></Pressable>
-        </Link>
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
+      ) : (
+        <Pressable
+          style={{
+            position: "absolute",
+            alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
+            bottom: 30,
+            width: 70,
+            height: 70,
+            backgroundColor: "blue",
+            borderRadius: 35,
+            display: postButtonVisible ? "flex" : "none",
+          }}
+          onPress={() => {
+            router.push({ pathname: "/loginForm" });
+          }}
+        >
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
       )}
 
       {user ? (
