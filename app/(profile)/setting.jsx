@@ -12,6 +12,7 @@ import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import SwitchWithIcons from "react-native-switch-with-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -23,6 +24,8 @@ const myPage = () => {
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
+
+  const navigation = useNavigation();
 
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数

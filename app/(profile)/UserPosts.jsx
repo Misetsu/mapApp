@@ -35,7 +35,6 @@ export default function UserPosts() {
           .get();
 
         if (photoSnapshot.empty) {
-          console.log("このユーザーの写真は見つかりませんでした。");
           return;
         }
 

@@ -70,40 +70,46 @@ const SearchScreen = () => {
         .collection("follow")
         .where("followerId", "==", auth.currentUser.uid)
         .get();
-  
-      const followingList = followSnapshot.docs.map(doc => doc.data().followeeId);
-  
+
+      const followingList = followSnapshot.docs.map(
+        (doc) => doc.data().followeeId
+      );
+
       if (followingList.length > 0) {
         let potentialRecommendedUsersSet = new Set();
         let maxRetries = 5; // 最大5回のリトライ
         let retryCount = 0;
-  
+
         // おすすめユーザーが見つかるまで繰り返す
-        while (potentialRecommendedUsersSet.size === 0 && retryCount < maxRetries) {
+        while (
+          potentialRecommendedUsersSet.size === 0 &&
+          retryCount < maxRetries
+        ) {
           // ランダムに1人のフォロー中ユーザーを選択
-          const randomFolloweeId = followingList[Math.floor(Math.random() * followingList.length)];
-  
+          const randomFolloweeId =
+            followingList[Math.floor(Math.random() * followingList.length)];
+
           // 選択されたフォロー中ユーザーのフォローユーザーを取得
           const followeeFollowSnapshot = await firestore()
             .collection("follow")
             .where("followerId", "==", randomFolloweeId)
             .get();
-  
+
           for (const followeeDoc of followeeFollowSnapshot.docs) {
             const recommendedUserId = followeeDoc.data().followeeId;
-  
+
             // フォロワーがいるかを確認
             const followeeFollowersSnapshot = await firestore()
               .collection("follow")
               .where("followerId", "==", recommendedUserId)
               .get();
-  
+
             // フォロー中のユーザーを取得
             const followeeFollowingSnapshot = await firestore()
               .collection("follow")
               .where("followerId", "==", recommendedUserId)
               .get();
-  
+
             // フォロワーがいるかつ、現在のユーザーがフォローしていないことを確認
             if (
               followeeFollowersSnapshot.docs.length > 0 && // フォロワーがいる
@@ -111,43 +117,43 @@ const SearchScreen = () => {
               !followingList.includes(recommendedUserId) // フォローしていないユーザー
             ) {
               // フォロー中のユーザーがフォロワーだけでなく、他のユーザーもフォローしているかを確認
-              const isOnlyFollowingFollowers = followeeFollowingSnapshot.docs.every(followeeDoc =>
-                followingList.includes(followeeDoc.data().followeeId)
-              );
-  
+              const isOnlyFollowingFollowers =
+                followeeFollowingSnapshot.docs.every((followeeDoc) =>
+                  followingList.includes(followeeDoc.data().followeeId)
+                );
+
               // もしフォロワーだけをフォローしている場合は除外
               if (!isOnlyFollowingFollowers) {
                 potentialRecommendedUsersSet.add(recommendedUserId);
               }
             }
           }
-  
+
           retryCount++; // リトライカウントを増やす
         }
-  
+
         // 有効なユーザーをリストに変換してランダムに5人選択
         const validRecommendedUsers = Array.from(potentialRecommendedUsersSet);
-        const randomRecommendedUsers = validRecommendedUsers.sort(() => 0.5 - Math.random()).slice(0, 5);
-  
+        const randomRecommendedUsers = validRecommendedUsers
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 5);
+
         // おすすめユーザーを設定
         if (randomRecommendedUsers.length > 0) {
-          const recommendedUserData = await fetchUserDetails(randomRecommendedUsers);
+          const recommendedUserData = await fetchUserDetails(
+            randomRecommendedUsers
+          );
           setRecommendedUsers(recommendedUserData);
         } else {
           setRecommendedUsers([]); // それでも表示するユーザーがいない場合は空の配列を設定
-          console.log("おすすめユーザーはいません"); // コンソールにメッセージを表示
         }
       } else {
-        setRecommendedUsers([]); // フォロー中のユーザーがいない場合も空の配列を設定
-        console.log("おすすめユーザーはいません"); // コンソールにメッセージを表示
+        setRecommendedUsers([]); // フォロー中のユーザーがいない場合も空の配列を設定()
       }
     } catch (error) {
       console.error("Error fetching recommended users:", error);
     }
   };
-  
-  
-  
 
   // Firestoreからユーザーの詳細を取得
   const fetchUserDetails = async (userIds) => {
@@ -295,9 +301,14 @@ const UserItem = ({ user, isFollowing, onProfilePress, onFollowToggle }) => (
     </TouchableOpacity>
     <TouchableOpacity
       onPress={onFollowToggle}
-      style={[styles.followButton, isFollowing ? styles.followedButton : styles.unfollowedButton]}
+      style={[
+        styles.followButton,
+        isFollowing ? styles.followedButton : styles.unfollowedButton,
+      ]}
     >
-      <Text style={styles.buttonText}>{isFollowing ? "フォロー中" : "フォロー"}</Text>
+      <Text style={styles.buttonText}>
+        {isFollowing ? "フォロー中" : "フォロー"}
+      </Text>
     </TouchableOpacity>
   </View>
 );

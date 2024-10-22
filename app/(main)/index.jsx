@@ -339,8 +339,6 @@ const TrackUserMapView = () => {
           fetchResult.push(item);
         });
         setMarkerCords(fetchResult);
-      } else {
-        console.log("empty");
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -796,6 +794,17 @@ const TrackUserMapView = () => {
           <Icon name="crosshairs" size={24} color="#3333ff" />
         </TouchableOpacity>
       </View>
+
+      {/* 設定ボタンを一旦保留 */}
+      {/* <View style={styles.settingButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/setting")}
+          style={styles.button}
+        > */}
+      {/* 左側のアイコンやテキストをここに追加 */}
+      {/* <Icon name="cog" size={24} color="#000" />
+        </TouchableOpacity>
+      </View> */}
     </SafeAreaView>
   );
 };
