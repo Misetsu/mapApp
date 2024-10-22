@@ -10,14 +10,12 @@ import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
-import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { Animated, PanResponder } from "react-native";
 import SwitchWithIcons from "react-native-switch-with-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const auth = FirebaseAuth();
 const router = useRouter();
-const reference = storage();
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
@@ -26,6 +24,8 @@ const myPage = () => {
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
+
+  const navigation = useNavigation();
 
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
@@ -68,7 +68,7 @@ const myPage = () => {
   return (
     <ScrollView>
       <TouchableOpacity
-        onPress={() => router.push({ pathname: "/myPage" })}
+        onPress={handleBackPress}
         style={{
           width: 50, // 横幅を設定
           height: 50, // 高さを設定
@@ -81,6 +81,7 @@ const myPage = () => {
       </TouchableOpacity>
 
       <View style={styles.container}>
+        <Text style={styles.pagetitle}>SETTING</Text>
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.push("/profileEdit")}
@@ -88,10 +89,33 @@ const myPage = () => {
           <Text style={styles.buttonText}>EDIT</Text>
         </TouchableOpacity>
 
-        <View>
+        <View style={styles.FFcontainer}>
           <Text>公開非公開</Text>
-          <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+          <View style={(style = styles.SwitchBtn)}>
+            <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+          </View>
         </View>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/userPolicy")}
+        >
+          <Text style={styles.buttonText}>USER POLICY</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/privacyPolicy")}
+        >
+          <Text style={styles.buttonText}>PRIVACY POLICY</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/myPage")}
+        >
+          <Text style={styles.buttonText}>HELP</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#FF6666" }]}
@@ -134,7 +158,7 @@ const styles = StyleSheet.create({
   },
   pagetitle: {
     fontSize: 30,
-    margin: 10,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
   },
@@ -174,12 +198,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   FFcontainer: {
+    justifyContent: "space-between",
     flexDirection: "row", // 子要素を横並びに配置
-    justifyContent: "space-between", // 子要素間にスペースを空ける
     alignItems: "center", // 垂直方向の中央に揃える
-    width: "80%", // 横幅を80%に設定（任意）
     padding: 5, // 全体にパディング
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
   },
+  SwitchBtn: {},
   FFnum: {
     padding: 10,
   },

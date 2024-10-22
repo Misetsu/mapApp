@@ -13,14 +13,6 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  hitSlop: {
-    width: 50,
-    height: 50,
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -25 }, { translateY: -25 }],
-  },
   marker: {
     width: 20,
     height: 20,
@@ -92,10 +84,10 @@ export const styles = StyleSheet.create({
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F2F2",
-    padding: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+    width: 70,
+    height: 70,
     marginBottom: 10, // ボタン間にスペースを追加
-    borderRadius: 10,
   },
   buttonText: {
     color: "white",
@@ -104,26 +96,32 @@ export const styles = StyleSheet.create({
   },
   loignBtnContainer: {
     position: "absolute",
-    top: "10%",
-    marginTop: 20,
-    right: 20,
+    top: 90,
+    right: 0,
   },
   mapfixed: {
     position: "absolute",
-    bottom: "17%",
-    right: "5%",
+    top: 160,
+    right: 0,
   },
   defaultlocation: {
     position: "absolute",
-    bottom: "10%",
-    right: "5%",
+    top: 230,
+    right: 0,
+  },
+  settingButton: {
+    position: "absolute",
+    top: 300,
+    right: 0,
   },
   indexContainer: {
     position: "absolute",
     top: 0,
     width: "100%",
-    height: "10%",
-    backgroundColor: "#F2F2F2",
+    height: 90,
+    backgroundColor: "#f2f5c8",
+    borderBottomWidth: 3,
+    borderBottomColor: "#404040",
     padding: 10,
     justifyContent: "center",
     display: "flex",
@@ -146,13 +144,16 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   listProfileSize: {
-    margin: 5,
+    marginTop: 7.5,
+    margin: 10,
   },
   listProfileIndexButton: {
-    width: "15%",
+    width: 40,
     justifyContent: "center",
     alignContent: "center",
+    marginLeft: 20,
   },
+
   newButtonContainer: {
     alignItems: "center", // 新しいボタンを中央に配置
     bottom: 100,
@@ -306,7 +307,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#66bb66",
+        color: "#A3DE83",
       },
     ],
   },
@@ -315,7 +316,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#e0ffe0",
+        color: "#A3DE83",
       },
     ],
   },
@@ -324,7 +325,7 @@ export const customMapStyle = [
     elementType: "geometry.fill",
     stylers: [
       {
-        color: "#6699ff", // 水の色を青色に変更
+        color: "#90CDFF", // 水の色を青色に変更
       },
     ],
   },
@@ -333,7 +334,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#404040",
+        color: "#E8E8A6",
       },
     ],
   },
@@ -342,8 +343,8 @@ export const customMapStyle = [
     elementType: "geometry.stroke",
     stylers: [
       {
-        color: "#fcfcfc",
-        weight: 1,
+        color: "#239D60",
+        weight: 2,
       },
     ],
   },
@@ -352,7 +353,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#808080",
+        color: "#E8E8A6",
       },
     ],
   },
@@ -361,8 +362,8 @@ export const customMapStyle = [
     elementType: "geometry.stroke",
     stylers: [
       {
-        color: "#fcfcfc",
-        weight: 1,
+        color: "#239D60",
+        weight: 2,
       },
     ],
   },
@@ -371,7 +372,7 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#99dd66",
+        color: "#F2F5C8",
       },
     ],
   },
@@ -380,7 +381,8 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#33ccff",
+        color: "#1A73E8",
+        weight: 2,
       },
     ],
   },
@@ -390,7 +392,7 @@ export const customMapStyle = [
     stylers: [
       {
         color: "#ffffff",
-        weight: 1,
+        weight: 2,
       },
     ],
   },
@@ -399,17 +401,17 @@ export const customMapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: "#ffeecc",
+        color: "#F2F5C8",
       },
     ],
   },
   {
-    // 医療機関の背景色を指定（例: 薄いピンク色）
+    // 医療機関の背景色を指定
     featureType: "poi.medical",
     elementType: "geometry",
     stylers: [
       {
-        color: "#ffdddd",
+        color: "#F2F5C8",
       },
     ],
   },

@@ -11,7 +11,7 @@ import {
   StyleSheet,
   Animated,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -59,6 +59,7 @@ const TrackUserMapView = () => {
   const [userList, setUserList] = useState([]);
   const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
+  const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
 
   const setmodal = (marker) => {
     try {
@@ -332,16 +333,12 @@ const TrackUserMapView = () => {
         .collection("spot")
         .orderBy("id")
         .get();
-
       if (!querySnapshot.empty) {
         querySnapshot.forEach((docs) => {
           const item = docs.data();
           fetchResult.push(item);
         });
-
         setMarkerCords(fetchResult);
-      } else {
-        console.log("empty");
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -447,6 +444,23 @@ const TrackUserMapView = () => {
     setUserList(tempList);
   };
 
+  const handleIconPress = () => {
+    if (iconName === "times") {
+      fetchAllMarkerCord();
+      if (indexStatus == "follow") {
+        setIconName("user-friends"); // アイコン名を "times" に変更
+      } else {
+        setIconName("star");
+      }
+    } else if (indexStatus == "follow") {
+      handleChangeIndex();
+      setIconName("star"); // アイコン名を "times" に変更
+    } else {
+      handleChangeIndex();
+      setIconName("user-friends");
+    }
+  };
+
   const handleUserChoose = async (userId) => {
     const queryPost = await firestore()
       .collection("post")
@@ -483,6 +497,7 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
+    setIconName("times");
   };
 
   const handleChangeIndex = () => {
@@ -490,9 +505,11 @@ const TrackUserMapView = () => {
     if (indexStatus == "follow") {
       status = "star";
       setIndexStatus("star");
+      setIconName("user-friends");
     } else {
       status = "follow";
       setIndexStatus("follow");
+      setIconName("star");
     }
     fetchIndexBar(status);
   };
@@ -551,7 +568,7 @@ const TrackUserMapView = () => {
         setError(err.message);
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
@@ -606,21 +623,20 @@ const TrackUserMapView = () => {
           </Marker>
 
           {markerCords.map((marker) => (
-            <TouchableOpacity style={styles.hitSlop} key={marker.id}>
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(marker.mapLatitude),
-                  longitude: parseFloat(marker.mapLongitude),
-                }}
-                title={marker.name}
-                onPress={() => setmodal(marker)}
-              >
-                <Image
-                  source={getPinColor(marker)}
-                  style={styles.markerImage} //ピンの色
-                />
-              </Marker>
-            </TouchableOpacity>
+            <Marker
+              key={marker.id}
+              coordinate={{
+                latitude: parseFloat(marker.mapLatitude),
+                longitude: parseFloat(marker.mapLongitude),
+              }}
+              title={marker.name}
+              onPress={() => setmodal(marker)}
+            >
+              <Image
+                source={getPinColor(marker)}
+                style={styles.markerImage} //ピンの色
+              />
+            </Marker>
           ))}
         </MapView>
       )}
@@ -648,9 +664,9 @@ const TrackUserMapView = () => {
         />
         <TouchableOpacity
           style={styles.listProfileIndexButton}
-          onPress={handleChangeIndex}
+          onPress={handleIconPress} // 変更した関数を呼び出す
         >
-          <Icon name="exchange-alt" size={30} color="#000"></Icon>
+          <Icon name={iconName} size={30} color="#000"></Icon>
         </TouchableOpacity>
       </SafeAreaView>
 
@@ -735,6 +751,8 @@ const TrackUserMapView = () => {
           style={{
             position: "absolute",
             alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
             bottom: 30,
             width: 70,
             height: 70,
@@ -743,28 +761,29 @@ const TrackUserMapView = () => {
             display: postButtonVisible ? "flex" : "none",
           }}
           onPress={showAnimatedButtons}
-        />
-      ) : (
-        // </Link>
-        <Link
-          href={{
-            pathname: "/loginForm",
-          }}
-          asChild
         >
-          <Pressable
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              bottom: 30,
-              width: 70,
-              height: 70,
-              backgroundColor: "blue",
-              borderRadius: 35,
-              display: postButtonVisible ? "flex" : "none",
-            }}
-          ></Pressable>
-        </Link>
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
+      ) : (
+        <Pressable
+          style={{
+            position: "absolute",
+            alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
+            bottom: 30,
+            width: 70,
+            height: 70,
+            backgroundColor: "blue",
+            borderRadius: 35,
+            display: postButtonVisible ? "flex" : "none",
+          }}
+          onPress={() => {
+            router.push({ pathname: "/loginForm" });
+          }}
+        >
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
       )}
 
       {user ? (
@@ -824,6 +843,17 @@ const TrackUserMapView = () => {
           <Icon name="crosshairs" size={24} color="#3333ff" />
         </TouchableOpacity>
       </View>
+
+      {/* 設定ボタンを一旦保留 */}
+      {/* <View style={styles.settingButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/setting")}
+          style={styles.button}
+        > */}
+      {/* 左側のアイコンやテキストをここに追加 */}
+      {/* <Icon name="cog" size={24} color="#000" />
+        </TouchableOpacity>
+      </View> */}
     </SafeAreaView>
   );
 };
