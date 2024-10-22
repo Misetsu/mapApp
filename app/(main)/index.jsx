@@ -688,24 +688,61 @@ const TrackUserMapView = () => {
           <TouchableOpacity style={styles.roundButton} onPress={hideButtons}>
             <Icon name="times" size={25} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.roundButton} onPress={() => {}}>
-            <Icon name="map-marked-alt" size={25} color="#000" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.roundButton}
-            onPress={() => {
-              router.push({
-                pathname: "/camera",
-                params: {
-                  latitude: position.latitude,
-                  longitude: position.longitude,
-                  spotId: 0,
-                },
-              });
-            }}
-          >
-            <Icon name="map-marker-alt" size={25} color="#000" />
-          </TouchableOpacity>
+          {user ? (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/selectSpot",
+                  params: {
+                    latitude: position.latitude,
+                    longitude: position.longitude,
+                  },
+                });
+              }}
+            >
+              <Icon name="map-marked-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/loginForm",
+                });
+              }}
+            >
+              <Icon name="map-marked-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          )}
+          {user ? (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/camera",
+                  params: {
+                    latitude: position.latitude,
+                    longitude: position.longitude,
+                    spotId: 0,
+                  },
+                });
+              }}
+            >
+              <Icon name="map-marker-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/loginForm",
+                });
+              }}
+            >
+              <Icon name="map-marker-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          )}
         </Animated.View>
       )}
 
