@@ -14,6 +14,7 @@ import MapView, { Marker } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { customMapStyle, styles } from "../component/styles";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -45,6 +46,10 @@ const SelectSpot = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [markerCords, setMarkerCords] = useState([]);
+
+  const handleBackPress = () => {
+    router.back(); // 前の画面に戻る
+  };
 
   const setmodal = (marker) => {
     try {
@@ -184,7 +189,7 @@ const SelectSpot = () => {
   }, []);
 
   return (
-    <SafeAreaView style={StyleSheet.absoluteFillObject}>
+    <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
       </View>
@@ -241,6 +246,40 @@ const SelectSpot = () => {
           ))}
         </MapView>
       )}
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          width: "100%",
+          backgroundColor: "#F2F2F2",
+          flexDirection: "row", // 横並びに配置
+          justifyContent: "space-between", // 左右にスペースを均等に配置
+          alignItems: "center", // 縦方向の中央揃え
+          height: 50, // 高さを指定
+        }}
+      >
+        <TouchableOpacity
+          onPress={handleBackPress}
+          style={{
+            width: 50, // 横幅を設定
+            height: 50, // 高さを設定
+            justifyContent: "center", // 縦中央揃え
+            alignItems: "center", // 横中央揃え
+          }}
+        >
+          {/* 右側のアイコンやテキストをここに追加 */}
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
+        <Text>投稿したいピンを選択してください</Text>
+        <TouchableOpacity
+          style={{
+            width: 50, // 横幅を設定
+            height: 50, // 高さを設定
+            justifyContent: "center", // 縦中央揃え
+            alignItems: "center", // 横中央揃え
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 };
