@@ -41,7 +41,6 @@ export default function CameraScreen() {
 
   const params = useLocalSearchParams();
   const { latitude, longitude, spotId } = params;
-  console.log(spotId);
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
@@ -97,11 +96,9 @@ export default function CameraScreen() {
   const onTakePicturePressed = async () => {
     try {
       if (cameraRef.current == null) {
-        console.log("null");
         return;
       }
       const photo = await cameraRef.current.takePhoto();
-      console.log(photo);
       router.navigate({
         pathname: "/edit",
         params: {
