@@ -10,59 +10,11 @@ import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
-import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { Animated, PanResponder } from "react-native";
 import SwitchWithIcons from "react-native-switch-with-icons";
 
 const auth = FirebaseAuth();
 const router = useRouter();
-const reference = storage();
-
-// const SlideButton = ({ onComplete, slideBtn }) => {
-//   const [slideAnim] = useState(new Animated.Value(0)); // スライド位置のアニメーション値
-
-//   const panResponder = PanResponder.create({
-//     onMoveShouldSetPanResponder: () => true,
-//     onPanResponderMove: (e, gestureState) => {
-//       const { dx } = gestureState;
-
-//       // 左右の制限を設定（ボタンの幅を考慮）
-//       if (dx >= 0 && dx <= 250) {
-//         slideAnim.setValue(dx);
-//       } else if (dx < 0) {
-//         slideAnim.setValue(0); // 左にスライドしたときは元の位置に戻す
-//       }
-//     },
-//     onPanResponderRelease: (e, gestureState) => {
-//       const { dx } = gestureState;
-
-//       if (dx >= 250) {
-//         // スライドが成功した場合のアクション（右から左へのスライド）
-//         onComplete();
-//       } else if (dx <= -250) {
-//         // スライドが成功した場合のアクション（左から右へのスライド）
-//         onComplete();
-//       } else {
-//         // スライドが不十分の場合、元に戻す
-//         Animated.spring(slideAnim, {
-//           toValue: 0,
-//           useNativeDriver: false,
-//         }).start();
-//       }
-//     },
-//   });
-
-//   return (
-//     <View style={styles.track}>
-//       <Animated.View
-//         {...panResponder.panHandlers}
-//         style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
-//       ></Animated.View>
-//       <Text style={styles.slideBtn}>{slideBtn}</Text>
-//     </View>
-//   );
-// };
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
@@ -113,7 +65,7 @@ const myPage = () => {
   return (
     <ScrollView>
       <TouchableOpacity
-        onPress={() => router.push({ pathname: "/myPage" })}
+        onPress={handleBackPress}
         style={{
           width: 50, // 横幅を設定
           height: 50, // 高さを設定
@@ -136,7 +88,7 @@ const myPage = () => {
 
         <View style={styles.FFcontainer}>
           <Text>公開非公開</Text>
-          <View style={style=styles.SwitchBtn}>
+          <View style={(style = styles.SwitchBtn)}>
             <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
           </View>
         </View>
@@ -154,14 +106,14 @@ const myPage = () => {
         >
           <Text style={styles.buttonText}>PRIVACY POLICY</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.push("/myPage")}
         >
           <Text style={styles.buttonText}>HELP</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#FF6666" }]}
           onPress={signout}
@@ -243,16 +195,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   FFcontainer: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     flexDirection: "row", // 子要素を横並びに配置
     alignItems: "center", // 垂直方向の中央に揃える
     padding: 5, // 全体にパディング
     height: 50,
     marginBottom: 10, // ボタン間にスペースを追加
   },
-  SwitchBtn:
-  { 
-  },
+  SwitchBtn: {},
   FFnum: {
     padding: 10,
   },
