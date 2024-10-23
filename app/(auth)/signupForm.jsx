@@ -45,6 +45,7 @@ const SignupScreen = () => {
         .set({
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
+          email: auth.currentUser.email,
           lastPostAt: "0", // TODO
           publicStatus: 0, // TODO
           photoURL:

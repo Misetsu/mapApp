@@ -100,6 +100,28 @@ const myPage = () => {
     return url;
   };
 
+  const signout = async () => {
+    await auth.signOut();
+    router.replace({ pathname: "/" });
+  };
+
+  const handleChangePassword = async () => {
+    if (auth.currentUser.providerData[0].providerId == "google.com") {
+    } else {
+      auth
+        .sendPasswordResetEmail(auth.currentUser.email)
+        .then(() => {
+          alert(
+            "パスワードを変更するメールを登録されているメールアドレスに送信しました。"
+          );
+          signout();
+        })
+        .catch((error) => {
+          alert(error);
+        });
+    }
+  };
+
   return (
     <ScrollView>
       <TouchableOpacity
@@ -145,9 +167,9 @@ const myPage = () => {
           editable={true}
         />
 
-        <Link href={{ pathname: "/" }} asChild>
+        <TouchableOpacity onPress={handleChangePassword}>
           <Text style={styles.linklabel}>Change password?</Text>
-        </Link>
+        </TouchableOpacity>
 
         {editable && (
           <TouchableOpacity
