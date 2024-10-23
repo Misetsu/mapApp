@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome";
 import FirebaseAuth from "@react-native-firebase/auth";
+import { ScrollView } from 'react-native';
 
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
@@ -21,24 +22,30 @@ const SearchScreen = () => {
   const [searchResult, setSearchResult] = useState([]); // 検索結果
   const [following, setFollowing] = useState({}); // フォローしているユーザーの状態
   const [recommendedUsers, setRecommendedUsers] = useState([]); // おすすめユーザーリスト
-  const [officialUser, setOfficialUser] = useState(null); // 公式ユーザー
+  const [officialUsers, setOfficialUsers] = useState([]); // 公式ユーザーのリスト
 
   useEffect(() => {
     fetchFollowingData(); // フォローしているユーザーのデータを取得
     fetchRecommendedUsers(); // おすすめユーザーを取得
-    fetchOfficialUser(); // 公式ユーザーを取得
+    fetchOfficialUsers(); // 公式ユーザーを取得
   }, []);
 
   // 公式ユーザーを取得
-  const fetchOfficialUser = async () => {
+  const fetchOfficialUsers = async () => {
     try {
-      const officialUid = "2tjGBOa6snXpIpxb2drbSvUAmb83";
-      const userSnapshot = await firestore()
-        .collection("users")
-        .where("uid", "==", officialUid)
-        .get();
-      const officialUserData = userSnapshot.docs[0]?.data();
-      setOfficialUser(officialUserData);
+      const officialUids = ["2tjGBOa6snXpIpxb2drbSvUAmb83", "H0zKYLQyeggzzCYgZM6bUddAItU2"];
+      const userSnapshots = await Promise.all(
+        officialUids.map(async (uid) => {
+          const userSnapshot = await firestore()
+            .collection("users")
+            .where("uid", "==", uid)
+            .get();
+          return userSnapshot.docs[0]?.data();
+        })
+      );
+  
+      const officialUserData = userSnapshots.filter((user) => user); // 存在するユーザーのみ取得
+      setOfficialUsers(officialUserData);
     } catch (error) {
       console.error("Error fetching official user data:", error);
     }
@@ -235,24 +242,31 @@ const SearchScreen = () => {
         />
       </View>
 
-      {/* おすすめ公式ユーザーの表示 */}
-      {officialUser && (
-        <View style={styles.recommendedContainer}>
-          <Text style={styles.sectionTitle}>おすすめ公式ユーザー</Text>
+       {/* 公式ユーザーの表示 */}
+    {officialUsers.length > 0 && (
+      <>
+      <Text style={styles.sectionTitle}>公式アカウント</Text>
+        <ScrollView style={styles.recommendedContainer}>
+        
+        {officialUsers.map((user) => (
           <UserItem
-            key={officialUser.uid}
-            user={officialUser}
-            isFollowing={following[officialUser.uid]}
-            onProfilePress={() => handleProfile(officialUser.uid)}
-            onFollowToggle={() => handleFollowToggle(officialUser.uid)}
+            key={user.uid}
+            user={user}
+            isFollowing={following[user.uid]}
+            onProfilePress={() => handleProfile(user.uid)}
+            onFollowToggle={() => handleFollowToggle(user.uid)}
           />
-        </View>
-      )}
+        ))}
+      </ScrollView>
+      </>
+    )}
 
       {/* おすすめユーザーの表示 */}
       {searchText === "" && recommendedUsers.length > 0 && (
-        <View style={styles.recommendedContainer}>
-          <Text style={styles.sectionTitle}>おすすめユーザー</Text>
+        <>
+        <Text style={styles.sectionTitle}>おすすめユーザー</Text>
+          <ScrollView style={styles.recommendedContainer}>
+          
           {recommendedUsers.map((user) => (
             <UserItem
               key={user.uid}
@@ -262,7 +276,8 @@ const SearchScreen = () => {
               onFollowToggle={() => handleFollowToggle(user.uid)}
             />
           ))}
-        </View>
+        </ScrollView>
+        </>
       )}
 
       {/* 検索結果の表示 */}
@@ -307,21 +322,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: "#f8f9fa", // 背景色を明るく
   },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    borderColor: "#ddd",
+    borderColor: "#ccc", // 少し濃いグレーに
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 5,
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "#fff", // 背景を白にしてシャープに
     marginBottom: 20,
+    shadowColor: "#000", // 軽いシャドウを追加
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2, // Androidのシャドウ
   },
   icon: {
     marginRight: 10,
+    color: "#668991", // アイコンにテーマカラーを適用
   },
   input: {
     flex: 1,
+    fontSize: 16,
+    color: "#333", // テキストの色を濃く
   },
   recommendedContainer: {
     marginBottom: 20,
@@ -330,15 +355,24 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20, // タイトルを少し大きく
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 15,
+    color: "#1f2121", // テーマカラーに変更
   },
   resultBar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 15, // パディングを広めに
+    backgroundColor: "#fff", // 各結果の背景を白に
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: "#000", // シャドウを追加
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2, // Android向けのシャドウ
   },
   userInfo: {
     flexDirection: "row",
@@ -349,18 +383,30 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 10,
+    borderWidth: 2, // 枠線を追加
+    borderColor: "#668991", // 枠線の色をテーマカラーに
   },
   resultText: {
     fontSize: 16,
+    color: "#555", // テキストの色を少し淡く
   },
   followButton: {
-    backgroundColor: "#007bff",
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: "#668991",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    shadowColor: "#007bff", // ボタンにもシャドウを追加
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
   buttonText: {
     color: "#fff",
+    fontSize: 14,
+    fontWeight: "600", // ボタンのテキストを太めに
   },
 });
+
 
 export default SearchScreen;
