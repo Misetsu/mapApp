@@ -1,5 +1,5 @@
 // MyModal.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,16 @@ import {
   TouchableOpacity,
   Pressable,
   ScrollView,
+  Animated,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
+const router = useRouter();
 
 const MyModal = ({
   visible,
@@ -27,20 +30,8 @@ const MyModal = ({
   onClose,
 }) => {
   const [likes, setLikes] = useState({});
-  const [tempObj, setTempObj] = useState({}); // 各投稿のlikeCountを管理
-
-  useEffect(() => {
-    const initialLikes = {};
-    const initialCounts = {};
-    
-    postData.forEach((post) => {
-      initialLikes[post.postId] = post.likeFlag;
-      initialCounts[post.postId] = post.likeCount;
-    });
-    
-    setLikes(initialLikes);
-    setTempObj(initialCounts);
-  }, [postData]);
+  const [showButtons, setShowButtons] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
@@ -48,50 +39,106 @@ const MyModal = ({
       [postId]: !prevLikes[postId],
     }));
   };
+  const tempObj1 = {};
+  const tempObj2 = {};
+  postData.map((post) => {
+    tempObj1[post.postId] = post.likeFlag;
+    tempObj2[post.postId] = post.likeCount;
+  });
 
-  const updateLikeCount = async (postId, countChange) => {
-    const userId = auth.currentUser?.uid; // ログイン状態を確認
-    if (!userId) {
-      console.error("ユーザーがログインしていません。");
-      return; // ログインしていない場合は処理を中断
-    }
-    try {
+  const handleUnlike = async (postId, index) => {
+    if (likes[postId] == true) {
+      handleSimpleLike(postId, index);
+    } else {
+      handleLikePress(postId);
+      tempObj2[postId] = tempObj2[postId] - 1;
       const querylike = await firestore()
         .collection("like")
         .where("postId", "==", postId)
         .get();
-
-      if (!querylike.empty) {
-        const queryId = querylike.docs[0].ref.id;
-        await firestore()
-          .collection("like")
-          .doc(queryId)
-          .update({
-            count: FieldValue.increment(countChange), // countをインクリメント
-            userId: countChange > 0 ? userId : FieldValue.delete(), // いいね追加の場合はuserIdを設定、削除の場合は削除
-          });
-      }
-    } catch (error) {
-      console.error("いいねの更新中にエラーが発生しました: ", error);
+      const queryId = querylike.docs[0].ref._documentPath._parts[1];
+      await firestore()
+        .collection("like")
+        .doc(queryId)
+        .update({
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: FieldValue.delete(),
+        });
     }
   };
 
-  const handleUnlike = async (postId) => {
-    if (likes[postId]) {
-      handleLikePress(postId);
-      setTempObj((prev) => ({ ...prev, [postId]: prev[postId] - 1 })); // local stateのカウントを更新
-      await updateLikeCount(postId, -1); // いいねを外す
-    }
+  const handleSimpleUnlike = async (postId, index) => {
+    handleLikePress(postId);
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", postId)
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: tempObj2[postId],
+        [auth.currentUser.uid]: FieldValue.delete(),
+      });
   };
 
-  const handleLike = async (postId) => {
-    if (!likes[postId]) {
-      handleLikePress(postId);
-      setTempObj((prev) => ({ ...prev, [postId]: prev[postId] + 1 })); // local stateのカウントを更新
-      await updateLikeCount(postId, 1); // いいねを追加
+  const handleLike = async (postId, index) => {
+    if (likes[postId] == true) {
+      handleSimpleUnlike(postId, index);
     } else {
-      handleUnlike(postId); // すでにいいねしている場合は、いいねを外す
+      handleLikePress(postId);
+      tempObj2[postId] = tempObj2[postId] + 1;
+      const querylike = await firestore()
+        .collection("like")
+        .where("postId", "==", postId)
+        .get();
+      const queryId = querylike.docs[0].ref._documentPath._parts[1];
+      await firestore()
+        .collection("like")
+        .doc(queryId)
+        .update({
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: auth.currentUser.uid,
+        });
     }
+  };
+
+  const handleSimpleLike = async (postId, index) => {
+    handleLikePress(postId);
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", postId)
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: tempObj2[postId],
+        [auth.currentUser.uid]: auth.currentUser.uid,
+      });
+  };
+
+  // ボタンを表示してフェードイン
+  const showAnimatedButtons = () => {
+    setShowButtons(true);
+    Animated.timing(fadeAnim, {
+      toValue: 1, // 完全に表示
+      duration: 500, // 0.5秒でフェードイン
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // 新しいボタン1を押したときにボタンをフェードアウトして非表示
+  const hideButtons = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0, // 完全に非表示
+      duration: 500, // 0.5秒でフェードアウト
+      useNativeDriver: true,
+    }).start(() => {
+      setShowButtons(false); // フェードアウト完了後にボタンを非表示
+    });
   };
 
   return (
@@ -103,17 +150,19 @@ const MyModal = ({
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
+          {/* ✖ ボタン */}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>✖</Text>
+            <Text style={styles.closeButtonText}>{/* スタイルを設定 */}✖</Text>
           </TouchableOpacity>
 
           <ScrollView>
             {loading ? (
               <Text>読み込み中...</Text>
             ) : !empty && postData.length > 0 ? (
-              postData.map((post) => {
+              postData.map((post, index) => {
                 const isLiked = likes[post.postId];
-                const count = tempObj[post.postId];
+                const flag = tempObj1[post.postId];
+                const count = tempObj2[post.postId];
                 return (
                   <View key={post.postId}>
                     <Link
@@ -146,51 +195,205 @@ const MyModal = ({
                       />
                     )}
 
+                    {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
-                      <Text>
+                      {/* いいねボタン */}
+                      {postImage ? (
+                        <View>
+                          {flag ? (
+                            <TouchableOpacity
+                              style={styles.likeButton}
+                              onPress={() => handleUnlike(post.postId, index)}
+                            >
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#000" : "#f00"}
+                              />
+                              <Text
+                                style={{ color: isLiked ? "black" : "red" }}
+                              >
+                                {isLiked ? count - 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.likeButton}
+                              onPress={() => handleLike(post.postId, index)}
+                            >
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#f00" : "#000"}
+                              />
+                              <Text
+                                style={{ color: isLiked ? "red" : "black" }}
+                              >
+                                {isLiked ? count + 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      ) : (
+                        <View>
+                          {flag ? (
+                            <TouchableOpacity style={styles.likeButton}>
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#000" : "#f00"}
+                              />
+                              <Text
+                                style={{ color: isLiked ? "black" : "red" }}
+                              >
+                                {isLiked ? count - 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity style={styles.likeButton}>
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#f00" : "#000"}
+                              />
+                              <Text
+                                style={{ color: isLiked ? "red" : "black" }}
+                              >
+                                {isLiked ? count + 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      )}
+
+                      <Text style={{ fontSize: 10, color: "#4d4d4d" }}>
                         {formatInTimeZone(
                           new Date(post.timestamp),
                           "Asia/Tokyo",
-                          "yyyy/MM/dd HH:mm"
+                          "yyyy年MM月dd日 HH:mm"
                         )}
                       </Text>
-
-                      <TouchableOpacity
-                        style={styles.likeButton}
-                        onPress={() => handleLike(post.postId)}
-                      >
-                        <Text style={{ color: isLiked ? "red" : "black" }}>
-                          {isLiked ? "❤️ " + count : "♡ " + count}
-                        </Text>
-                      </TouchableOpacity>
                     </View>
 
                     <Text>{post.postText}</Text>
+
+                    {postImage ? (
+                      <View style={styles.toolView}>
+                        {showButtons && (
+                          <Animated.View
+                            style={[styles.buttonView, { opacity: fadeAnim }]}
+                          >
+                            <Pressable
+                              style={styles.roundButton}
+                              onPress={hideButtons}
+                            >
+                              <Icon name="times" size={25} color="#000" />
+                            </Pressable>
+                            <Pressable
+                              style={styles.roundButton}
+                              onPress={() => {
+                                router.push({
+                                  pathname: "/cameraComposition",
+                                  params: {
+                                    latitude: 0,
+                                    longitude: 0,
+                                    spotId: spotId,
+                                  },
+                                });
+                              }}
+                            >
+                              <Icon name="images" size={25} color="#000" />
+                            </Pressable>
+                            <Pressable
+                              style={styles.roundButton}
+                              onPress={() => {
+                                router.push({
+                                  pathname: "/camera",
+                                  params: {
+                                    latitude: 0,
+                                    longitude: 0,
+                                    spotId: spotId,
+                                  },
+                                });
+                              }}
+                            >
+                              <Icon name="camera" size={25} color="#000" />
+                            </Pressable>
+                          </Animated.View>
+                        )}
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={showAnimatedButtons}
+                        >
+                          <Icon name="map-marked-alt" size={25} color="#000" />
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <View style={styles.toolView} />
+                    )}
                   </View>
                 );
               })
             ) : (
-              <Text>投稿がありません</Text>
+              <View>
+                <Text>投稿がありません</Text>
+                {postImage ? (
+                  <View style={styles.toolView}>
+                    {showButtons && (
+                      <Animated.View
+                        style={[styles.buttonView, { opacity: fadeAnim }]}
+                      >
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={hideButtons}
+                        >
+                          <Icon name="times" size={25} color="#000" />
+                        </Pressable>
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/cameraComposition",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                              },
+                            });
+                          }}
+                        >
+                          <Icon name="images" size={25} color="#000" />
+                        </Pressable>
+                        <Pressable
+                          style={styles.roundButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/camera",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                              },
+                            });
+                          }}
+                        >
+                          <Icon name="camera" size={25} color="#000" />
+                        </Pressable>
+                      </Animated.View>
+                    )}
+                    <Pressable
+                      style={styles.roundButton}
+                      onPress={showAnimatedButtons}
+                    >
+                      <Icon name="map-marked-alt" size={25} color="#000" />
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View style={styles.toolView} />
+                )}
+              </View>
             )}
           </ScrollView>
-
-          <View style={styles.toolView}>
-            <Link
-              href={{
-                pathname: "/camera",
-                params: {
-                  latitude: 0,
-                  longitude: 0,
-                  spotId: spotId,
-                },
-              }}
-              asChild
-            >
-              <Pressable style={styles.postButton}>
-                <Text style={styles.postButtonText}>投稿</Text>
-              </Pressable>
-            </Link>
-          </View>
         </View>
       </View>
     </Modal>
@@ -222,15 +425,19 @@ const styles = StyleSheet.create({
   },
   toolView: {
     marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: "row", // 横方向に要素を配置
+    justifyContent: "flex-end", // 右寄せにする
+  },
+  buttonView: {
+    flexDirection: "row", // 横方向に要素を配置
+    justifyContent: "flex-end", // 右寄せにする
   },
   postButton: {
     width: 75,
     height: 25,
     backgroundColor: "blue",
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 垂直方向の中央揃え
+    alignItems: "center", // 水平方向の中央揃え
   },
   postButtonText: {
     color: "#FFFFFF",
@@ -246,23 +453,38 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   likeButton: {
-    marginLeft: 10,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+    gap: 5,
   },
   closeButton: {
-    position: "absolute",
+    position: "absolute", //絶対配置
     top: 10,
     right: 10,
     padding: 10,
     zIndex: 1,
   },
   closeButtonText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#888",
+    color: "black",
   },
   dateLikeRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: "row", //右端に配置
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  roundButton: {
+    backgroundColor: "#007AFF", // ボタンの背景色
+    borderRadius: 25, // ボタンを丸くするために大きめの値を指定
+    width: 50, // ボタンの幅
+    height: 50, // ボタンの高さ
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+    marginBottom: 10, // ボタン間の余白
   },
 });
 

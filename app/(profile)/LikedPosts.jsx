@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Image, StyleSheet, Text, ActivityIndicator, Modal, TouchableOpacity } from "react-native";
+import {
+  View,
+  Image,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  Modal,
+  TouchableOpacity,
+} from "react-native";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
@@ -9,8 +17,8 @@ const auth = FirebaseAuth();
 export default function UserLikedPosts() {
   const [likedPosts, setLikedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState(null);  // クリックされた画像の詳細用
-  const [modalVisible, setModalVisible] = useState(false);  // モーダル表示の制御用
+  const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
+  const [modalVisible, setModalVisible] = useState(false); // モーダル表示の制御用
   const userId = auth.currentUser?.uid;
 
   useEffect(() => {
@@ -22,7 +30,7 @@ export default function UserLikedPosts() {
         // like コレクションからユーザーがいいねしたデータを取得
         const likeSnapshot = await firestore()
           .collection("like")
-          .where("userId", "==", userId)  // 自分の userId に基づいたいいねを取得
+          .where(userId, "==", userId) // 自分の userId に基づいたいいねを取得
           .get();
 
         if (likeSnapshot.empty) {
@@ -37,7 +45,7 @@ export default function UserLikedPosts() {
           // postId を使って photo コレクションからデータを取得
           const photoSnapshot = await firestore()
             .collection("photo")
-            .where("postId", "==", postId)  // postId に基づいて photo データを取得
+            .where("postId", "==", postId) // postId に基づいて photo データを取得
             .get();
 
           if (!photoSnapshot.empty) {
@@ -46,14 +54,16 @@ export default function UserLikedPosts() {
 
             // 画像パスが存在する場合、URL を取得
             if (photoData.imagePath) {
-              photoUri = await storage().ref(photoData.imagePath).getDownloadURL();
+              photoUri = await storage()
+                .ref(photoData.imagePath)
+                .getDownloadURL();
             }
 
             return {
               postId: photoData.postId,
               photoUri: photoUri,
-              postTxt: photoData.postTxt,  // 投稿テキスト
-              spotId: photoData.spotId,    // スポットIDも保存
+              postTxt: photoData.postTxt, // 投稿テキスト
+              spotId: photoData.spotId, // スポットIDも保存
             };
           }
         });
@@ -75,7 +85,7 @@ export default function UserLikedPosts() {
       // postId を使って post コレクションからデータを取得
       const postSnapshot = await firestore()
         .collection("post")
-        .where("id", "==", post.postId)  // 画像の postId を使って投稿を取得
+        .where("id", "==", post.postId) // 画像の postId を使って投稿を取得
         .get();
 
       let postDetails = null;
@@ -87,7 +97,7 @@ export default function UserLikedPosts() {
       // spotId を使って spot コレクションから名前を取得
       const spotSnapshot = await firestore()
         .collection("spot")
-        .where("id", "==", post.spotId)  // 画像の spotId を使ってスポットを取得
+        .where("id", "==", post.spotId) // 画像の spotId を使ってスポットを取得
         .get();
 
       let spotName = null;
@@ -104,19 +114,19 @@ export default function UserLikedPosts() {
 
       let likeCount = 0;
       if (!likeSnapShot.empty) {
-        likeCount = likeSnapShot.docs[0].data().count || 0;  // デフォルトのカウントを 0 に設定
+        likeCount = likeSnapShot.docs[0].data().count || 0; // デフォルトのカウントを 0 に設定
       }
 
-      setSelectedPost({ ...post, postDetails, spotName, likeCount });  // 画像の情報と投稿の詳細、スポットの名前、いいねの数を保存
-      setModalVisible(true);  // モーダルを表示
+      setSelectedPost({ ...post, postDetails, spotName, likeCount }); // 画像の情報と投稿の詳細、スポットの名前、いいねの数を保存
+      setModalVisible(true); // モーダルを表示
     } catch (error) {
       console.error("投稿データの取得中にエラーが発生しました: ", error);
     }
   };
 
   const closeModal = () => {
-    setModalVisible(false);  // モーダルを閉じる
-    setSelectedPost(null);  // 選択された画像のリセット
+    setModalVisible(false); // モーダルを閉じる
+    setSelectedPost(null); // 選択された画像のリセット
   };
 
   if (loading) {
@@ -135,12 +145,13 @@ export default function UserLikedPosts() {
       ) : (
         <View style={styles.grid}>
           {likedPosts.map((post) => (
-            <TouchableOpacity key={post.postId} onPress={() => handleImagePress(post)} style={styles.postContainer}>
+            <TouchableOpacity
+              key={post.postId}
+              onPress={() => handleImagePress(post)}
+              style={styles.postContainer}
+            >
               {post.photoUri ? (
-                <Image
-                  source={{ uri: post.photoUri }}
-                  style={styles.image}
-                />
+                <Image source={{ uri: post.photoUri }} style={styles.image} />
               ) : (
                 <Text>画像がありません。</Text>
               )}
@@ -161,18 +172,27 @@ export default function UserLikedPosts() {
             {selectedPost && (
               <>
                 {selectedPost.spotName && (
-                  <Text style={styles.spotContent}>{selectedPost.spotName}</Text>
+                  <Text style={styles.spotContent}>
+                    {selectedPost.spotName}
+                  </Text>
                 )}
                 {selectedPost.photoUri ? (
-                  <Image source={{ uri: selectedPost.photoUri }} style={styles.modalImage} />
+                  <Image
+                    source={{ uri: selectedPost.photoUri }}
+                    style={styles.modalImage}
+                  />
                 ) : (
                   <Text>画像がありません。</Text>
                 )}
                 {selectedPost.postDetails?.postTxt && (
-                  <Text style={styles.postContent}>{selectedPost.postDetails.postTxt}</Text>
+                  <Text style={styles.postContent}>
+                    {selectedPost.postDetails.postTxt}
+                  </Text>
                 )}
                 {selectedPost.likeCount > 0 && (
-                  <Text style={styles.likeCountText}>❤: {selectedPost.likeCount}</Text>
+                  <Text style={styles.likeCountText}>
+                    ❤ {selectedPost.likeCount}
+                  </Text>
                 )}
               </>
             )}
@@ -218,7 +238,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.6)",  // 背景の透明度を少し高めました
+    backgroundColor: "rgba(0, 0, 0, 0.6)", // 背景の透明度を少し高めました
   },
   modalContent: {
     width: 320,
@@ -228,16 +248,16 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 6,  // モーダルに軽い影を追加
+    shadowRadius: 6, // モーダルに軽い影を追加
     alignItems: "center",
   },
   modalImage: {
     width: 280,
     height: 280,
-    borderRadius: 12,  // 画像の角を少し丸く
+    borderRadius: 12, // 画像の角を少し丸く
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#ddd",  // 画像に軽い枠を追加
+    borderColor: "#ddd", // 画像に軽い枠を追加
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
