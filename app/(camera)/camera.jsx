@@ -34,6 +34,7 @@ const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
   const cameraRef = useRef(null);
+  const ViewRef = useRef(null);
   const device = useCameraDevice("back");
   const { hasPermission, requestPermission } = useCameraPermission();
   const [isActive, setIsActive] = useState(false);
@@ -133,6 +134,18 @@ export default function CameraScreen() {
       });
     }
   }
+
+  useEffect(() => {
+    if (cameraRef.current) {
+      console.log("１");
+    }
+  }, [cameraRef]);
+
+  useEffect(() => {
+    if (ViewRef.current) {
+      console.log("２");
+    }
+  }, [ViewRef]);
   //exposuer slider
   const exposureValue = useDerivedValue(() => {
     if (device == null) return 0;
@@ -148,7 +161,7 @@ export default function CameraScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={styles.container}>
+      <View style={styles.container} ref={ViewRef}>
         <Stack.Screen options={{ headerShown: false }} />
 
         <View style={styles.cameraContainer}>
@@ -161,6 +174,9 @@ export default function CameraScreen() {
               format={format}
               isActive={isActive}
               animatedProps={animatedProps}
+              onCameraReady={() => {
+                console.log("カメラ")
+              }}
             />
           </GestureDetector>
         </View>
@@ -207,8 +223,10 @@ const styles = StyleSheet.create({
   cameraContainer: {
     // height: "auto",
     width: "auto",
+    backgroundColor: "black",
   },
   camera: {
+    backgroundColor: "coral",
     flex: 0.8,
     aspectRatio: 3 / 4,
   },
