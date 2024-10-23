@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   ScrollView,
   View,
@@ -7,20 +7,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
-import FirebaseAuth from "@react-native-firebase/auth";
-import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { Animated, PanResponder } from "react-native";
-import SwitchWithIcons from "react-native-switch-with-icons";
 
 const router = useRouter();
 
 const myPage = () => {
-  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
-  const [userStatus, setUserStatus] = useState(0);
-
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
@@ -145,44 +136,39 @@ const myPage = () => {
 
 
   `;
-  
+
   return (
     <ScrollView>
-        <View style={styles.header}>
-    <TouchableOpacity
-      onPress={() => router.push({ pathname: "/setting" })}
-      style={styles.iconButton}
-    >
-      <Icon name="angle-left" size={24} color="#000" />
-    </TouchableOpacity>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.iconButton}>
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
 
-    <Text style={styles.pagetitle}>利用規約</Text>
-  </View>
+        <Text style={styles.pagetitle}>利用規約</Text>
+      </View>
 
-  <View style={styles.container}>
-    <Text style={{ fontSize: 16, lineHeight: 24 }}>
-      {termsText}
-    </Text>
-  </View>
+      <View style={styles.container}>
+        <Text style={{ fontSize: 16, lineHeight: 24 }}>{termsText}</Text>
+      </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row', // 横並びにする
-    alignItems: 'center',  // 縦方向の中央揃え
-    justifyContent: 'flex-start', // アイコンを左端に配置
+    flexDirection: "row", // 横並びにする
+    alignItems: "center", // 縦方向の中央揃え
+    justifyContent: "flex-start", // アイコンを左端に配置
   },
   iconButton: {
-    width: 50,             // 横幅を設定
-    height: 50,            // 高さを設定
-    justifyContent: 'center', // 縦中央揃え
-    alignItems: 'center',    // 横中央揃え
+    width: 50, // 横幅を設定
+    height: 50, // 高さを設定
+    justifyContent: "center", // 縦中央揃え
+    alignItems: "center", // 横中央揃え
   },
   pagetitle: {
-    fontSize: 20,          // タイトルのフォントサイズ
-    marginLeft: 110,        // アイコンとタイトルの間にスペースを追加
+    fontSize: 20, // タイトルのフォントサイズ
+    marginLeft: 110, // アイコンとタイトルの間にスペースを追加
   },
   container: {
     flex: 1,
