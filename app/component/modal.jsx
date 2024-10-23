@@ -1,5 +1,5 @@
 // MyModal.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -27,91 +27,71 @@ const MyModal = ({
   onClose,
 }) => {
   const [likes, setLikes] = useState({});
+  const [tempObj, setTempObj] = useState({}); // 各投稿のlikeCountを管理
+
+  useEffect(() => {
+    const initialLikes = {};
+    const initialCounts = {};
+    
+    postData.forEach((post) => {
+      initialLikes[post.postId] = post.likeFlag;
+      initialCounts[post.postId] = post.likeCount;
+    });
+    
+    setLikes(initialLikes);
+    setTempObj(initialCounts);
+  }, [postData]);
+
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
       ...prevLikes,
       [postId]: !prevLikes[postId],
     }));
   };
-  const tempObj1 = {};
-  const tempObj2 = {};
-  postData.map((post) => {
-    tempObj1[post.postId] = post.likeFlag;
-    tempObj2[post.postId] = post.likeCount;
-  });
 
-  const handleUnlike = async (postId, index) => {
-    if (likes[postId] == true) {
-      handleSimpleLike(postId, index);
-    } else {
-      handleLikePress(postId);
-      tempObj2[postId] = tempObj2[postId] - 1;
+  const updateLikeCount = async (postId, countChange) => {
+    const userId = auth.currentUser?.uid; // ログイン状態を確認
+    if (!userId) {
+      console.error("ユーザーがログインしていません。");
+      return; // ログインしていない場合は処理を中断
+    }
+    try {
       const querylike = await firestore()
         .collection("like")
         .where("postId", "==", postId)
         .get();
-      const queryId = querylike.docs[0].ref._documentPath._parts[1];
-      await firestore()
-        .collection("like")
-        .doc(queryId)
-        .update({
-          count: tempObj2[postId],
-          [auth.currentUser.uid]: FieldValue.delete(),
-        });
+
+      if (!querylike.empty) {
+        const queryId = querylike.docs[0].ref.id;
+        await firestore()
+          .collection("like")
+          .doc(queryId)
+          .update({
+            count: FieldValue.increment(countChange), // countをインクリメント
+            userId: countChange > 0 ? userId : FieldValue.delete(), // いいね追加の場合はuserIdを設定、削除の場合は削除
+          });
+      }
+    } catch (error) {
+      console.error("いいねの更新中にエラーが発生しました: ", error);
     }
   };
 
-  const handleSimpleUnlike = async (postId, index) => {
-    handleLikePress(postId);
-    const querylike = await firestore()
-      .collection("like")
-      .where("postId", "==", postId)
-      .get();
-    const queryId = querylike.docs[0].ref._documentPath._parts[1];
-    await firestore()
-      .collection("like")
-      .doc(queryId)
-      .update({
-        count: tempObj2[postId],
-        [auth.currentUser.uid]: FieldValue.delete(),
-      });
-  };
-
-  const handleLike = async (postId, index) => {
-    if (likes[postId] == true) {
-      handleSimpleUnlike(postId, index);
-    } else {
+  const handleUnlike = async (postId) => {
+    if (likes[postId]) {
       handleLikePress(postId);
-      tempObj2[postId] = tempObj2[postId] + 1;
-      const querylike = await firestore()
-        .collection("like")
-        .where("postId", "==", postId)
-        .get();
-      const queryId = querylike.docs[0].ref._documentPath._parts[1];
-      await firestore()
-        .collection("like")
-        .doc(queryId)
-        .update({
-          count: tempObj2[postId],
-          [auth.currentUser.uid]: auth.currentUser.uid,
-        });
+      setTempObj((prev) => ({ ...prev, [postId]: prev[postId] - 1 })); // local stateのカウントを更新
+      await updateLikeCount(postId, -1); // いいねを外す
     }
   };
 
-  const handleSimpleLike = async (postId, index) => {
-    handleLikePress(postId);
-    const querylike = await firestore()
-      .collection("like")
-      .where("postId", "==", postId)
-      .get();
-    const queryId = querylike.docs[0].ref._documentPath._parts[1];
-    await firestore()
-      .collection("like")
-      .doc(queryId)
-      .update({
-        count: tempObj2[postId],
-        [auth.currentUser.uid]: auth.currentUser.uid,
-      });
+  const handleLike = async (postId) => {
+    if (!likes[postId]) {
+      handleLikePress(postId);
+      setTempObj((prev) => ({ ...prev, [postId]: prev[postId] + 1 })); // local stateのカウントを更新
+      await updateLikeCount(postId, 1); // いいねを追加
+    } else {
+      handleUnlike(postId); // すでにいいねしている場合は、いいねを外す
+    }
   };
 
   return (
@@ -123,19 +103,17 @@ const MyModal = ({
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          {/* ✖ ボタン */}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>{/* スタイルを設定 */}✖</Text>
+            <Text style={styles.closeButtonText}>✖</Text>
           </TouchableOpacity>
 
           <ScrollView>
             {loading ? (
               <Text>読み込み中...</Text>
             ) : !empty && postData.length > 0 ? (
-              postData.map((post, index) => {
+              postData.map((post) => {
                 const isLiked = likes[post.postId];
-                const flag = tempObj1[post.postId];
-                const count = tempObj2[post.postId];
+                const count = tempObj[post.postId];
                 return (
                   <View key={post.postId}>
                     <Link
@@ -168,7 +146,6 @@ const MyModal = ({
                       />
                     )}
 
-                    {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
                       <Text>
                         {formatInTimeZone(
@@ -178,27 +155,14 @@ const MyModal = ({
                         )}
                       </Text>
 
-                      {/* いいねボタン */}
-
-                      {flag ? (
-                        <TouchableOpacity
-                          style={styles.likeButton}
-                          onPress={() => handleUnlike(post.postId, index)}
-                        >
-                          <Text style={{ color: isLiked ? "black" : "red" }}>
-                            {isLiked ? "♡ " + (count - 1) : "❤️ " + count}
-                          </Text>
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.likeButton}
-                          onPress={() => handleLike(post.postId, index)}
-                        >
-                          <Text style={{ color: isLiked ? "red" : "black" }}>
-                            {isLiked ? "❤️ " + (count + 1) : "♡ " + count}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
+                      <TouchableOpacity
+                        style={styles.likeButton}
+                        onPress={() => handleLike(post.postId)}
+                      >
+                        <Text style={{ color: isLiked ? "red" : "black" }}>
+                          {isLiked ? "❤️ " + count : "♡ " + count}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
 
                     <Text>{post.postText}</Text>
@@ -258,15 +222,15 @@ const styles = StyleSheet.create({
   },
   toolView: {
     marginTop: 10,
-    flexDirection: "row", // 横方向に要素を配置
-    justifyContent: "flex-end", // 右寄せにする
+    flexDirection: "row",
+    justifyContent: "flex-end",
   },
   postButton: {
     width: 75,
     height: 25,
     backgroundColor: "blue",
-    justifyContent: "center", // 垂直方向の中央揃え
-    alignItems: "center", // 水平方向の中央揃え
+    justifyContent: "center",
+    alignItems: "center",
   },
   postButtonText: {
     color: "#FFFFFF",
@@ -282,24 +246,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   likeButton: {
-    marginLeft: 10, // 日付といいねボタンの間のスペース
+    marginLeft: 10,
   },
   closeButton: {
-    position: "absolute", //絶対配置
+    position: "absolute",
     top: 10,
     right: 10,
     padding: 10,
     zIndex: 1,
   },
   closeButtonText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "black",
+    color: "#888",
   },
   dateLikeRow: {
-    flexDirection: "row", //右端に配置
-    alignItems: "center",
-    marginTop: 10,
+    flexDirection: "row",
+    justifyContent: "flex-end",
   },
 });
 
