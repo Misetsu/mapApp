@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
     // top: "10%",
     marginLeft: "auto",
     marginRight: "auto",
+    backgroundColor: "black",
   },
   camera: {
     flex: 0.8,
