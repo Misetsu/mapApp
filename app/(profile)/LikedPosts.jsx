@@ -34,7 +34,6 @@ export default function UserLikedPosts() {
           .get();
 
         if (likeSnapshot.empty) {
-          console.log("いいねした投稿がありません。");
           return;
         }
 

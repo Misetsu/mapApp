@@ -25,7 +25,7 @@ const myPage = () => {
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
-  const [userStatus, setUserStatus] = useState(0);
+  const [googleProvider, setGoogleProvider] = useState(false);
   const [editable, setEditable] = useState(true);
 
   const handleBackPress = () => {
@@ -39,12 +39,9 @@ const myPage = () => {
       setDisplayEmail(auth.currentUser.email);
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
-      const userData = queryUser.data();
-      setUserStatus(userData.publicStatus);
+      if (auth.currentUser.providerData[0].providerId == "google.com") {
+        setGoogleProvider(true);
+      }
     };
 
     fetchUserData();
@@ -106,7 +103,7 @@ const myPage = () => {
   };
 
   const handleChangePassword = async () => {
-    if (auth.currentUser.providerData[0].providerId == "google.com") {
+    if (googleProvider) {
     } else {
       auth
         .sendPasswordResetEmail(auth.currentUser.email)
@@ -167,9 +164,13 @@ const myPage = () => {
           editable={true}
         />
 
-        <TouchableOpacity onPress={handleChangePassword}>
-          <Text style={styles.linklabel}>Change password?</Text>
-        </TouchableOpacity>
+        {googleProvider ? (
+          <></>
+        ) : (
+          <TouchableOpacity onPress={handleChangePassword}>
+            <Text style={styles.linklabel}>Change password?</Text>
+          </TouchableOpacity>
+        )}
 
         {editable && (
           <TouchableOpacity
