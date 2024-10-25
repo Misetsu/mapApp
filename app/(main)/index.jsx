@@ -20,6 +20,7 @@ import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import * as Notifications from 'expo-notifications';
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -28,6 +29,9 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const auth = FirebaseAuth();
 const router = useRouter();
+
+
+
 
 const TrackUserMapView = () => {
   const [position, setPosition] = useState({
@@ -62,8 +66,48 @@ const TrackUserMapView = () => {
 
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
+  useEffect(() => {
+    // 通知の設定
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = firestore()
+      .collection('like') // 対象のコレクション名
+      .onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'modified') {
+            
+            console.log('ドキュメントが変更されました: ', modifiedData);
+            scheduleNotification("いいねがおされた")
+            // 変更時の処理
+          }
+        });
+      });
+
+    // クリーンアップ
+    return () => unsubscribe();
+  }, []);
+  
+  const scheduleNotification = async (text) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: text,
+        body: text,
+      },
+      trigger: { seconds: 2 }, // 2秒後に通知
+    });
+  };
+
   const setmodal = (marker) => {
     try {
+      scheduleNotification(marker.name)
       const distance = calculateDistance(
         position.latitude,
         position.longitude,
