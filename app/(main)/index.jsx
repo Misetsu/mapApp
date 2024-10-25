@@ -74,6 +74,7 @@ const TrackUserMapView = () => {
         setSpotId(marker.id);
         setModalVisible(true);
         setPostImage(true);
+        handleVisitState(marker.id);
         fetchPostData(marker.id);
       } else {
         setSpotId(marker.id);
@@ -633,6 +634,38 @@ const TrackUserMapView = () => {
     }).start(() => {
       setShowButtons(false); // フェードアウト完了後にボタンを非表示
     });
+  };
+
+  const handleVisitState = async (spotId) => {
+    const querySnapshot = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .collection("spot")
+      .where("spotId", "==", spotId)
+      .get();
+
+    const currentTime = new Date().toISOString();
+
+    if (!querySnapshot.empty) {
+      const docId = querySnapshot.docs[0].ref._documentPath._parts[1];
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .doc(docId)
+        .update({
+          timeStamp: currentTime,
+        });
+    } else {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .add({
+          spotId: spotId,
+          timeStamp: currentTime,
+        });
+    }
   };
 
   useEffect(() => {
