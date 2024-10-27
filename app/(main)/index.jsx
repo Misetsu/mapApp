@@ -372,18 +372,19 @@ const TrackUserMapView = () => {
   };
 
   const getPinColor = (marker) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
-      return distance < marker.areaRadius
-        ? require("../image/pin_orange.png")
-        : require("../image/pin_blue.png");
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
+    const distance = calculateDistance(
+      position.latitude,
+      position.longitude,
+      marker.mapLatitude,
+      marker.mapLongitude
+    );
+
+    if (distance < marker.areaRadius) {
+      return require("../image/ActionPin.png");
+    } else if (marker.visited) {
+      return require("../image/VisitedPin.png");
+    } else {
+      return require("../image/UnvisitedPin.png");
     }
   };
 
@@ -425,6 +426,22 @@ const TrackUserMapView = () => {
   };
 
   const fetchAllMarkerCord = async () => {
+    let vivstedSpot = {};
+
+    const querySnapshot = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .collection("spot")
+      .orderBy("spotId", "asc")
+      .get();
+
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((docs) => {
+        const item = docs.data();
+        vivstedSpot[item.spotId] = item.timeStamp;
+      });
+    }
+
     const fetchResult = [];
     setLoading(true);
     try {
@@ -435,6 +452,12 @@ const TrackUserMapView = () => {
       if (!querySnapshot.empty) {
         querySnapshot.forEach((docs) => {
           const item = docs.data();
+          if (item.id in vivstedSpot) {
+            item.visited = true;
+          } else {
+            item.visited = false;
+          }
+
           fetchResult.push(item);
         });
         setMarkerCords(fetchResult);
@@ -647,7 +670,7 @@ const TrackUserMapView = () => {
     const currentTime = new Date().toISOString();
 
     if (!querySnapshot.empty) {
-      const docId = querySnapshot.docs[0].ref._documentPath._parts[1];
+      const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
       await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
