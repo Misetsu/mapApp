@@ -380,7 +380,11 @@ const TrackUserMapView = () => {
     );
 
     if (distance < marker.areaRadius) {
-      return require("../image/ActionPin.png");
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/ActionPin_New.png");
+      } else {
+        return require("../image/ActionPin.png");
+      }
     } else if (marker.visited == "") {
       return require("../image/UnvisitedPin_New.png");
     } else {
