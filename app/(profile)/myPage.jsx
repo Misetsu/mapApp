@@ -175,6 +175,11 @@ const myPage = () => {
     setViewMode(viewMode === "posts" ? "liked" : "posts");
   };
 
+  const signout = async () => {
+    await auth.signOut();
+    router.replace({ pathname: "/" });
+  };
+
   return (
     <ScrollView>
       <View
@@ -315,13 +320,22 @@ const myPage = () => {
           </View>
         </Modal>
 
-        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
+
+
+        <Text style={styles.displayName}>Username</Text>
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
           style={styles.textInput}
           editable={false}
         />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/profileEdit")}
+        >
+          <Text style={styles.buttonText}>EDIT</Text>
+        </TouchableOpacity>
+        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
       </View>
 
 
@@ -341,7 +355,17 @@ const myPage = () => {
 
       {/* 表示内容を切り替え */}
       {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
+
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#FF6666" }]}
+          onPress={signout}
+        >
+          <Text style={styles.buttonText}>LOGOUT</Text>
+        </TouchableOpacity>
+        </View>
     </ScrollView>
+
   );
 };
 
@@ -358,7 +382,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 10, // ボタン間にスペースを追加
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -447,6 +471,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     margin: 5,
+    marginTop: 0,
     marginBottom: 0,
     fontSize: 20,
     height: 40,
@@ -456,11 +481,11 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,

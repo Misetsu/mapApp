@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     margin: 5,
+    marginTop: 0,
     marginBottom: 0,
     fontSize: 20,
     height: 40,
@@ -165,11 +166,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
@@ -178,11 +179,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   button: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   buttonText: {
     fontSize: 18,

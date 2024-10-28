@@ -25,21 +25,6 @@ const myPage = () => {
 
   const navigation = useNavigation();
 
-  useEffect(() => {
-    // ユーザーデータを取得するための非同期関数
-    const fetchUserData = async () => {
-      setUser(auth.currentUser);
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
-      const userData = queryUser.data();
-      setUserStatus(userData.publicStatus);
-    };
-
-    fetchUserData();
-  }, []);
-
   const signout = async () => {
     await auth.signOut();
     router.replace({ pathname: "/" });
@@ -64,12 +49,6 @@ const myPage = () => {
 
       <View style={styles.container}>
         <Text style={styles.pagetitle}>SETTING</Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/profileEdit")}
-        >
-          <Text style={styles.buttonText}>EDIT</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
@@ -91,13 +70,6 @@ const myPage = () => {
         >
           <Text style={styles.buttonText}>HELP</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#FF6666" }]}
-          onPress={signout}
-        >
-          <Text style={styles.buttonText}>LOGOUT</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -116,7 +88,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 10, // ボタン間にスペースを追加
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -208,11 +180,11 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
