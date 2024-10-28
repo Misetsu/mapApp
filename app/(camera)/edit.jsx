@@ -40,7 +40,7 @@ export default function edit() {
     const currentTime = new Date().toISOString();
 
     const randomNumber = Math.floor(Math.random() * 100) + 1;
-    const imagePath = new Date().getTime().toString() + randomNumber;
+    const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
 
     await reference.ref(imagePath).putFile(imageUri);
 
@@ -101,16 +101,16 @@ export default function edit() {
         lastPostAt: currentTime,
       });
     } else {
-      const querySpot = await firestore()
-        .collection("spot")
-        .where("id", "==", spotId)
-        .get();
+      // const querySpot = await firestore()
+      //   .collection("spot")
+      //   .where("id", "==", spotId)
+      //   .get();
 
-      const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
+      // const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
 
-      await firestore().collection("spot").doc(spotDocId).update({
-        lastUpdateAt: currentTime,
-      });
+      // await firestore().collection("spot").doc(spotDocId).update({
+      //   lastUpdateAt: currentTime,
+      // });
 
       const queryPost = await firestore()
         .collection("post")
