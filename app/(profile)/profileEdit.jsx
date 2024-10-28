@@ -281,8 +281,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    margin: 10,
-    marginTop: 0,
+    margin: 5,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,

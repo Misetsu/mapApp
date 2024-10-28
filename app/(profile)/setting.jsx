@@ -11,7 +11,6 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import SwitchWithIcons from "react-native-switch-with-icons";
 import { useNavigation } from "@react-navigation/native";
 
 const auth = FirebaseAuth();
@@ -19,7 +18,6 @@ const router = useRouter();
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
-  const [userStatus, setUserStatus] = useState(0);
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
@@ -41,22 +39,6 @@ const myPage = () => {
 
     fetchUserData();
   }, []);
-
-  const handleStatus = async () => {
-    if (userStatus == 1) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 0 });
-      setUserStatus(0); // 公開状態に設定
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
-      setUserStatus(1); // 非公開状態に設定
-    }
-  };
 
   const signout = async () => {
     await auth.signOut();
@@ -88,13 +70,6 @@ const myPage = () => {
         >
           <Text style={styles.buttonText}>EDIT</Text>
         </TouchableOpacity>
-
-        <View style={styles.FFcontainer}>
-          <Text>公開非公開</Text>
-          <View style={(style = styles.SwitchBtn)}>
-            <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
-          </View>
-        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -223,8 +198,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    margin: 10,
-    marginTop: 0,
+    margin: 5,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,

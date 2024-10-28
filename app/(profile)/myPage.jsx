@@ -16,6 +16,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
 import UserPosts from "./UserPosts";
 import LikedPosts from "./LikedPosts";
+import SwitchWithIcons from "react-native-switch-with-icons";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
@@ -30,6 +31,7 @@ const myPage = () => {
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
   const [viewMode, setViewMode] = useState("posts"); // 投稿といいねの切り替え
+  const [userStatus, setUserStatus] = useState(0);
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
@@ -72,6 +74,20 @@ const myPage = () => {
           cnt = cnt + 1;
         }
         setFollowList(followArray);
+
+        // ユーザーデータを取得するための非同期関数
+        const fetchUserData = async () => {
+          setUser(auth.currentUser);
+          const queryUser = await firestore()
+            .collection("users")
+            .doc(auth.currentUser.uid)
+            .get();
+          const userData = queryUser.data();
+          setUserStatus(userData.publicStatus);
+        };
+
+        fetchUserData();
+
       }
 
       // フォロワー取得
@@ -109,6 +125,22 @@ const myPage = () => {
 
     fetchUserData();
   }, []);
+
+  const handleStatus = async () => {
+    if (userStatus == 1) {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .update({ publicStatus: 0 });
+      setUserStatus(0); // 公開状態に設定
+    } else {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .update({ publicStatus: 1 });
+      setUserStatus(1); // 非公開状態に設定
+    }
+  }
 
   const handleProfile = (uid) => {
     if (uid == auth.currentUser.uid) {
@@ -292,6 +324,14 @@ const myPage = () => {
         />
       </View>
 
+
+      <View style={styles.ChangeStatus}>
+        <Text>公開非公開</Text>
+        <View style={(style = styles.SwitchBtn)}>
+          <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+        </View>
+      </View>
+
       {/* 投稿といいねの表示切り替えボタン */}
       <TouchableOpacity style={styles.toggleButton} onPress={toggleView}>
         <Text style={styles.toggleButtonText}>
@@ -384,6 +424,14 @@ const styles = StyleSheet.create({
   FFnum: {
     padding: 10,
   },
+  ChangeStatus: {
+    justifyContent: "space-between",
+    flexDirection: "row", // 子要素を横並びに配置
+    alignItems: "center", // 垂直方向の中央に揃える
+    width: "80%", // 横幅を80%に設定（任意）
+    alignSelf: "center",
+    margin: 10,
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -398,8 +446,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    margin: 10,
-    marginTop: 0,
+    margin: 5,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
