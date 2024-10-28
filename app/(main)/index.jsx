@@ -381,10 +381,14 @@ const TrackUserMapView = () => {
 
     if (distance < marker.areaRadius) {
       return require("../image/ActionPin.png");
-    } else if (marker.visited) {
-      return require("../image/VisitedPin.png");
+    } else if (marker.visited == "") {
+      return require("../image/UnvisitedPin_New.png");
     } else {
-      return require("../image/UnvisitedPin.png");
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/VisitedPin_New.png");
+      } else {
+        return require("../image/VisitedPin.png");
+      }
     }
   };
 
@@ -453,9 +457,9 @@ const TrackUserMapView = () => {
         querySnapshot.forEach((docs) => {
           const item = docs.data();
           if (item.id in vivstedSpot) {
-            item.visited = true;
+            item.visited = vivstedSpot[item.id];
           } else {
-            item.visited = false;
+            item.visited = "";
           }
 
           fetchResult.push(item);
