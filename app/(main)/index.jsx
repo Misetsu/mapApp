@@ -943,6 +943,15 @@ const TrackUserMapView = () => {
           <Icon name="crosshairs" size={24} color="#3333ff" />
         </TouchableOpacity>
       </View>
+      <View style={styles.settingButton}>
+          <TouchableOpacity
+            style={styles.button}
+            // onPress={() => setmapfixeds()}
+            onPress={() => router.push("/setting")}
+          >
+            <Icon name="cog" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
 
       {/* 設定ボタンを一旦保留 */}
       {/* <View style={styles.settingButton}>
