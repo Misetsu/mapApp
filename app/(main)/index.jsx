@@ -21,6 +21,7 @@ import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import * as Notifications from 'expo-notifications';
+import BackgroundFetch from "react-native-background-fetch";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -66,7 +67,9 @@ const TrackUserMapView = () => {
 
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
+  
   useEffect(() => {
+    try{
     // 通知の設定
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -75,25 +78,53 @@ const TrackUserMapView = () => {
         shouldSetBadge: false,
       }),
     });
+  } catch (error) {
+    console.error("Error fetching documents: ", error);
+  }
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = firestore()
-      .collection('like') // 対象のコレクション名
-      .onSnapshot((snapshot) => {
+  const configureBackgroundFetch = async () => {
+    const status = await BackgroundFetch.configure({
+        minimumFetchInterval: 1, // 15分ごとに実行
+        enableHeadless: true, 
+
+        stopOnTerminate: false,   // アプリ終了時にバックグラウンドフェッチを停止するか
+        startOnBoot: true,        // デバイス起動時にバックグラウンドフェッチを再起動するか
+    }, async taskId => {
+      console.log("AA")
+        const unsubscribe = firestore()
+          .collection('like') // 対象のコレクション名
+          .onSnapshot((snapshot) => {
         snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            console.log('新しいドキュメントが追加されました: ', change.doc.data());
+          }
           if (change.type === 'modified') {
-            
-            console.log('ドキュメントが変更されました: ', modifiedData);
-            scheduleNotification("いいねがおされた")
-            // 変更時の処理
+            console.log('ドキュメントが変更されました: ', change.doc.data().count);
+            scheduleNotification("返信がきました！")
           }
         });
+        
       });
+      console.log("AAA")
+      BackgroundFetch.finish(taskId);
 
-    // クリーンアップ
-    return () => unsubscribe();
+    }, error => {
+        console.log('[BackgroundFetch] failed to start: ', error);
+    });
+
+    console.log('[BackgroundFetch] status: ', status);
+    
+};
+  
+  useEffect(() => {
+    try{
+    configureBackgroundFetch()
+    }catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
   }, []);
+
   
   const scheduleNotification = async (text) => {
     await Notifications.scheduleNotificationAsync({
@@ -680,6 +711,7 @@ const TrackUserMapView = () => {
   };
 
   useEffect(() => {
+    try{
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
@@ -719,12 +751,19 @@ const TrackUserMapView = () => {
       }
     );
     return () => Geolocation.clearWatch(watchId);
+  }catch (error) {
+    console.error("Error fetching documents: ", error);
+  }
   }, [initialRegion]);
 
   useEffect(() => {
+    try{
     setUser(auth.currentUser);
     fetchAllMarkerCord();
     fetchIndexBar(indexStatus);
+    }catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
   }, []);
 
   return (
