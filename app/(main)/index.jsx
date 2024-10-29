@@ -74,6 +74,7 @@ const TrackUserMapView = () => {
         setSpotId(marker.id);
         setModalVisible(true);
         setPostImage(true);
+        handleVisitState(marker.id);
         fetchPostData(marker.id);
       } else {
         setSpotId(marker.id);
@@ -371,18 +372,31 @@ const TrackUserMapView = () => {
   };
 
   const getPinColor = (marker) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
-      return distance < marker.areaRadius
-        ? require("../image/pin_orange.png")
-        : require("../image/pin_blue.png");
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
+    const distance = calculateDistance(
+      position.latitude,
+      position.longitude,
+      marker.mapLatitude,
+      marker.mapLongitude
+    );
+
+    if (distance < marker.areaRadius) {
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/ActionPin_New.png");
+      } else {
+        return require("../image/ActionPin.png");
+      }
+    } else if (marker.visited == "") {
+      if (marker.lastUpdateAt == "") {
+        return require("../image/UnvisitedPin.png");
+      } else {
+        return require("../image/UnvisitedPin_New.png");
+      }
+    } else {
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/VisitedPin_New.png");
+      } else {
+        return require("../image/VisitedPin.png");
+      }
     }
   };
 
@@ -424,6 +438,22 @@ const TrackUserMapView = () => {
   };
 
   const fetchAllMarkerCord = async () => {
+    let vivstedSpot = {};
+
+    const querySnapshot = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .collection("spot")
+      .orderBy("spotId", "asc")
+      .get();
+
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((docs) => {
+        const item = docs.data();
+        vivstedSpot[item.spotId] = item.timeStamp;
+      });
+    }
+
     const fetchResult = [];
     setLoading(true);
     try {
@@ -434,6 +464,12 @@ const TrackUserMapView = () => {
       if (!querySnapshot.empty) {
         querySnapshot.forEach((docs) => {
           const item = docs.data();
+          if (item.id in vivstedSpot) {
+            item.visited = vivstedSpot[item.id];
+          } else {
+            item.visited = "";
+          }
+
           fetchResult.push(item);
         });
         setMarkerCords(fetchResult);
@@ -633,6 +669,38 @@ const TrackUserMapView = () => {
     }).start(() => {
       setShowButtons(false); // フェードアウト完了後にボタンを非表示
     });
+  };
+
+  const handleVisitState = async (spotId) => {
+    const querySnapshot = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .collection("spot")
+      .where("spotId", "==", spotId)
+      .get();
+
+    const currentTime = new Date().toISOString();
+
+    if (!querySnapshot.empty) {
+      const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .doc(docId)
+        .update({
+          timeStamp: currentTime,
+        });
+    } else {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .add({
+          spotId: spotId,
+          timeStamp: currentTime,
+        });
+    }
   };
 
   useEffect(() => {

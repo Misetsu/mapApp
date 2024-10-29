@@ -36,9 +36,11 @@ export default function edit() {
 
   const uploadPost = async () => {
     setIsoading(true);
+
+    const currentTime = new Date().toISOString();
+
     const randomNumber = Math.floor(Math.random() * 100) + 1;
-    const imagePath =
-      "photo/image-" + new Date().getTime().toString() + randomNumber;
+    const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
 
     await reference.ref(imagePath).putFile(imageUri);
 
@@ -56,6 +58,7 @@ export default function edit() {
         mapLongitude: longitude,
         name: text,
         areaRadius: 50,
+        lastUpdateAt: currentTime,
       });
 
       const queryPost = await firestore()
@@ -74,8 +77,6 @@ export default function edit() {
           userId: auth.currentUser.uid,
         })
         .catch((error) => console.log(error));
-
-      const currentTime = new Date().toISOString();
 
       await firestore()
         .collection("post")
@@ -100,12 +101,27 @@ export default function edit() {
         lastPostAt: currentTime,
       });
     } else {
+      const querySpot = await firestore()
+        .collection("spot")
+        .where("id", "==", parseInt(spotId))
+        .get();
+
+      const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
+
+      console.log(spotDocId);
+
+      await firestore().collection("spot").doc(spotDocId).update({
+        lastUpdateAt: currentTime,
+      });
+
       const queryPost = await firestore()
         .collection("post")
         .orderBy("id", "desc")
         .get();
 
       const maxPostId = queryPost.docs[0].data().id + 1;
+
+      console.log("a");
 
       await firestore()
         .collection("photo")
@@ -116,8 +132,6 @@ export default function edit() {
           userId: auth.currentUser.uid,
         })
         .catch((error) => console.log(error));
-
-      const currentTime = new Date().toISOString();
 
       await firestore()
         .collection("post")
@@ -137,6 +151,7 @@ export default function edit() {
           postId: maxPostId,
         })
         .catch((error) => console.log(error));
+
       await firestore().collection("users").doc(auth.currentUser.uid).update({
         lastPostAt: currentTime,
       });
