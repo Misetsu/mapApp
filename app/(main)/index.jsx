@@ -386,7 +386,11 @@ const TrackUserMapView = () => {
         return require("../image/ActionPin.png");
       }
     } else if (marker.visited == "") {
-      return require("../image/UnvisitedPin_New.png");
+      if (marker.lastUpdateAt == "") {
+        return require("../image/UnvisitedPin.png");
+      } else {
+        return require("../image/UnvisitedPin_New.png");
+      }
     } else {
       if (marker.visited < marker.lastUpdateAt) {
         return require("../image/VisitedPin_New.png");

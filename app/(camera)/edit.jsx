@@ -103,10 +103,12 @@ export default function edit() {
     } else {
       const querySpot = await firestore()
         .collection("spot")
-        .where("id", "==", spotId)
+        .where("id", "==", parseInt(spotId))
         .get();
 
       const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
+
+      console.log(spotDocId);
 
       await firestore().collection("spot").doc(spotDocId).update({
         lastUpdateAt: currentTime,
@@ -119,6 +121,8 @@ export default function edit() {
 
       const maxPostId = queryPost.docs[0].data().id + 1;
 
+      console.log("a");
+
       await firestore()
         .collection("photo")
         .add({
@@ -128,8 +132,6 @@ export default function edit() {
           userId: auth.currentUser.uid,
         })
         .catch((error) => console.log(error));
-
-      const currentTime = new Date().toISOString();
 
       await firestore()
         .collection("post")
