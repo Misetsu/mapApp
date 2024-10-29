@@ -204,18 +204,6 @@ const myPage = () => {
           <Icon name="angle-left" size={24} color="#000" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => router.push("/setting")}
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        >
-          {/* 左側のアイコンやテキストをここに追加 */}
-          <Icon name="cog" size={24} color="#000" />
-        </TouchableOpacity>
       </View>
       <View style={styles.container}>
         <Text style={styles.pagetitle}>MY PAGE</Text>
@@ -346,17 +334,19 @@ const myPage = () => {
         {/* 投稿といいねの表示切り替えボタン */}
         <TouchableOpacity style={styles.button} onPress={toggleView}>
           <Text style={styles.buttonText}>
-            {viewMode === "posts" ? "いいねした写真を見る" : "自分の写真を見る"}
+            {viewMode === "posts" ? "いいねした投稿を見る" : "自分の投稿を見る"}
           </Text>
         </TouchableOpacity>
 
 
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#FF6666" }]}
-          onPress={signout}
-        >
-          <Text style={styles.buttonText}>LOGOUT</Text>
-        </TouchableOpacity>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: "none", width: "50%", marginBottom: 0, }]}
+            onPress={signout}
+          >
+            <Text style={[styles.buttonText, { color: "#FF6666"}]}>ログアウト</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
 
