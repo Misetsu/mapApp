@@ -222,16 +222,13 @@ const styles = StyleSheet.create({
   },
   postContainer: {
     width: "30%", // 1行に3つの画像を表示
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 5,
+    margin: 5,
+    borderWidth: 4,
+    borderColor: "#ffffff",
   },
   image: {
     width: "100%",
     height: 100,
-    borderRadius: 8,
   },
   modalContainer: {
     flex: 1,

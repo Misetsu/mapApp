@@ -218,13 +218,6 @@ const myPage = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.container}>
-        {/* フォロワーの検索へのボタン */}
-        <Link href={{ pathname: "/search" }} asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>ユーザー検索</Text>
-          </TouchableOpacity>
-        </Link>
-
         <Text style={styles.pagetitle}>MY PAGE</Text>
         <View style={styles.profileContainer}>
           {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
@@ -404,6 +397,7 @@ const styles = StyleSheet.create({
   pagetitle: {
     fontSize: 30,
     margin: 10,
+    marginTop: 0,
     textAlign: "center",
     fontWeight: "300",
     color: "#000000",
