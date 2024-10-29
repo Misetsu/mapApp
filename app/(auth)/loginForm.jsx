@@ -58,6 +58,8 @@ const LoginScreen = () => {
           email: auth.currentUser.email,
           lastPostAt: "0", // TODO
           publicStatus: 0, // TODO
+          spotCreate: 0,
+          spotPoint: 0,
           photoURL: auth.currentUser.photoURL,
         })
         .then()

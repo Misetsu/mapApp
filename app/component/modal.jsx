@@ -313,6 +313,8 @@ const MyModal = ({
                                     latitude: 0,
                                     longitude: 0,
                                     spotId: spotId,
+                                    point: 0,
+                                    spotNo: 0,
                                   },
                                 });
                               }}
@@ -373,6 +375,8 @@ const MyModal = ({
                                 latitude: 0,
                                 longitude: 0,
                                 spotId: spotId,
+                                point: 0,
+                                spotNo: 0,
                               },
                             });
                           }}

@@ -41,7 +41,7 @@ export default function CameraScreen() {
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
-  const { latitude, longitude, spotId } = params;
+  const { latitude, longitude, spotId, point, spotNo } = params;
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
@@ -107,6 +107,7 @@ export default function CameraScreen() {
           latitude: latitude,
           longitude: longitude,
           spotId: spotId,
+          point: point,
         },
       });
     } catch (error) {
@@ -129,6 +130,7 @@ export default function CameraScreen() {
           latitude: latitude,
           longitude: longitude,
           spotId: spotId,
+          point: point,
         },
       });
     }
