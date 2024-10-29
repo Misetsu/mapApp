@@ -200,7 +200,7 @@ export default function UserPosts() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
   },
   loadingContainer: {
     flex: 1,

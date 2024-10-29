@@ -181,7 +181,7 @@ const myPage = () => {
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.scrview}>
       <View
         style={{
           flexDirection: "row", // 横並びに配置
@@ -221,7 +221,7 @@ const myPage = () => {
         {/* フォロワーの検索へのボタン */}
         <Link href={{ pathname: "/search" }} asChild>
           <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>SEARCH</Text>
+            <Text style={styles.buttonText}>ユーザー検索</Text>
           </TouchableOpacity>
         </Link>
 
@@ -238,11 +238,11 @@ const myPage = () => {
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFcontainer}>
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
-            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
+            <Text style={styles.FFtext}>フォロー中： {followList.length} 人</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
-            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
+            <Text style={styles.FFtext}>フォロワー： {followerList.length} 人</Text>
           </TouchableOpacity>
         </View>
 
@@ -333,37 +333,38 @@ const myPage = () => {
           style={styles.button}
           onPress={() => router.push("/profileEdit")}
         >
-          <Text style={styles.buttonText}>EDIT</Text>
+          <Text style={styles.buttonText}>プロフィール編集</Text>
         </TouchableOpacity>
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
-      </View>
 
 
-      <View style={styles.ChangeStatus}>
-        <Text>公開非公開</Text>
-        <View style={(style = styles.SwitchBtn)}>
-          <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+
+        <View style={styles.ChangeStatus}>
+          <Text>投稿を公開する：{userStatus ? "公開" : "非公開"}</Text>
+          <View style={(style = styles.SwitchBtn)}>
+            <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
+          </View>
         </View>
-      </View>
+        <Text style={styles.subtitle}>{viewMode === "posts" ? "自分の投稿" : "いいねした投稿"}</Text>
 
-      {/* 投稿といいねの表示切り替えボタン */}
-      <TouchableOpacity style={styles.toggleButton} onPress={toggleView}>
-        <Text style={styles.toggleButtonText}>
-          {viewMode === "posts" ? "Show Liked Posts" : "Show My Posts"}
-        </Text>
-      </TouchableOpacity>
+        {/* 表示内容を切り替え */}
+        {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
 
-      {/* 表示内容を切り替え */}
-      {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
+        {/* 投稿といいねの表示切り替えボタン */}
+        <TouchableOpacity style={styles.button} onPress={toggleView}>
+          <Text style={styles.buttonText}>
+            {viewMode === "posts" ? "いいねした写真を見る" : "自分の写真を見る"}
+          </Text>
+        </TouchableOpacity>
 
-      <View style={styles.container}>
+
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#FF6666" }]}
           onPress={signout}
         >
           <Text style={styles.buttonText}>LOGOUT</Text>
         </TouchableOpacity>
-        </View>
+      </View>
     </ScrollView>
 
   );
@@ -374,15 +375,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  scrview: {
+    backgroundColor: "#F2F5C8",
+  },
   profileContainer: {
     alignItems: "center",
   },
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#A3DE83",
     height: 50,
-    marginTop: 10, // ボタン間にスペースを追加
+    margin: 10, // ボタン間にスペースを追加
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -393,7 +397,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 18,
-    color: "black",
+    color: "#000000",
     textAlign: "center",
     fontWeight: "300",
   },
@@ -402,6 +406,14 @@ const styles = StyleSheet.create({
     margin: 10,
     textAlign: "center",
     fontWeight: "300",
+    color: "#000000",
+  },
+  subtitle: {
+    fontSize: 18,
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "600",
+    color: "#000000",
   },
   displayName: {
     fontSize: 15,
@@ -435,7 +447,7 @@ const styles = StyleSheet.create({
   },
   FFtext: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "900",
     textAlign: "center",
   },
   FFcontainer: {
@@ -452,9 +464,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     flexDirection: "row", // 子要素を横並びに配置
     alignItems: "center", // 垂直方向の中央に揃える
-    width: "80%", // 横幅を80%に設定（任意）
+    width: "90%", // 横幅を80%に設定（任意）
     alignSelf: "center",
     margin: 10,
+    backgroundColor: '#F2F5C8'
   },
   modalOverlay: {
     flex: 1,
@@ -475,7 +488,8 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     fontSize: 20,
     height: 40,
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
+    borderColor: "#239D60",
     marginVertical: 16,
     color: "black",
     fontWeight: "300",
