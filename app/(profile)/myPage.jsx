@@ -33,8 +33,12 @@ const myPage = () => {
   const [viewMode, setViewMode] = useState("posts"); // 投稿といいねの切り替え
   const [userStatus, setUserStatus] = useState(0);
 
+  const router = useRouter();
+
   const handleBackPress = () => {
-    router.back(); // 前の画面に戻る
+    if (router) {
+      router.back();
+    }
   };
 
   useEffect(() => {
@@ -182,29 +186,8 @@ const myPage = () => {
 
   return (
     <ScrollView style={styles.scrview}>
-      <View
-        style={{
-          flexDirection: "row", // 横並びに配置
-          justifyContent: "space-between", // 左右にスペースを均等に配置
-          alignItems: "center", // 縦方向の中央揃え
-          padding: 10, // パディングを追加
-          height: 50, // 高さを指定
-        }}
-      >
-        <TouchableOpacity
-          onPress={handleBackPress}
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        >
-          {/* 右側のアイコンやテキストをここに追加 */}
-          <Icon name="angle-left" size={24} color="#000" />
-        </TouchableOpacity>
-
-      </View>
+      {/* 右側のアイコンやテキストをここに追加 */}
+      {/*<Icon name="angle-left" size={24} color="#000" />*/}
       <View style={styles.container}>
         <Text style={styles.pagetitle}>MY PAGE</Text>
         <View style={styles.profileContainer}>
@@ -344,9 +327,17 @@ const myPage = () => {
             style={[styles.button, { backgroundColor: "none", width: "50%", marginBottom: 0, }]}
             onPress={signout}
           >
-            <Text style={[styles.buttonText, { color: "#FF6666"}]}>ログアウト</Text>
+            <Text style={[styles.buttonText, { color: "#FF6666" }]}>ログアウト</Text>
           </TouchableOpacity>
         </View>
+      </View>
+      <View style={styles.Back}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={handleBackPress}
+        >
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
       </View>
     </ScrollView>
 
@@ -386,7 +377,7 @@ const styles = StyleSheet.create({
   },
   pagetitle: {
     fontSize: 30,
-    margin: 10,
+    height: 70,
     marginTop: 0,
     textAlign: "center",
     fontWeight: "300",
@@ -501,9 +492,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   backButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    height: 50,
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginBottom: 10, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   backButtonText: {
     fontSize: 18,
