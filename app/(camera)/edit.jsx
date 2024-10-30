@@ -32,7 +32,7 @@ export default function edit() {
   const reference = storage();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { imageUri, latitude, longitude, spotId } = params;
+  const { imageUri, latitude, longitude, spotId, point, spotNo } = params;
 
   const uploadPost = async () => {
     setIsoading(true);
@@ -98,6 +98,8 @@ export default function edit() {
         .catch((error) => console.log(error));
 
       await firestore().collection("users").doc(auth.currentUser.uid).update({
+        spotCreate: spotNo,
+        spotPoint: point,
         lastPostAt: currentTime,
       });
     } else {

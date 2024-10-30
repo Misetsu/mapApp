@@ -700,6 +700,47 @@ const TrackUserMapView = () => {
           spotId: spotId,
           timeStamp: currentTime,
         });
+      const queryUser = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .get();
+      const spotPoint = queryUser.data().spotPoint + 1;
+
+      await firestore().collection("users").doc(auth.currentUser.uid).update({
+        spotPoint: spotPoint,
+      });
+    }
+  };
+
+  function fibonacci(num) {
+    if (num == 1) return 0;
+    if (num == 2) return 1;
+    return fibonacci(num - 1) + fibonacci(num - 2);
+  }
+
+  const handleAddNewPin = async () => {
+    const queryUser = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .get();
+
+    const userData = queryUser.data();
+
+    const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
+    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
+    if (pointRequired <= userData.spotPoint) {
+      router.push({
+        pathname: "/camera",
+        params: {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          spotId: 0,
+          point: pointLeft,
+          spotNo: parseInt(userData.spotCreate) + 1,
+        },
+      });
+    } else {
+      alert("ポイントが足りない。");
     }
   };
 
@@ -810,6 +851,16 @@ const TrackUserMapView = () => {
       )}
       {/* タスクバーアイコン */}
       <SafeAreaView style={styles.indexContainer}>
+        <TouchableOpacity
+          style={styles.listProfileIndexButton}
+          onPress={() => {
+            router.push({
+              pathname: "/search",
+            });
+          }}
+        >
+          <Icon name="search" size={30} color="#000"></Icon>
+        </TouchableOpacity>
         <FlatList
           horizontal={true}
           data={userList}
@@ -886,16 +937,7 @@ const TrackUserMapView = () => {
           {user ? (
             <TouchableOpacity
               style={styles.roundButton}
-              onPress={() => {
-                router.push({
-                  pathname: "/camera",
-                  params: {
-                    latitude: position.latitude,
-                    longitude: position.longitude,
-                    spotId: 0,
-                  },
-                });
-              }}
+              onPress={handleAddNewPin}
             >
               <Icon name="map-marker-alt" size={25} color="#000" />
             </TouchableOpacity>
