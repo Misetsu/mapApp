@@ -198,14 +198,6 @@ const MyModal = ({
 
                     {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
-                      <Text>
-                        {formatInTimeZone(
-                          new Date(post.timestamp),
-                          "Asia/Tokyo",
-                          "yyyy/MM/dd HH:mm"
-                        )}
-                      </Text>
-
                       {/* いいねボタン */}
                       {postImage ? (
                         <View>
@@ -214,11 +206,11 @@ const MyModal = ({
                               style={styles.likeButton}
                               onPress={() => handleUnlike(post.postId, index)}
                             >
-                              {isLiked ? (
-                                <Icon name="heart" size={16} color="#000000" />
-                              ) : (
-                                <Icon name="heart" size={16} color="#ff0000" />
-                              )}
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#000" : "#f00"}
+                              />
                               <Text
                                 style={{ color: isLiked ? "black" : "red" }}
                               >
@@ -230,11 +222,11 @@ const MyModal = ({
                               style={styles.likeButton}
                               onPress={() => handleLike(post.postId, index)}
                             >
-                              {isLiked ? (
-                                <Icon name="heart" size={16} color="#ff0000" />
-                              ) : (
-                                <Icon name="heart" size={16} color="#000000" />
-                              )}
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#f00" : "#000"}
+                              />
                               <Text
                                 style={{ color: isLiked ? "red" : "black" }}
                               >
@@ -247,11 +239,11 @@ const MyModal = ({
                         <View>
                           {flag ? (
                             <TouchableOpacity style={styles.likeButton}>
-                              {isLiked ? (
-                                <Icon name="heart" size={16} color="#000000" />
-                              ) : (
-                                <Icon name="heart" size={16} color="#ff0000" />
-                              )}
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#000" : "#f00"}
+                              />
                               <Text
                                 style={{ color: isLiked ? "black" : "red" }}
                               >
@@ -260,11 +252,11 @@ const MyModal = ({
                             </TouchableOpacity>
                           ) : (
                             <TouchableOpacity style={styles.likeButton}>
-                              {isLiked ? (
-                                <Icon name="heart" size={16} color="#ff0000" />
-                              ) : (
-                                <Icon name="heart" size={16} color="#000000" />
-                              )}
+                              <Icon
+                                name="heart"
+                                size={16}
+                                color={isLiked ? "#f00" : "#000"}
+                              />
                               <Text
                                 style={{ color: isLiked ? "red" : "black" }}
                               >
@@ -274,6 +266,14 @@ const MyModal = ({
                           )}
                         </View>
                       )}
+
+                      <Text style={{ fontSize: 10, color: "#4d4d4d" }}>
+                        {formatInTimeZone(
+                          new Date(post.timestamp),
+                          "Asia/Tokyo",
+                          "yyyy年MM月dd日 HH:mm"
+                        )}
+                      </Text>
                     </View>
 
                     <Text>{post.postText}</Text>
@@ -315,6 +315,8 @@ const MyModal = ({
                                     latitude: 0,
                                     longitude: 0,
                                     spotId: spotId,
+                                    point: 0,
+                                    spotNo: 0,
                                   },
                                 });
                               }}
@@ -379,6 +381,8 @@ const MyModal = ({
                                 latitude: 0,
                                 longitude: 0,
                                 spotId: spotId,
+                                point: 0,
+                                spotNo: 0,
                               },
                             });
                           }}
@@ -461,7 +465,9 @@ const styles = StyleSheet.create({
   likeButton: {
     display: "flex",
     flexDirection: "row",
-    marginLeft: 10, // 日付といいねボタンの間のスペース
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+    gap: 5,
   },
   closeButton: {
     position: "absolute", //絶対配置
@@ -477,6 +483,7 @@ const styles = StyleSheet.create({
   },
   dateLikeRow: {
     flexDirection: "row", //右端に配置
+    justifyContent: "space-between",
     alignItems: "center",
     marginTop: 10,
   },

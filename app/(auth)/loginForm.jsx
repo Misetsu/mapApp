@@ -55,8 +55,11 @@ const LoginScreen = () => {
         .set({
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
+          email: auth.currentUser.email,
           lastPostAt: "0", // TODO
           publicStatus: 0, // TODO
+          spotCreate: 0,
+          spotPoint: 0,
           photoURL: auth.currentUser.photoURL,
         })
         .then()
@@ -71,6 +74,28 @@ const LoginScreen = () => {
   const signInWithEmail = async () => {
     await auth.signInWithEmailAndPassword(userEmail, userPassword);
     router.replace({ pathname: "/" });
+  };
+
+  const handleChangePassword = async () => {
+    const userSnapshot = await firestore()
+      .collection("users")
+      .where("email", "==", userEmail)
+      .get();
+
+    if (!userSnapshot.empty) {
+      auth
+        .sendPasswordResetEmail(userEmail)
+        .then(() => {
+          alert(
+            "パスワードを変更するメールを入力されたメールアドレスに送信しました。"
+          );
+        })
+        .catch((error) => {
+          alert(error);
+        });
+    } else {
+      alert("入力されたメールアドレスが登録されていません。");
+    }
   };
 
   return (
@@ -112,9 +137,9 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <Link href={{ pathname: "/" }} asChild>
+        <TouchableOpacity onPress={handleChangePassword}>
           <Text style={styles.linklabel}>Forgot password?</Text>
-        </Link>
+        </TouchableOpacity>
 
         <Text style={styles.noamllabel}>Don't have an account?</Text>
 

@@ -15,6 +15,7 @@ import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
 import UserPosts from "./UserPosts";
+import LikedPosts from "./LikedPosts";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
@@ -28,6 +29,7 @@ const myPage = () => {
   const [followList, setFollowList] = useState([]);
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
+  const [viewMode, setViewMode] = useState("posts"); // 投稿といいねの切り替え
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
@@ -134,6 +136,11 @@ const myPage = () => {
   const handleCloseFollowerModal = () => {
     // フォロワーモーダルを閉じる
     setIsFollowerModalVisible(false);
+  };
+
+  const toggleView = () => {
+    // 自分の投稿といいねを切り替える
+    setViewMode(viewMode === "posts" ? "liked" : "posts");
   };
 
   return (
@@ -285,7 +292,15 @@ const myPage = () => {
         />
       </View>
 
-      <UserPosts />
+      {/* 投稿といいねの表示切り替えボタン */}
+      <TouchableOpacity style={styles.toggleButton} onPress={toggleView}>
+        <Text style={styles.toggleButtonText}>
+          {viewMode === "posts" ? "Show Liked Posts" : "Show My Posts"}
+        </Text>
+      </TouchableOpacity>
+
+      {/* 表示内容を切り替え */}
+      {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
     </ScrollView>
   );
 };
@@ -424,6 +439,18 @@ const styles = StyleSheet.create({
     color: "black",
     textAlign: "center",
     fontWeight: "300",
+  },
+  toggleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    backgroundColor: "#ccc",
+    alignSelf: "center",
+    marginVertical: 20,
+  },
+  toggleButtonText: {
+    color: "#000",
+    fontSize: 16,
   },
 });
 
