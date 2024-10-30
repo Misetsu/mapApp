@@ -250,15 +250,16 @@ const styles = StyleSheet.create({
   modalImage: {
     width: 280,
     height: 280,
-    marginBottom: 20,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: "#ddd", // 画像に軽い枠を追加
     borderWidth: 4,
     borderColor: "#ffffff",
   },
   postContent: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: 18, // フォントサイズを16から18に変更
+    color: "#333",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 18,

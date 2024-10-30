@@ -241,15 +241,14 @@ const styles = StyleSheet.create({
   modalImage: {
     width: 280,
     height: 280,
-    marginBottom: 20,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: "#ddd", // 画像に軽い枠を追加
     borderWidth: 4,
     borderColor: "#ffffff",
   },
   postContent: {
-    marginTop: 2,
-    fontSize: 24, // フォントサイズを16から18に変更
+    fontSize: 18, // フォントサイズを16から18に変更
     color: "#333",
     textAlign: "center",
   },
