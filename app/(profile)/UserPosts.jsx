@@ -157,12 +157,12 @@ export default function UserPosts() {
         animationType="fade"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {selectedPost && (
               <>
                 {selectedPost.spotName && ( // スポット名が存在する場合に表示
-                  <Text style={styles.spotContent}>
+                  <Text style={styles.subtitle}>
                     {selectedPost.spotName}
                   </Text> // スポット名を表示
                 )}
@@ -180,15 +180,18 @@ export default function UserPosts() {
                       {selectedPost.postDetails.postTxt}
                     </Text> // 投稿内容を表示
                   )}
-                {/* いいねのカウントを表示 */}
-                <Text style={styles.likeCountText}>
-                  <Icon name="heart" size={16} color="#000" />
-                  {selectedPost.likeCount}
-                </Text>
+                {selectedPost.likeCount > 0 && (
+                  <Text style={styles.likeCountText}>
+                    ❤ {selectedPost.likeCount}
+                  </Text>
+                )}
               </>
             )}
-            <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>✖</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={closeModal}
+            >
+              <Text style={styles.buttonText}>閉じる</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -222,34 +225,27 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 100,
   },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.6)", // 背景の透明度を少し高めました
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
   },
   modalContent: {
-    width: 320,
-    backgroundColor: "#fff",
-    padding: 25,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6, // モーダルに軽い影を追加
-    alignItems: "center",
+    width: "90%",
+    padding: 20,
+    paddingTop: 15,
+    backgroundColor: "#F2F5C2",
+    borderRadius: 10,
   },
   modalImage: {
     width: 280,
     height: 280,
-    borderRadius: 12, // 画像の角を少し丸く
     marginBottom: 20,
     borderWidth: 1,
     borderColor: "#ddd", // 画像に軽い枠を追加
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5, // 画像にも軽い影を追加
+    borderWidth: 4,
+    borderColor: "#ffffff",
   },
   postContent: {
     marginTop: 2,
@@ -257,26 +253,29 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "center",
   },
-  spotContent: {
-    marginTop: 5,
-    fontSize: 25,
-    fontWeight: "600", // スポット名を強調
+  subtitle: {
+    fontSize: 18,
+    margin: 10,
     textAlign: "center",
+    fontWeight: "600",
+    color: "#000000",
   },
   likeCountText: {
-    marginTop: 10,
-    fontSize: 20,
-    color: "#555", // いいねのカウントを少し大きく、色を変更
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 10,
+  },
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#A3DE83",
+    height: 50,
+    margin: 10, // ボタン間にスペースを追加
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "#000000",
     textAlign: "center",
-  },
-  closeButton: {
-    position: "absolute", // 閉じるボタンの位置
-    top: 10, // 上からの位置
-    right: 10, // 右からの位置
-    padding: 10, // ボタンのパディング調整
-  },
-  closeButtonText: {
-    fontSize: 24, // "X" を少し大きく
-    fontWeight: "bold",
+    fontWeight: "300",
   },
 });
