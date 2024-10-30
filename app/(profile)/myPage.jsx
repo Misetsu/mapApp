@@ -219,29 +219,33 @@ const myPage = () => {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text>Follow</Text>
-              {followList.map((follow) => {
-                return (
-                  <TouchableOpacity
-                    key={follow.uid}
-                    style={styles.followList}
-                    onPress={() => {
-                      handleProfile(follow.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <Text>{follow.displayName}</Text>
-                  </TouchableOpacity>
-                );
-              })}
+              <Text style={styles.subtitle}>フォロー中</Text>
+              <View style={styles.userList}>
+                {followList.map((follow) => {
+                  return (
+                    <TouchableOpacity
+                      key={follow.uid}
+                      style={styles.followListuser}
+                      onPress={() => {
+                        handleProfile(follow.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: follow.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <View style={styles.listUsernamecontainer}>
+                        <Text style={styles.listUsername}>{follow.displayName}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
               <TouchableOpacity
-                style={styles.closeButton}
+                style={styles.button}
                 onPress={handleCloseFollowModal}
               >
-                <Text style={styles.buttonText}>Close</Text>
+                <Text style={styles.buttonText}>閉じる</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -256,12 +260,12 @@ const myPage = () => {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text>Follower</Text>
+              <Text style={styles.subtitle}>フォロワー</Text>
               {followerList.map((follower) => {
                 return (
                   <TouchableOpacity
                     key={follower.uid}
-                    style={styles.followList}
+                    style={styles.followListuser}
                     onPress={() => {
                       handleProfile(follower.uid);
                     }}
@@ -270,15 +274,17 @@ const myPage = () => {
                       source={{ uri: follower.photoURL }}
                       style={styles.listProfileImage}
                     />
-                    <Text>{follower.displayName}</Text>
+                    <View style={styles.listUsernamecontainer}>
+                      <Text style={styles.listUsername}>{follower.displayName}</Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
               <TouchableOpacity
-                style={styles.closeButton}
+                style={styles.button}
                 onPress={handleCloseFollowerModal}
               >
-                <Text style={styles.buttonText}>Close</Text>
+                <Text style={styles.buttonText}>閉じる</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -409,17 +415,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: "#ccc",
   },
-  followList: {
-    display: "flex",
-    flexDirection: "row",
-    gap: 10,
-    margin: 10,
-  },
-  listProfileImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-  },
   FFtext: {
     fontSize: 16,
     fontWeight: "900",
@@ -451,11 +446,35 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
   },
   modalContent: {
-    width: 300,
+    width: "90%",
     padding: 20,
-    backgroundColor: "white",
+    paddingTop: 15,
+    backgroundColor: "#F2F5C2",
     borderRadius: 10,
+  },
+  userList: {
+    alignItems: "flex-start",
+  },
+  listUsernamecontainer: {
+    justifyContent: "center",
     alignItems: "center",
+    marginLeft: 10,
+  },
+  listUsername: {
+    fontSize: 18,
+    color: "black",
+    fontWeight: "300",
+  },
+  followListuser: {
+    display: "flex",
+    flexDirection: "row",
+    margin: 10,
+    width: "100%"
+  },
+  listProfileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 30,
   },
   textInput: {
     margin: 5,
