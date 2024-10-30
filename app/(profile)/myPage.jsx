@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 5, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",
