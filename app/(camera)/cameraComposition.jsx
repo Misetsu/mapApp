@@ -44,7 +44,7 @@ export default function CameraScreen() {
 
   const params = useLocalSearchParams();
   const { imageUri, latitude, longitude, spotId, photoUri } = params;
-  console.log(photoUri);
+
   const [tests, settest] = useState(imageUri);
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
@@ -105,7 +105,6 @@ export default function CameraScreen() {
         return;
       }
       const photo = await cameraRef.current.takePhoto();
-      console.log(photo);
       router.navigate({
         pathname: "/editComposition",
         params: {
