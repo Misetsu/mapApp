@@ -228,14 +228,7 @@ const profile = () => {
   return (
     <ScrollView>
       <View style={styles.container}>
-        {/* フォロワーの検索へのボタン */}
-        <Link href={{ pathname: "/search" }} asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>SEARCH</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Text style={styles.pagetitle}>PROFILE</Text>
+        <Text style={styles.pagetitle}>プロフィル</Text>
         {/* プロフィール画像を表示するだけ */}
         <View style={styles.profileContainer}>
           {photoUri ? (
@@ -248,11 +241,11 @@ const profile = () => {
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFcontainer}>
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
-            <Text style={styles.FFtext}>Follow: {followList.length}</Text>
+            <Text style={styles.FFtext}>フォロー中: {followList.length}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
-            <Text style={styles.FFtext}>Follower: {followerList.length}</Text>
+            <Text style={styles.FFtext}>フォロワー: {followerList.length}</Text>
           </TouchableOpacity>
         </View>
 
@@ -260,11 +253,11 @@ const profile = () => {
         <View style={styles.actionBar}>
           {isFollowing ? (
             <TouchableOpacity style={styles.FFbutton} onPress={handleFollow}>
-              <Text style={styles.buttonText}>UNFOLLOW</Text>
+              <Text style={styles.buttonText}>フォロー解除</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.FFbutton} onPress={handleFollow}>
-              <Text style={styles.buttonText}>FOLLOW</Text>
+              <Text style={styles.buttonText}>フォロー</Text>
             </TouchableOpacity>
           )}
           {isFav ? (
@@ -353,15 +346,13 @@ const profile = () => {
         </Modal>
 
         {/* ユーザーネームを表示するだけ */}
-        <Text style={styles.displayName}>Username</Text>
+        <Text style={styles.displayName}>ユーザー名</Text>
         <TextInput
           value={displayName}
           style={styles.textInput}
           editable={false}
         />
-        <UserPosts
-        uid ={uid}
-        />
+        <UserPosts uid={uid} />
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <Text style={styles.backButtonText}>{"<"} Back</Text>
         </TouchableOpacity>

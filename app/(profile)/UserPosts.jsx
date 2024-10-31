@@ -32,6 +32,7 @@ export default function UserPosts() {
         const photoSnapshot = await firestore()
           .collection("photo")
           .where("userId", "==", userId)
+          .orderBy("postId", "desc")
           .get();
 
         if (photoSnapshot.empty) {
@@ -51,7 +52,6 @@ export default function UserPosts() {
           }
 
           return {
-            photoId: photoData.id,
             photoUri: photoUri,
             postId: photoData.postId, // postId も保存
             spotId: photoData.spotId, // spotId も保存
