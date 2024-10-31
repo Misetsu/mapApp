@@ -145,7 +145,7 @@ const TrackUserMapView = () => {
           .collection("post")
           .where("spotId", "==", spotId)
           .orderBy("timeStamp", "desc")
-          .limit(10)
+          .limit(5)
           .get();
 
         if (!querySnapshot.empty) {
@@ -186,7 +186,8 @@ const TrackUserMapView = () => {
 
                 if (photoData.imagePath) {
                   const url = await storage()
-                    .ref(photoData.imagePath)
+                    .ref()
+                    .child(photoData.imagePath)
                     .getDownloadURL();
                   photoUri = url;
                 }
@@ -229,7 +230,8 @@ const TrackUserMapView = () => {
 
                 if (photoData.imagePath) {
                   const url = await storage()
-                    .ref(photoData.imagePath)
+                    .ref()
+                    .child(photoData.imagePath)
                     .getDownloadURL();
                   photoUri = url;
                 }
@@ -284,7 +286,7 @@ const TrackUserMapView = () => {
           .where("spotId", "==", spotId)
           .where("userId", "==", chosenUser)
           .orderBy("timeStamp", "desc")
-          .limit(10)
+          .limit(5)
           .get();
 
         const queryUser = await firestore()
@@ -318,14 +320,14 @@ const TrackUserMapView = () => {
               .collection("photo")
               .where("postId", "==", postData.id) // 特定の条件を指定
               .get();
-
             if (!queryPhoto.empty) {
               const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
               const photoData = photoSnapshot.data();
 
               if (photoData.imagePath) {
                 const url = await storage()
-                  .ref(photoData.imagePath)
+                  .ref()
+                  .child(photoData.imagePath)
                   .getDownloadURL();
                 photoUri = url;
               }

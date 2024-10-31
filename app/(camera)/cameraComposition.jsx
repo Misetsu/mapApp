@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions } from "react-native";
+import { View, StyleSheet, Pressable, Dimensions, Image } from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -27,8 +27,9 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
-import Icon from "react-native-vector-icons/Entypo";
+import FirebaseAuth from "@react-native-firebase/auth";
 
+const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
 const height = (width / 3) * 4;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
@@ -42,7 +43,7 @@ export default function CameraScreen() {
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
-  const { latitude, longitude, spotId, point, spotNo } = params;
+  const { imageUri, latitude, longitude, spotId, photoUri } = params;
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
@@ -98,17 +99,18 @@ export default function CameraScreen() {
   const onTakePicturePressed = async () => {
     try {
       if (cameraRef.current == null) {
+        console.log("null");
         return;
       }
       const photo = await cameraRef.current.takePhoto();
       router.navigate({
-        pathname: "/edit",
+        pathname: "/editComposition",
         params: {
           imageUri: "file://" + photo.path,
           latitude: latitude,
           longitude: longitude,
           spotId: spotId,
-          point: point,
+          Composition: encodeURIComponent(photoUri),
         },
       });
     } catch (error) {
@@ -125,13 +127,12 @@ export default function CameraScreen() {
 
     if (!result.canceled) {
       router.navigate({
-        pathname: "/edit",
+        pathname: "/editComposition",
         params: {
           imageUri: result.assets[0].uri,
           latitude: latitude,
           longitude: longitude,
           spotId: spotId,
-          point: point,
         },
       });
     }
@@ -166,7 +167,25 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
+          <View style={styles.cameraDisplayContainer}>
+            {/* <Svg width="100%" height="100%"> */}
+            {/* <ClipPath id="clipLeft">
+                <Rect x="0" y="0" width="400" height="400" />
+              </ClipPath>
+              <ClipPath id="clipRight">
+                <Rect x="50%" y="0%" width="400" height="400"></Rect>
+              </ClipPath> */}
+            <Image
+              source={{ uri: photoUri }}
+              style={styles.cameraDisplay}
+              // preserveAspectRatio="xMidYMid slice"
+              // clipPath="url(#clip)"
+              // resizeMode="cover"
+            />
+            {/* </Svg> */}
+          </View>
         </View>
+
         {showSlider && (
           <View style={styles.sliderContainer}>
             <Slider
@@ -190,10 +209,9 @@ export default function CameraScreen() {
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
         >
-          {/* <Reanimated.Text style={styles.exposureButtonText}>
-            {exposureSlider.value.toFixed(1)} 
-          </Reanimated.Text> */}
-          <Icon name="light-up" size={24} color="#FFF" />
+          <Reanimated.Text style={styles.exposureButtonText}>
+            {exposureSlider.value.toFixed(1)} {/* スライダーの値を表示 */}
+          </Reanimated.Text>
         </Pressable>
       </View>
     </GestureHandlerRootView>
@@ -208,12 +226,18 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   cameraContainer: {
+    // flex: 0.8,
+    width: "100%",
     height: height,
-    width: width,
+    // position: "absolute",
+    // left: 0,
+    // top: "10%",
+    marginLeft: "auto",
+    marginRight: "auto",
     backgroundColor: "black",
   },
   camera: {
-    // flex: 0.8,
+    // flex: 0.75,
     aspectRatio: 3 / 4,
   },
   sliderContainer: {
@@ -263,5 +287,21 @@ const styles = StyleSheet.create({
   exposureButtonText: {
     color: "white",
     fontSize: 16,
+  },
+  cameraDisplay: {
+    width: width,
+    height: "100%",
+    // objectFit: "cover",
+    // objectPosition: "left top",
+    // left: 0,
+    // top: 0,
+  },
+  cameraDisplayContainer: {
+    position: "absolute",
+    // left: "50%",
+    backgroundColor: "black",
+    width: "50%", // 左半分
+    height: height,
+    overflow: "hidden",
   },
 });

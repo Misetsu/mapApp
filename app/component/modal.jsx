@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Pressable,
   ScrollView,
+  FlatList,
   Animated,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
@@ -150,38 +151,42 @@ const MyModal = ({
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          {/* ✖ ボタン */}
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>{/* スタイルを設定 */}✖</Text>
-          </TouchableOpacity>
-
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
             {loading ? (
-              <Text>読み込み中...</Text>
+              <View style={styles.postView}>
+                <Text>読み込み中...</Text>
+              </View>
             ) : !empty && postData.length > 0 ? (
               postData.map((post, index) => {
                 const isLiked = likes[post.postId];
                 const flag = tempObj1[post.postId];
                 const count = tempObj2[post.postId];
                 return (
-                  <View key={post.postId}>
-                    <Link
-                      href={{
-                        pathname: "/profile",
-                        params: {
-                          uid: post.userId,
-                        },
-                      }}
-                      asChild
-                    >
-                      <TouchableOpacity style={styles.userInfo}>
-                        <Image
-                          source={{ uri: post.userIcon }}
-                          style={styles.userIcon}
-                        />
-                        <Text>{post.username}</Text>
+                  <View key={post.postId} style={styles.postView}>
+                    <View style={styles.profileBar}>
+                      <Link
+                        href={{
+                          pathname: "/profile",
+                          params: {
+                            uid: post.userId,
+                          },
+                        }}
+                        asChild
+                      >
+                        <TouchableOpacity style={styles.userInfo}>
+                          <Image
+                            source={{ uri: post.userIcon }}
+                            style={styles.userIcon}
+                          />
+                          <Text>{post.username}</Text>
+                        </TouchableOpacity>
+                      </Link>
+                      <TouchableOpacity onPress={onClose}>
+                        <Text style={styles.closeButtonText}>
+                          {/* スタイルを設定 */}✖
+                        </Text>
                       </TouchableOpacity>
-                    </Link>
+                    </View>
                     {postImage ? (
                       <Image
                         source={{ uri: post.photoUri }}
@@ -298,6 +303,7 @@ const MyModal = ({
                                     latitude: 0,
                                     longitude: 0,
                                     spotId: spotId,
+                                    photoUri: encodeURIComponent(post.photoUri),
                                   },
                                 });
                               }}
@@ -319,7 +325,11 @@ const MyModal = ({
                                 });
                               }}
                             >
-                              <Icon name="camera" size={25} color="#000" />
+                              <Icon
+                                name="map-marked-alt"
+                                size={25}
+                                color="#000"
+                              />
                             </Pressable>
                           </Animated.View>
                         )}
@@ -327,7 +337,7 @@ const MyModal = ({
                           style={styles.roundButton}
                           onPress={showAnimatedButtons}
                         >
-                          <Icon name="map-marked-alt" size={25} color="#000" />
+                          <Icon name="camera" size={25} color="#000" />
                         </Pressable>
                       </View>
                     ) : (
@@ -413,18 +423,10 @@ const styles = StyleSheet.create({
   modalView: {
     width: 350,
     margin: 20,
-    backgroundColor: "white",
+    marginBottom: 0,
+    marginTop: 90,
     borderRadius: 20,
-    padding: 25,
     alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
     position: "relative",
   },
   toolView: {
@@ -463,13 +465,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 5,
   },
-  closeButton: {
-    position: "absolute", //絶対配置
-    top: 10,
-    right: 10,
-    padding: 10,
-    zIndex: 1,
-  },
   closeButtonText: {
     fontSize: 18,
     fontWeight: "bold",
@@ -489,6 +484,19 @@ const styles = StyleSheet.create({
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
     marginBottom: 10, // ボタン間の余白
+  },
+  profileBar: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  postView: {
+    width: "100%",
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    marginBottom: 10,
+    marginTop: 10,
   },
 });
 
