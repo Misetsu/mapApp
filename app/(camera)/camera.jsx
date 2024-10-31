@@ -29,7 +29,8 @@ import {
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
 import Icon from "react-native-vector-icons/Entypo";
 
-const width = Dimensions.get("window");
+const width = Dimensions.get("window").width;
+const height = (width / 3) * 4;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
@@ -207,12 +208,12 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   cameraContainer: {
-    // height: "auto",
-    width: "auto",
+    height: height,
+    width: width,
     backgroundColor: "black",
   },
   camera: {
-    flex: 0.8,
+    // flex: 0.8,
     aspectRatio: 3 / 4,
   },
   sliderContainer: {

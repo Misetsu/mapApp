@@ -28,10 +28,10 @@ import {
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
 import FirebaseAuth from "@react-native-firebase/auth";
-import Svg, { ClipPath, Rect } from "react-native-svg";
 
 const auth = FirebaseAuth();
-const height = Dimensions.get("window").height;
+const width = Dimensions.get("window").width;
+const height = (width / 3) * 4;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   cameraContainer: {
     // flex: 0.8,
     width: "100%",
-    height: "80%",
+    height: height,
     // position: "absolute",
     // left: 0,
     // top: "10%",
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   camera: {
-    flex: 0.8,
+    // flex: 0.75,
     aspectRatio: 3 / 4,
   },
   sliderContainer: {
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   cameraDisplay: {
-    width: "auto",
+    width: width,
     height: "100%",
     // objectFit: "cover",
     // objectPosition: "left top",
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     // left: "50%",
     backgroundColor: "red",
     width: "50%", // 左半分
-    height: "80%",
+    height: height,
     overflow: "hidden",
   },
 });

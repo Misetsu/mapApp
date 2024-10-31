@@ -186,7 +186,6 @@ const MyModal = ({
                       <Image
                         source={{ uri: post.photoUri }}
                         style={{ width: 300, height: 400 }}
-                        onPress={console.log(post.photoUri)}
                       />
                     ) : (
                       <Image

@@ -180,15 +180,18 @@ const TrackUserMapView = () => {
                 .collection("photo")
                 .where("postId", "==", postData.id) // 特定の条件を指定
                 .get();
+              console.log("p");
               if (!queryPhoto.empty) {
                 const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
                 const photoData = photoSnapshot.data();
 
                 if (photoData.imagePath) {
                   const url = await storage()
-                    .ref(photoData.imagePath)
+                    .ref()
+                    .child(photoData.imagePath)
                     .getDownloadURL();
                   photoUri = url;
+                  console.log(url);
                 }
               }
 
@@ -223,15 +226,18 @@ const TrackUserMapView = () => {
                 .collection("photo")
                 .where("postId", "==", postData.id) // 特定の条件を指定
                 .get();
+              console.log("p");
               if (!queryPhoto.empty) {
                 const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
                 const photoData = photoSnapshot.data();
 
                 if (photoData.imagePath) {
                   const url = await storage()
-                    .ref(photoData.imagePath)
+                    .ref()
+                    .child(photoData.imagePath)
                     .getDownloadURL();
                   photoUri = url;
+                  console.log(url);
                 }
               }
 
@@ -318,16 +324,18 @@ const TrackUserMapView = () => {
               .collection("photo")
               .where("postId", "==", postData.id) // 特定の条件を指定
               .get();
-
+            console.log("p");
             if (!queryPhoto.empty) {
               const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
               const photoData = photoSnapshot.data();
 
               if (photoData.imagePath) {
                 const url = await storage()
-                  .ref(photoData.imagePath)
+                  .ref()
+                  .child(photoData.imagePath)
                   .getDownloadURL();
                 photoUri = url;
+                console.log(url);
               }
             }
 
