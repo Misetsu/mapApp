@@ -10,7 +10,7 @@ import {
   Platform,
   Text,
   Keyboard,
-  Image as RNImage
+  Image as RNImage,
 } from "react-native";
 import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,7 +29,6 @@ const auth = FirebaseAuth();
 export default function edit() {
   const [text, setText] = useState("");
   const [post, setPost] = useState("");
-  const [newimageuri, setnewimageuri] = useState(null);
   const [compositionuri, setCompositionuri] = useState(null);
   const [focusedInput, setFocusedInput] = useState(null);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
@@ -47,7 +46,7 @@ export default function edit() {
 
   const [orientation, setOrientation] = useState("");
 
-  const resizeImage = async (uri,uri2,rotation) => {
+  const resizeImage = async (uri, uri2, rotation) => {
     try {
       const newImage = await ImageResizer.createResizedImage(
         uri,
@@ -215,34 +214,47 @@ export default function edit() {
           const orientationValue = exifData.Orientation;
           console.log(orientationValue);
           if (orientationValue === 1 || orientationValue === 3) {
-            RNImage.getSize(Composition, (width, height) => {
-              console.log(width)
-              if (width > height || (width == 844 && height == 1125) || (width == 810 && height == 1080)) {
-                console.log("This is a landscape (横向き) image.");
-                resizeImage(imageUri,Composition,0);
-              } else if (height > width) {
-                resizeImage(imageUri,Composition,90);
-              } else {
-                
+            RNImage.getSize(
+              Composition,
+              (width, height) => {
+                console.log(width);
+                if (
+                  width > height ||
+                  (width == 844 && height == 1125) ||
+                  (width == 810 && height == 1080)
+                ) {
+                  console.log("This is a landscape (横向き) image.");
+                  resizeImage(imageUri, Composition, 0);
+                } else if (height > width) {
+                  resizeImage(imageUri, Composition, 90);
+                } else {
+                }
+              },
+              (error) => {
+                console.error("Failed to get image size:", error);
               }
-            }, (error) => {
-              console.error("Failed to get image size:", error);
-            });
-            
+            );
           } else {
-            RNImage.getSize(Composition, (width, height) => {
-              console.log(width,height)
-              if (width > height|| (width == 844 && height == 1125) || (width == 810 && height == 1080)) {
-                console.log("This is a landscape (横向き) image.");
-                resizeImage(imageUri,Composition,0);
-              } else if (height > width) {
-                resizeImage(imageUri,Composition,90);
-              } else {
-                
+            RNImage.getSize(
+              Composition,
+              (width, height) => {
+                console.log(width, height);
+                if (
+                  width > height ||
+                  (width == 844 && height == 1125) ||
+                  (width == 810 && height == 1080)
+                ) {
+                  console.log("This is a landscape (横向き) image.");
+                  resizeImage(imageUri, Composition, 0);
+                } else if (height > width) {
+                  resizeImage(imageUri, Composition, 90);
+                } else {
+                }
+              },
+              (error) => {
+                console.error("Failed to get image size:", error);
               }
-            }, (error) => {
-              console.error("Failed to get image size:", error);
-            });
+            );
           }
         }
       })

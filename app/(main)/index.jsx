@@ -145,7 +145,7 @@ const TrackUserMapView = () => {
           .collection("post")
           .where("spotId", "==", spotId)
           .orderBy("timeStamp", "desc")
-          .limit(10)
+          .limit(3)
           .get();
 
         if (!querySnapshot.empty) {
@@ -290,7 +290,7 @@ const TrackUserMapView = () => {
           .where("spotId", "==", spotId)
           .where("userId", "==", chosenUser)
           .orderBy("timeStamp", "desc")
-          .limit(10)
+          .limit(3)
           .get();
 
         const queryUser = await firestore()
