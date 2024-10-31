@@ -10,6 +10,7 @@ import {
   Platform,
   Text,
   Keyboard,
+  Image as RNImage
 } from "react-native";
 import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -46,17 +47,29 @@ export default function edit() {
 
   const [orientation, setOrientation] = useState("");
 
-  const resizeImage = async (uri) => {
+  const resizeImage = async (uri,uri2,rotation) => {
     try {
       const newImage = await ImageResizer.createResizedImage(
         uri,
         4000,
         3000,
         "JPEG",
-        100
+        100,
+        0
+      );
+
+      const newImage2 = await ImageResizer.createResizedImage(
+        uri2,
+        3000,
+        4000,
+        "JPEG",
+        100,
+        rotation
       );
       console.log("リサイズされた画像のURI:", newImage.uri);
       settest(newImage.uri); // 新しいURIを返す
+      console.log("リサイズされた画像のURI:", newImage2.uri);
+      settest2(newImage2.uri); // 新しいURIを返す
     } catch (error) {
       console.error(error);
     }
@@ -202,9 +215,34 @@ export default function edit() {
           const orientationValue = exifData.Orientation;
           console.log(orientationValue);
           if (orientationValue === 1 || orientationValue === 3) {
-            settest(imageUri);
+            RNImage.getSize(Composition, (width, height) => {
+              console.log(width)
+              if (width > height || (width == 844 && height == 1125) || (width == 810 && height == 1080)) {
+                console.log("This is a landscape (横向き) image.");
+                resizeImage(imageUri,Composition,0);
+              } else if (height > width) {
+                resizeImage(imageUri,Composition,90);
+              } else {
+                
+              }
+            }, (error) => {
+              console.error("Failed to get image size:", error);
+            });
+            
           } else {
-            resizeImage(imageUri);
+            RNImage.getSize(Composition, (width, height) => {
+              console.log(width,height)
+              if (width > height|| (width == 844 && height == 1125) || (width == 810 && height == 1080)) {
+                console.log("This is a landscape (横向き) image.");
+                resizeImage(imageUri,Composition,0);
+              } else if (height > width) {
+                resizeImage(imageUri,Composition,90);
+              } else {
+                
+              }
+            }, (error) => {
+              console.error("Failed to get image size:", error);
+            });
           }
         }
       })
