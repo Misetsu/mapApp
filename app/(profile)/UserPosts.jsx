@@ -11,7 +11,6 @@ import {
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 
