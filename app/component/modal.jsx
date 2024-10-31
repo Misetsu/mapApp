@@ -151,7 +151,7 @@ const MyModal = ({
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
             {loading ? (
               <View style={styles.postView}>
                 <Text>読み込み中...</Text>
@@ -496,6 +496,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 20,
     marginBottom: 10,
+    marginTop: 10,
   },
 });
 
