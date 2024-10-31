@@ -15,7 +15,9 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 
-export default function UserPosts() {
+export default function UserPosts(
+  uid,
+) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
@@ -31,9 +33,9 @@ export default function UserPosts() {
         // photo コレクションからデータを取得
         const photoSnapshot = await firestore()
           .collection("photo")
-          .where("userId", "==", userId)
+          .where("userId", "==", uid)
           .get();
-
+        console.log(uid)
         if (photoSnapshot.empty) {
           return;
         }
@@ -68,7 +70,7 @@ export default function UserPosts() {
     };
 
     fetchPosts();
-  }, [userId]);
+  }, []);
 
   const handleImagePress = async (post) => {
     try {
