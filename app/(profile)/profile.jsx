@@ -13,6 +13,7 @@ import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
+import UserPosts from "./UserPosts";
 
 const auth = FirebaseAuth();
 const router = useRouter();
@@ -358,6 +359,7 @@ const profile = () => {
           style={styles.textInput}
           editable={false}
         />
+        <UserPosts />
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <Text style={styles.backButtonText}>{"<"} Back</Text>
         </TouchableOpacity>
