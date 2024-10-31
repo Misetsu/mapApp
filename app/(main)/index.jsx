@@ -145,7 +145,7 @@ const TrackUserMapView = () => {
           .collection("post")
           .where("spotId", "==", spotId)
           .orderBy("timeStamp", "desc")
-          .limit(10)
+          .limit(5)
           .get();
 
         if (!querySnapshot.empty) {
@@ -186,7 +186,8 @@ const TrackUserMapView = () => {
 
                 if (photoData.imagePath) {
                   const url = await storage()
-                    .ref(photoData.imagePath)
+                    .ref()
+                    .child(photoData.imagePath)
                     .getDownloadURL();
                   photoUri = url;
                 }
@@ -229,7 +230,8 @@ const TrackUserMapView = () => {
 
                 if (photoData.imagePath) {
                   const url = await storage()
-                    .ref(photoData.imagePath)
+                    .ref()
+                    .child(photoData.imagePath)
                     .getDownloadURL();
                   photoUri = url;
                 }
@@ -284,7 +286,7 @@ const TrackUserMapView = () => {
           .where("spotId", "==", spotId)
           .where("userId", "==", chosenUser)
           .orderBy("timeStamp", "desc")
-          .limit(10)
+          .limit(5)
           .get();
 
         const queryUser = await firestore()
@@ -318,14 +320,14 @@ const TrackUserMapView = () => {
               .collection("photo")
               .where("postId", "==", postData.id) // 特定の条件を指定
               .get();
-
             if (!queryPhoto.empty) {
               const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
               const photoData = photoSnapshot.data();
 
               if (photoData.imagePath) {
                 const url = await storage()
-                  .ref(photoData.imagePath)
+                  .ref()
+                  .child(photoData.imagePath)
                   .getDownloadURL();
                 photoUri = url;
               }
@@ -700,6 +702,47 @@ const TrackUserMapView = () => {
           spotId: spotId,
           timeStamp: currentTime,
         });
+      const queryUser = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .get();
+      const spotPoint = queryUser.data().spotPoint + 1;
+
+      await firestore().collection("users").doc(auth.currentUser.uid).update({
+        spotPoint: spotPoint,
+      });
+    }
+  };
+
+  function fibonacci(num) {
+    if (num == 1) return 0;
+    if (num == 2) return 1;
+    return fibonacci(num - 1) + fibonacci(num - 2);
+  }
+
+  const handleAddNewPin = async () => {
+    const queryUser = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .get();
+
+    const userData = queryUser.data();
+
+    const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
+    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
+    if (pointRequired <= userData.spotPoint) {
+      router.push({
+        pathname: "/camera",
+        params: {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          spotId: 0,
+          point: pointLeft,
+          spotNo: parseInt(userData.spotCreate) + 1,
+        },
+      });
+    } else {
+      alert("ポイントが足りない。");
     }
   };
 
@@ -810,6 +853,16 @@ const TrackUserMapView = () => {
       )}
       {/* タスクバーアイコン */}
       <SafeAreaView style={styles.indexContainer}>
+        <TouchableOpacity
+          style={styles.listProfileIndexButton}
+          onPress={() => {
+            router.push({
+              pathname: "/search",
+            });
+          }}
+        >
+          <Icon name="search" size={30} color="#000"></Icon>
+        </TouchableOpacity>
         <FlatList
           horizontal={true}
           data={userList}
@@ -886,16 +939,7 @@ const TrackUserMapView = () => {
           {user ? (
             <TouchableOpacity
               style={styles.roundButton}
-              onPress={() => {
-                router.push({
-                  pathname: "/camera",
-                  params: {
-                    latitude: position.latitude,
-                    longitude: position.longitude,
-                    spotId: 0,
-                  },
-                });
-              }}
+              onPress={handleAddNewPin}
             >
               <Icon name="map-marker-alt" size={25} color="#000" />
             </TouchableOpacity>
@@ -1011,17 +1055,14 @@ const TrackUserMapView = () => {
           <Icon name="crosshairs" size={24} color="#3333ff" />
         </TouchableOpacity>
       </View>
-
-      {/* 設定ボタンを一旦保留 */}
-      {/* <View style={styles.settingButton}>
+      <View style={styles.settingButton}>
         <TouchableOpacity
           onPress={() => router.push("/setting")}
           style={styles.button}
-        > */}
-      {/* 左側のアイコンやテキストをここに追加 */}
-      {/* <Icon name="cog" size={24} color="#000" />
+        >
+          <Icon name="cog" size={24} color="#000" />
         </TouchableOpacity>
-      </View> */}
+      </View>
     </SafeAreaView>
   );
 };

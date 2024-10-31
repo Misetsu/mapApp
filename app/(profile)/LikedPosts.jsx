@@ -131,7 +131,7 @@ export default function UserLikedPosts() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#239D60" />
         <Text>読み込み中...</Text>
       </View>
     );
@@ -163,17 +163,15 @@ export default function UserLikedPosts() {
       <Modal
         visible={modalVisible}
         transparent={true}
-        animationType="slide"
+        animationType="fade"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {selectedPost && (
               <>
                 {selectedPost.spotName && (
-                  <Text style={styles.spotContent}>
-                    {selectedPost.spotName}
-                  </Text>
+                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text>
                 )}
                 {selectedPost.photoUri ? (
                   <Image
@@ -183,11 +181,12 @@ export default function UserLikedPosts() {
                 ) : (
                   <Text>画像がありません。</Text>
                 )}
-                {selectedPost.postDetails?.postTxt && (
-                  <Text style={styles.postContent}>
-                    {selectedPost.postDetails.postTxt}
-                  </Text>
-                )}
+                {selectedPost.postDetails &&
+                  selectedPost.postDetails.postTxt && (
+                    <Text style={styles.postContent}>
+                      {selectedPost.postDetails.postTxt}
+                    </Text>
+                  )}
                 {selectedPost.likeCount > 0 && (
                   <Text style={styles.likeCountText}>
                     ❤ {selectedPost.likeCount}
@@ -195,8 +194,8 @@ export default function UserLikedPosts() {
                 )}
               </>
             )}
-            <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>✖</Text>
+            <TouchableOpacity style={styles.button} onPress={closeModal}>
+              <Text style={styles.buttonText}>閉じる</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -208,7 +207,7 @@ export default function UserLikedPosts() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
   },
   loadingContainer: {
     flex: 1,
@@ -222,67 +221,64 @@ const styles = StyleSheet.create({
   },
   postContainer: {
     width: "30%", // 1行に3つの画像を表示
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 5,
+    margin: 5,
+    borderWidth: 4,
+    borderColor: "#ffffff",
   },
   image: {
     width: "100%",
     height: 100,
-    borderRadius: 8,
   },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.6)", // 背景の透明度を少し高めました
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
   },
   modalContent: {
-    width: 320,
-    backgroundColor: "#fff",
-    padding: 25,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6, // モーダルに軽い影を追加
-    alignItems: "center",
+    width: "90%",
+    padding: 20,
+    paddingTop: 15,
+    backgroundColor: "#F2F5C2",
+    borderRadius: 10,
   },
   modalImage: {
     width: 280,
     height: 280,
-    borderRadius: 12, // 画像の角を少し丸く
-    marginBottom: 20,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: "#ddd", // 画像に軽い枠を追加
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    borderWidth: 4,
+    borderColor: "#ffffff",
   },
   postContent: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: 18, // フォントサイズを16から18に変更
+    color: "#333",
+    textAlign: "center",
   },
-  spotContent: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
+  subtitle: {
+    fontSize: 18,
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "600",
+    color: "#000000",
   },
   likeCountText: {
     fontSize: 14,
     color: "#555",
     marginBottom: 10,
   },
-  closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#A3DE83",
+    height: 50,
+    margin: 10, // ボタン間にスペースを追加
   },
-  closeButtonText: {
-    fontSize: 20,
-    color: "#333",
+  buttonText: {
+    fontSize: 18,
+    color: "#000000",
+    textAlign: "center",
+    fontWeight: "300",
   },
 });
