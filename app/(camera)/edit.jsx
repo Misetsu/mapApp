@@ -110,8 +110,6 @@ export default function edit() {
 
       const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
 
-      console.log(spotDocId);
-
       await firestore().collection("spot").doc(spotDocId).update({
         lastUpdateAt: currentTime,
       });
@@ -122,8 +120,6 @@ export default function edit() {
         .get();
 
       const maxPostId = queryPost.docs[0].data().id + 1;
-
-      console.log("a");
 
       await firestore()
         .collection("photo")
@@ -164,8 +160,6 @@ export default function edit() {
   };
 
   useEffect(() => {
-    // console.log("imageWidth=",imageWidth)
-    // console.log("imageHeight=",imageHeight)
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardStatus(true);
     });

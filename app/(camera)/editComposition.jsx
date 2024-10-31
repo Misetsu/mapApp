@@ -41,8 +41,6 @@ export default function edit() {
   const [tests, settest] = useState(imageUri);
   const [tests2, settest2] = useState(Composition);
   const viewRef = useRef();
-  console.log("imageuri=", imageUri);
-  console.log("Composition=", Composition);
 
   const [orientation, setOrientation] = useState("");
 
@@ -65,9 +63,7 @@ export default function edit() {
         100,
         rotation
       );
-      console.log("リサイズされた画像のURI:", newImage.uri);
       settest(newImage.uri); // 新しいURIを返す
-      console.log("リサイズされた画像のURI:", newImage2.uri);
       settest2(newImage2.uri); // 新しいURIを返す
     } catch (error) {
       console.error(error);
@@ -77,12 +73,9 @@ export default function edit() {
   const uploadPost = async () => {
     setIsoading(true);
     const randomNumber = Math.floor(Math.random() * 100) + 1;
-    const imagePath =
-      "photo/image-" + new Date().getTime().toString() + randomNumber;
-    console.log(compositionuri);
+    const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
     try {
       await reference.ref(imagePath).putFile(compositionuri);
-      console.log("Image uploaded successfully.");
     } catch (error) {
       console.error("Error uploading image:", error);
     }
@@ -212,18 +205,15 @@ export default function edit() {
       .then((exifData) => {
         if (exifData && exifData.Orientation) {
           const orientationValue = exifData.Orientation;
-          console.log(orientationValue);
           if (orientationValue === 1 || orientationValue === 3) {
             RNImage.getSize(
               Composition,
               (width, height) => {
-                console.log(width);
                 if (
                   width > height ||
                   (width == 844 && height == 1125) ||
                   (width == 810 && height == 1080)
                 ) {
-                  console.log("This is a landscape (横向き) image.");
                   resizeImage(imageUri, Composition, 0);
                 } else if (height > width) {
                   resizeImage(imageUri, Composition, 90);
@@ -238,13 +228,11 @@ export default function edit() {
             RNImage.getSize(
               Composition,
               (width, height) => {
-                console.log(width, height);
                 if (
                   width > height ||
                   (width == 844 && height == 1125) ||
                   (width == 810 && height == 1080)
                 ) {
-                  console.log("This is a landscape (横向き) image.");
                   resizeImage(imageUri, Composition, 0);
                 } else if (height > width) {
                   resizeImage(imageUri, Composition, 90);
@@ -317,9 +305,7 @@ export default function edit() {
                 height="400"
                 preserveAspectRatio="xMidYMid slice"
                 clipPath="url(#clipLeft)"
-                onLoad={(event) => {
-                  console.log("画像１＝", tests);
-                }}
+                onLoad={(event) => {}}
                 onError={(error) => console.log("Error loading image:", error)}
               />
 
@@ -340,9 +326,7 @@ export default function edit() {
                 preserveAspectRatio="xMidYMid slice"
                 clipPath="url(#clipRight)"
                 resizeMode="cover"
-                onLoad={(event) => {
-                  console.log("画像２＝", tests2);
-                }}
+                onLoad={(event) => {}}
                 onError={(error) => console.log("Error loading image:", error)}
               />
             </Svg>

@@ -45,8 +45,6 @@ export default function CameraScreen() {
   const params = useLocalSearchParams();
   const { imageUri, latitude, longitude, spotId, photoUri } = params;
 
-  const [tests, settest] = useState(imageUri);
-
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
 
@@ -301,7 +299,7 @@ const styles = StyleSheet.create({
   cameraDisplayContainer: {
     position: "absolute",
     // left: "50%",
-    backgroundColor: "red",
+    backgroundColor: "black",
     width: "50%", // 左半分
     height: height,
     overflow: "hidden",
