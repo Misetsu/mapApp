@@ -161,9 +161,7 @@ export default function UserPosts() {
             {selectedPost && (
               <>
                 {selectedPost.spotName && ( // スポット名が存在する場合に表示
-                  <Text style={styles.subtitle}>
-                    {selectedPost.spotName}
-                  </Text> // スポット名を表示
+                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text> // スポット名を表示
                 )}
                 {selectedPost.photoUri ? (
                   <Image
@@ -186,10 +184,7 @@ export default function UserPosts() {
                 )}
               </>
             )}
-            <TouchableOpacity
-              style={styles.button}
-              onPress={closeModal}
-            >
+            <TouchableOpacity style={styles.button} onPress={closeModal}>
               <Text style={styles.buttonText}>閉じる</Text>
             </TouchableOpacity>
           </View>

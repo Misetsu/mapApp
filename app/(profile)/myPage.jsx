@@ -91,7 +91,6 @@ const myPage = () => {
         };
 
         fetchUserData();
-
       }
 
       // フォロワー取得
@@ -144,7 +143,7 @@ const myPage = () => {
         .update({ publicStatus: 1 });
       setUserStatus(1); // 非公開状態に設定
     }
-  }
+  };
 
   const handleProfile = (uid) => {
     if (uid == auth.currentUser.uid) {
@@ -202,11 +201,15 @@ const myPage = () => {
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFcontainer}>
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
-            <Text style={styles.FFtext}>フォロー中： {followList.length} 人</Text>
+            <Text style={styles.FFtext}>
+              フォロー中： {followList.length} 人
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
-            <Text style={styles.FFtext}>フォロワー： {followerList.length} 人</Text>
+            <Text style={styles.FFtext}>
+              フォロワー： {followerList.length} 人
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -235,7 +238,9 @@ const myPage = () => {
                         style={styles.listProfileImage}
                       />
                       <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>{follow.displayName}</Text>
+                        <Text style={styles.listUsername}>
+                          {follow.displayName}
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   );
@@ -275,7 +280,9 @@ const myPage = () => {
                       style={styles.listProfileImage}
                     />
                     <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}>{follower.displayName}</Text>
+                      <Text style={styles.listUsername}>
+                        {follower.displayName}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -290,9 +297,7 @@ const myPage = () => {
           </View>
         </Modal>
 
-
-
-        <Text style={styles.displayName}>Username</Text>
+        <Text style={styles.displayName}>ユーザー名</Text>
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
@@ -307,15 +312,15 @@ const myPage = () => {
         </TouchableOpacity>
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
 
-
-
         <View style={styles.ChangeStatus}>
           <Text>投稿を公開する：{userStatus ? "公開" : "非公開"}</Text>
           <View style={(style = styles.SwitchBtn)}>
             <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
           </View>
         </View>
-        <Text style={styles.subtitle}>{viewMode === "posts" ? "自分の投稿" : "いいねした投稿"}</Text>
+        <Text style={styles.subtitle}>
+          {viewMode === "posts" ? "自分の投稿" : "いいねした投稿"}
+        </Text>
 
         {/* 表示内容を切り替え */}
         {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
@@ -327,26 +332,28 @@ const myPage = () => {
           </Text>
         </TouchableOpacity>
 
-
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: "none", width: "50%", marginBottom: 0, }]}
+            style={[
+              styles.button,
+              { backgroundColor: "none", width: "50%", marginBottom: 0 },
+            ]}
             onPress={signout}
           >
-            <Text style={[styles.buttonText, { color: "#FF6666" }]}>ログアウト</Text>
+            <Text style={[styles.buttonText, { color: "#FF6666" }]}>
+              ログアウト
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
       <View style={styles.Back}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleBackPress}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <Icon name="angle-left" size={24} color="#000" />
         </TouchableOpacity>
       </View>
     </ScrollView>
-
   );
 };
 
@@ -430,7 +437,7 @@ const styles = StyleSheet.create({
     width: "90%", // 横幅を80%に設定（任意）
     alignSelf: "center",
     margin: 10,
-    backgroundColor: '#F2F5C8'
+    backgroundColor: "#F2F5C8",
   },
   modalOverlay: {
     flex: 1,
@@ -462,7 +469,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     margin: 10,
-    width: "100%"
+    width: "100%",
   },
   listProfileImage: {
     width: 50,

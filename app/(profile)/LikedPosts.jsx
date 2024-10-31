@@ -171,9 +171,7 @@ export default function UserLikedPosts() {
             {selectedPost && (
               <>
                 {selectedPost.spotName && (
-                  <Text style={styles.subtitle}>
-                    {selectedPost.spotName}
-                  </Text>
+                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text>
                 )}
                 {selectedPost.photoUri ? (
                   <Image
@@ -185,10 +183,10 @@ export default function UserLikedPosts() {
                 )}
                 {selectedPost.postDetails &&
                   selectedPost.postDetails.postTxt && (
-                  <Text style={styles.postContent}>
-                    {selectedPost.postDetails.postTxt}
-                  </Text>
-                )}
+                    <Text style={styles.postContent}>
+                      {selectedPost.postDetails.postTxt}
+                    </Text>
+                  )}
                 {selectedPost.likeCount > 0 && (
                   <Text style={styles.likeCountText}>
                     ❤ {selectedPost.likeCount}
@@ -196,12 +194,9 @@ export default function UserLikedPosts() {
                 )}
               </>
             )}
-              <TouchableOpacity
-                style={styles.button}
-                onPress={closeModal}
-              >
-                <Text style={styles.buttonText}>閉じる</Text>
-              </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={closeModal}>
+              <Text style={styles.buttonText}>閉じる</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
