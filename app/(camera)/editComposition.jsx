@@ -51,8 +51,8 @@ export default function edit() {
     try {
       const newImage = await ImageResizer.createResizedImage(
         uri,
-        4000,
         3000,
+        4000,
         "JPEG",
         100,
         0
@@ -60,8 +60,8 @@ export default function edit() {
 
       const newImage2 = await ImageResizer.createResizedImage(
         uri2,
-        3000,
         4000,
+        3000,
         "JPEG",
         100,
         rotation
