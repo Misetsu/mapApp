@@ -368,13 +368,6 @@ const styles = StyleSheet.create({
     height: 50,
     margin: 10, // ボタン間にスペースを追加
   },
-  closeButton: {
-    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
-    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F2F2",
-    paddingHorizontal: 20,
-    paddingVertical: 5,
-  },
   buttonText: {
     fontSize: 18,
     color: "#000000",
@@ -488,28 +481,6 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "300",
   },
-  submit: {
-    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
-    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "black",
-    height: 50,
-    marginTop: 10, // ボタン間にスペースを追加
-  },
-  submitText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#f2f2f2",
-    textAlign: "center",
-  },
-  linklabel: {
-    fontSize: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
-    textAlign: "center",
-    textDecorationLine: "underline",
-    color: "#1a0dab",
-    fontWeight: "600",
-  },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
@@ -522,24 +493,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: "black",
-    textAlign: "center",
-    fontWeight: "300",
-  },
-  toggleButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    backgroundColor: "#ccc",
-    alignSelf: "center",
-    marginVertical: 20,
-  },
-  toggleButtonText: {
-    color: "#000",
-    fontSize: 16,
   },
 });
 
