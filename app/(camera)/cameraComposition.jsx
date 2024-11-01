@@ -43,7 +43,7 @@ export default function CameraScreen() {
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
-  const { imageUri, latitude, longitude, spotId, photoUri } = params;
+  const { latitude, longitude, spotId, photoUri } = params;
 
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);

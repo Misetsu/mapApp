@@ -11,10 +11,11 @@ import {
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 
-export default function UserPosts() {
+export default function UserPosts(uid) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
@@ -25,15 +26,30 @@ export default function UserPosts() {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const PhotoArray = [];
+        let vivstedSpot = {};
+
+        const querySnapshot = await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .orderBy("spotId", "asc")
+          .get();
+
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((docs) => {
+            const item = docs.data();
+            vivstedSpot[item.spotId] = item.timeStamp;
+          });
+        }
+
+        console.log(vivstedSpot);
 
         // photo コレクションからデータを取得
         const photoSnapshot = await firestore()
           .collection("photo")
-          .where("userId", "==", userId)
+          .where("userId", "==", uid.uid)
           .orderBy("postId", "desc")
           .get();
-
         if (photoSnapshot.empty) {
           return;
         }
@@ -42,6 +58,7 @@ export default function UserPosts() {
         const photoPromises = photoSnapshot.docs.map(async (photoDoc) => {
           const photoData = photoDoc.data();
           let photoUri = "";
+          let visited = false;
 
           // 画像パスが存在する場合、URL を取得
           if (photoData.imagePath) {
@@ -50,10 +67,19 @@ export default function UserPosts() {
               .getDownloadURL();
           }
 
+          if (photoData.spotId in vivstedSpot) {
+            console.log("a");
+            if (photoData.timeStamp < vivstedSpot[photoData.spotId]) {
+              visited = true;
+              console.log("b");
+            }
+          }
+
           return {
             photoUri: photoUri,
             postId: photoData.postId, // postId も保存
             spotId: photoData.spotId, // spotId も保存
+            visited: visited,
           };
         });
 
@@ -67,7 +93,7 @@ export default function UserPosts() {
     };
 
     fetchPosts();
-  }, [userId]);
+  }, []);
 
   const handleImagePress = async (post) => {
     try {
@@ -121,7 +147,7 @@ export default function UserPosts() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#239D60" />
+        <ActivityIndicator size="large" color="#0000ff" />
         <Text>読み込み中...</Text>
       </View>
     );
@@ -139,8 +165,22 @@ export default function UserPosts() {
               onPress={() => handleImagePress(post)}
               style={styles.postContainer}
             >
+              {console.log(post.postId)}
               {post.photoUri ? (
-                <Image source={{ uri: post.photoUri }} style={styles.image} />
+                <View>
+                  {post.visited ? (
+                    <Image
+                      source={{ uri: post.photoUri }}
+                      style={styles.image}
+                    />
+                  ) : (
+                    <Image
+                      source={{ uri: post.photoUri }}
+                      style={styles.image}
+                      blurRadius={50}
+                    />
+                  )}
+                </View>
               ) : (
                 <Text>画像がありません。</Text>
               )}
@@ -164,10 +204,20 @@ export default function UserPosts() {
                   <Text style={styles.subtitle}>{selectedPost.spotName}</Text> // スポット名を表示
                 )}
                 {selectedPost.photoUri ? (
-                  <Image
-                    source={{ uri: selectedPost.photoUri }}
-                    style={styles.modalImage}
-                  />
+                  <View>
+                    {selectedPost.visited ? (
+                      <Image
+                        source={{ uri: selectedPost.photoUri }}
+                        style={styles.modalImage}
+                      />
+                    ) : (
+                      <Image
+                        source={{ uri: selectedPost.photoUri }}
+                        style={styles.modalImage}
+                        blurRadius={50}
+                      />
+                    )}
+                  </View>
                 ) : (
                   <Text>画像がありません。</Text>
                 )}
@@ -177,11 +227,11 @@ export default function UserPosts() {
                       {selectedPost.postDetails.postTxt}
                     </Text> // 投稿内容を表示
                   )}
-                {selectedPost.likeCount > 0 && (
-                  <Text style={styles.likeCountText}>
-                    ❤ {selectedPost.likeCount}
-                  </Text>
-                )}
+                {/* いいねのカウントを表示 */}
+                <Text style={styles.likeCountText}>
+                  <Icon name="heart" size={16} color="#000" />
+                  {selectedPost.likeCount}
+                </Text>
               </>
             )}
             <TouchableOpacity style={styles.button} onPress={closeModal}>

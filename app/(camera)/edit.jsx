@@ -75,6 +75,7 @@ export default function edit() {
           postId: maxPostId,
           spotId: maxId,
           userId: auth.currentUser.uid,
+          timeStamp: currentTime,
         })
         .catch((error) => console.log(error));
 
@@ -82,6 +83,7 @@ export default function edit() {
         .collection("post")
         .add({
           id: maxPostId,
+          imagePath: imagePath,
           postTxt: post,
           spotId: maxId,
           userId: auth.currentUser.uid,
@@ -128,6 +130,7 @@ export default function edit() {
           postId: maxPostId,
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,
+          timeStamp: currentTime,
         })
         .catch((error) => console.log(error));
 
@@ -135,6 +138,7 @@ export default function edit() {
         .collection("post")
         .add({
           id: maxPostId,
+          imagePath: imagePath,
           postTxt: post,
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,

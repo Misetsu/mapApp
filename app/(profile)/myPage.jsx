@@ -188,7 +188,7 @@ const myPage = () => {
       {/* 右側のアイコンやテキストをここに追加 */}
       {/*<Icon name="angle-left" size={24} color="#000" />*/}
       <View style={styles.container}>
-        <Text style={styles.pagetitle}>MY PAGE</Text>
+        <Text style={styles.pagetitle}>マイページ</Text>
         <View style={styles.profileContainer}>
           {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
           {photoUri ? (
@@ -223,29 +223,27 @@ const myPage = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              <View style={styles.userList}>
-                {followList.map((follow) => {
-                  return (
-                    <TouchableOpacity
-                      key={follow.uid}
-                      style={styles.followListuser}
-                      onPress={() => {
-                        handleProfile(follow.uid);
-                      }}
-                    >
-                      <Image
-                        source={{ uri: follow.photoURL }}
-                        style={styles.listProfileImage}
-                      />
-                      <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>
-                          {follow.displayName}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              {followList.map((follow) => {
+                return (
+                  <TouchableOpacity
+                    key={follow.uid}
+                    style={styles.followListuser}
+                    onPress={() => {
+                      handleProfile(follow.uid);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: follow.photoURL }}
+                      style={styles.listProfileImage}
+                    />
+                    <View style={styles.listUsernamecontainer}>
+                      <Text style={styles.listUsername}>
+                        {follow.displayName}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowModal}
@@ -300,7 +298,6 @@ const myPage = () => {
         <Text style={styles.displayName}>ユーザー名</Text>
         <TextInput
           value={displayName}
-          onChangeText={setDisplayName}
           style={styles.textInput}
           editable={false}
         />
@@ -313,7 +310,7 @@ const myPage = () => {
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
 
         <View style={styles.ChangeStatus}>
-          <Text>投稿を公開する：{userStatus ? "公開" : "非公開"}</Text>
+          <Text>投稿を公開する：{userStatus ? "非公開" : "公開"}</Text>
           <View style={(style = styles.SwitchBtn)}>
             <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
           </View>
@@ -451,9 +448,6 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     backgroundColor: "#F2F5C2",
     borderRadius: 10,
-  },
-  userList: {
-    alignItems: "flex-start",
   },
   listUsernamecontainer: {
     justifyContent: "center",
