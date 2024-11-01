@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 10, // ボタン間にスペースを追加
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -281,8 +281,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    margin: 10,
+    margin: 5,
     marginTop: 0,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
@@ -291,11 +292,11 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,

@@ -11,73 +11,89 @@ import {
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 
-export default function UserLikedPosts() {
-  const [likedPosts, setLikedPosts] = useState([]);
+export default function UserPosts(uid) {
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
   const [modalVisible, setModalVisible] = useState(false); // モーダル表示の制御用
   const userId = auth.currentUser?.uid;
 
   useEffect(() => {
-    const fetchLikedPosts = async () => {
+    const fetchPosts = async () => {
       setLoading(true);
       try {
-        const likedPostArray = [];
+        let vivstedSpot = {};
 
-        // like コレクションからユーザーがいいねしたデータを取得
-        const likeSnapshot = await firestore()
-          .collection("like")
-          .where(userId, "==", userId) // 自分の userId に基づいたいいねを取得
+        const querySnapshot = await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .orderBy("spotId", "asc")
           .get();
 
-        if (likeSnapshot.empty) {
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((docs) => {
+            const item = docs.data();
+            vivstedSpot[item.spotId] = item.timeStamp;
+          });
+        }
+
+        console.log(vivstedSpot);
+
+        // photo コレクションからデータを取得
+        const photoSnapshot = await firestore()
+          .collection("photo")
+          .where("userId", "==", uid.uid)
+          .orderBy("postId", "desc")
+          .get();
+        if (photoSnapshot.empty) {
           return;
         }
 
-        const likedPostPromises = likeSnapshot.docs.map(async (likeDoc) => {
-          const likeData = likeDoc.data();
-          const postId = likeData.postId;
+        // photo の各ドキュメントをループ処理
+        const photoPromises = photoSnapshot.docs.map(async (photoDoc) => {
+          const photoData = photoDoc.data();
+          let photoUri = "";
+          let visited = false;
 
-          // postId を使って photo コレクションからデータを取得
-          const photoSnapshot = await firestore()
-            .collection("photo")
-            .where("postId", "==", postId) // postId に基づいて photo データを取得
-            .get();
-
-          if (!photoSnapshot.empty) {
-            const photoData = photoSnapshot.docs[0].data(); // 1つ目の一致したデータを取得
-            let photoUri = "";
-
-            // 画像パスが存在する場合、URL を取得
-            if (photoData.imagePath) {
-              photoUri = await storage()
-                .ref(photoData.imagePath)
-                .getDownloadURL();
-            }
-
-            return {
-              postId: photoData.postId,
-              photoUri: photoUri,
-              postTxt: photoData.postTxt, // 投稿テキスト
-              spotId: photoData.spotId, // スポットIDも保存
-            };
+          // 画像パスが存在する場合、URL を取得
+          if (photoData.imagePath) {
+            photoUri = await storage()
+              .ref(photoData.imagePath)
+              .getDownloadURL();
           }
+
+          if (photoData.spotId in vivstedSpot) {
+            console.log("a");
+            if (photoData.timeStamp < vivstedSpot[photoData.spotId]) {
+              visited = true;
+              console.log("b");
+            }
+          }
+
+          return {
+            photoUri: photoUri,
+            postId: photoData.postId, // postId も保存
+            spotId: photoData.spotId, // spotId も保存
+            visited: visited,
+          };
         });
 
-        const likedPostsData = await Promise.all(likedPostPromises);
-        setLikedPosts(likedPostsData);
+        const photos = await Promise.all(photoPromises);
+        setPosts(photos);
       } catch (error) {
-        console.error("いいねした投稿の取得中にエラーが発生しました: ", error);
+        console.error("投稿の取得中にエラーが発生しました: ", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLikedPosts();
-  }, [userId]);
+    fetchPosts();
+  }, []);
 
   const handleImagePress = async (post) => {
     try {
@@ -131,7 +147,7 @@ export default function UserLikedPosts() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#239D60" />
+        <ActivityIndicator size="large" color="#0000ff" />
         <Text>読み込み中...</Text>
       </View>
     );
@@ -139,18 +155,32 @@ export default function UserLikedPosts() {
 
   return (
     <View style={styles.container}>
-      {likedPosts.length === 0 ? (
-        <Text>いいねした投稿がありません。</Text>
+      {posts.length === 0 ? (
+        <Text>投稿がありません。</Text>
       ) : (
         <View style={styles.grid}>
-          {likedPosts.map((post) => (
+          {posts.map((post) => (
             <TouchableOpacity
               key={post.postId}
               onPress={() => handleImagePress(post)}
               style={styles.postContainer}
             >
+              {console.log(post.postId)}
               {post.photoUri ? (
-                <Image source={{ uri: post.photoUri }} style={styles.image} />
+                <View>
+                  {post.visited ? (
+                    <Image
+                      source={{ uri: post.photoUri }}
+                      style={styles.image}
+                    />
+                  ) : (
+                    <Image
+                      source={{ uri: post.photoUri }}
+                      style={styles.image}
+                      blurRadius={50}
+                    />
+                  )}
+                </View>
               ) : (
                 <Text>画像がありません。</Text>
               )}
@@ -170,28 +200,38 @@ export default function UserLikedPosts() {
           <View style={styles.modalContent}>
             {selectedPost && (
               <>
-                {selectedPost.spotName && (
-                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text>
+                {selectedPost.spotName && ( // スポット名が存在する場合に表示
+                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text> // スポット名を表示
                 )}
                 {selectedPost.photoUri ? (
-                  <Image
-                    source={{ uri: selectedPost.photoUri }}
-                    style={styles.modalImage}
-                  />
+                  <View>
+                    {selectedPost.visited ? (
+                      <Image
+                        source={{ uri: selectedPost.photoUri }}
+                        style={styles.modalImage}
+                      />
+                    ) : (
+                      <Image
+                        source={{ uri: selectedPost.photoUri }}
+                        style={styles.modalImage}
+                        blurRadius={50}
+                      />
+                    )}
+                  </View>
                 ) : (
                   <Text>画像がありません。</Text>
                 )}
                 {selectedPost.postDetails &&
-                  selectedPost.postDetails.postTxt && (
+                  selectedPost.postDetails.postTxt && ( // 投稿内容が存在する場合に表示
                     <Text style={styles.postContent}>
                       {selectedPost.postDetails.postTxt}
-                    </Text>
+                    </Text> // 投稿内容を表示
                   )}
-                {selectedPost.likeCount > 0 && (
-                  <Text style={styles.likeCountText}>
-                    ❤ {selectedPost.likeCount}
-                  </Text>
-                )}
+                {/* いいねのカウントを表示 */}
+                <Text style={styles.likeCountText}>
+                  <Icon name="heart" size={16} color="#000" />
+                  {selectedPost.likeCount}
+                </Text>
               </>
             )}
             <TouchableOpacity style={styles.button} onPress={closeModal}>
@@ -245,7 +285,7 @@ const styles = StyleSheet.create({
   modalImage: {
     width: 280,
     height: 280,
-    marginBottom: 15,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: "#ddd", // 画像に軽い枠を追加
     borderWidth: 4,

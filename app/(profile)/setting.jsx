@@ -11,7 +11,6 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import SwitchWithIcons from "react-native-switch-with-icons";
 import { useNavigation } from "@react-navigation/native";
 
 const auth = FirebaseAuth();
@@ -19,44 +18,12 @@ const router = useRouter();
 
 const myPage = () => {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
-  const [userStatus, setUserStatus] = useState(0);
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
 
   const navigation = useNavigation();
-
-  useEffect(() => {
-    // ユーザーデータを取得するための非同期関数
-    const fetchUserData = async () => {
-      setUser(auth.currentUser);
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
-      const userData = queryUser.data();
-      setUserStatus(userData.publicStatus);
-    };
-
-    fetchUserData();
-  }, []);
-
-  const handleStatus = async () => {
-    if (userStatus == 1) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 0 });
-      setUserStatus(0); // 公開状態に設定
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
-      setUserStatus(1); // 非公開状態に設定
-    }
-  };
 
   const signout = async () => {
     await auth.signOut();
@@ -82,19 +49,6 @@ const myPage = () => {
 
       <View style={styles.container}>
         <Text style={styles.pagetitle}>SETTING</Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/profileEdit")}
-        >
-          <Text style={styles.buttonText}>EDIT</Text>
-        </TouchableOpacity>
-
-        <View style={styles.FFcontainer}>
-          <Text>公開非公開</Text>
-          <View style={(style = styles.SwitchBtn)}>
-            <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
-          </View>
-        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -116,13 +70,6 @@ const myPage = () => {
         >
           <Text style={styles.buttonText}>HELP</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#FF6666" }]}
-          onPress={signout}
-        >
-          <Text style={styles.buttonText}>LOGOUT</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -141,7 +88,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 10, // ボタン間にスペースを追加
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -223,8 +170,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    margin: 10,
-    marginTop: 0,
+    margin: 5,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
@@ -233,11 +180,11 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,

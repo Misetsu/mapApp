@@ -63,7 +63,13 @@ const SelectSpot = () => {
         setSpotId(marker.id);
         router.push({
           pathname: "/camera",
-          params: { latitude: 0, longitude: 0, spotId: marker.id },
+          params: {
+            latitude: 0,
+            longitude: 0,
+            spotId: marker.id,
+            point: 0,
+            spotNo: 0,
+          },
         });
       } else {
         setSpotId(marker.id);
