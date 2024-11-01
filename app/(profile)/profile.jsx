@@ -16,9 +16,9 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./othersPosts";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const profile = () => {
+export default function profile() {
+  const router = useRouter();
   const params = useLocalSearchParams();
   const { uid } = params;
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
@@ -363,7 +363,7 @@ const profile = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -518,5 +518,3 @@ const styles = StyleSheet.create({
     left: 0,
   },
 });
-
-export default profile;

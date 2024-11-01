@@ -7,17 +7,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { useNavigation } from "@react-navigation/native";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const myPage = () => {
-  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
+export default function myPage() {
+  const router = useRouter();
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
@@ -73,7 +70,7 @@ const myPage = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -249,5 +246,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-export default myPage;

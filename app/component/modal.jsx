@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Pressable,
   ScrollView,
-  FlatList,
   Animated,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
@@ -19,9 +18,8 @@ import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const MyModal = ({
+export default function MyModal({
   visible,
   empty,
   postData,
@@ -29,7 +27,8 @@ const MyModal = ({
   spotId,
   loading,
   onClose,
-}) => {
+}) {
+  const router = useRouter();
   const [likes, setLikes] = useState({});
   const [showButtons, setShowButtons] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
@@ -412,7 +411,7 @@ const MyModal = ({
       </View>
     </Modal>
   );
-};
+}
 
 const styles = StyleSheet.create({
   centeredView: {
@@ -499,5 +498,3 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 });
-
-export default MyModal;

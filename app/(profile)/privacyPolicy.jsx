@@ -9,9 +9,8 @@ import {
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
-const router = useRouter();
-
-const myPage = () => {
+export default function myPage() {
+  const router = useRouter();
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
@@ -124,7 +123,7 @@ Eメールアドレス：ekatiihs@gmail.com
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   header: {
@@ -146,5 +145,3 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 });
-
-export default myPage;

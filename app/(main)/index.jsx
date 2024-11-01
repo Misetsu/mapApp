@@ -29,12 +29,9 @@ const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-
-
-
-const TrackUserMapView = () => {
+export default function TrackUserMapView() {
+  const router = useRouter();
   const [position, setPosition] = useState({
     //ユーザーの位置情報を保持
     latitude: 0,
@@ -1148,6 +1145,4 @@ const TrackUserMapView = () => {
       </View>
     </SafeAreaView>
   );
-};
-
-export default TrackUserMapView;
+}

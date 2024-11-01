@@ -12,9 +12,9 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const SignupScreen = () => {
+export default function SignupScreen() {
+  const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [userPasswordVal, setUserPasswordVal] = useState("");
@@ -120,7 +120,7 @@ const SignupScreen = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -205,5 +205,3 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
 });
-
-export default SignupScreen;

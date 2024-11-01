@@ -42,8 +42,6 @@ export default function UserPosts(uid) {
           });
         }
 
-        console.log(vivstedSpot);
-
         // photo コレクションからデータを取得
         const photoSnapshot = await firestore()
           .collection("photo")
@@ -68,10 +66,8 @@ export default function UserPosts(uid) {
           }
 
           if (photoData.spotId in vivstedSpot) {
-            console.log("a");
             if (photoData.timeStamp < vivstedSpot[photoData.spotId]) {
               visited = true;
-              console.log("b");
             }
           }
 
@@ -165,7 +161,6 @@ export default function UserPosts(uid) {
               onPress={() => handleImagePress(post)}
               style={styles.postContainer}
             >
-              {console.log(post.postId)}
               {post.photoUri ? (
                 <View>
                   {post.visited ? (

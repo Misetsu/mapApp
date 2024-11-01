@@ -14,9 +14,9 @@ import FirebaseAuth from "@react-native-firebase/auth";
 
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const SearchScreen = () => {
+export default function SearchScreen() {
+  const router = useRouter();
   const [searchText, setSearchText] = useState(""); // 検索テキスト
   const [searchResult, setSearchResult] = useState([]); // 検索結果
   const [following, setFollowing] = useState({}); // フォローしているユーザーの状態
@@ -290,7 +290,7 @@ const SearchScreen = () => {
       )}
     </View>
   );
-};
+}
 
 // ユーザーアイテムのためのコンポーネントを分離してクリーンなコードを維持
 const UserItem = ({ user, isFollowing, onProfilePress, onFollowToggle }) => (
@@ -373,5 +373,3 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 });
-
-export default SearchScreen;
