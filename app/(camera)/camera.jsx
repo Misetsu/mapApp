@@ -109,6 +109,7 @@ export default function CameraScreen() {
           longitude: longitude,
           spotId: spotId,
           point: point,
+          spotNo: spotNo,
         },
       });
     } catch (error) {

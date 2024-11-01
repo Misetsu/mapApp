@@ -26,7 +26,23 @@ export default function UserPosts(uid) {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const PhotoArray = [];
+        let vivstedSpot = {};
+
+        const querySnapshot = await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .orderBy("spotId", "asc")
+          .get();
+
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((docs) => {
+            const item = docs.data();
+            vivstedSpot[item.spotId] = item.timeStamp;
+          });
+        }
+
+        console.log(vivstedSpot);
 
         // photo コレクションからデータを取得
         const photoSnapshot = await firestore()
@@ -42,6 +58,7 @@ export default function UserPosts(uid) {
         const photoPromises = photoSnapshot.docs.map(async (photoDoc) => {
           const photoData = photoDoc.data();
           let photoUri = "";
+          let visited = false;
 
           // 画像パスが存在する場合、URL を取得
           if (photoData.imagePath) {
@@ -50,10 +67,19 @@ export default function UserPosts(uid) {
               .getDownloadURL();
           }
 
+          if (photoData.spotId in vivstedSpot) {
+            console.log("a");
+            if (photoData.timeStamp < vivstedSpot[photoData.spotId]) {
+              visited = true;
+              console.log("b");
+            }
+          }
+
           return {
             photoUri: photoUri,
             postId: photoData.postId, // postId も保存
             spotId: photoData.spotId, // spotId も保存
+            visited: visited,
           };
         });
 
@@ -141,7 +167,20 @@ export default function UserPosts(uid) {
             >
               {console.log(post.postId)}
               {post.photoUri ? (
-                <Image source={{ uri: post.photoUri }} style={styles.image} />
+                <View>
+                  {post.visited ? (
+                    <Image
+                      source={{ uri: post.photoUri }}
+                      style={styles.image}
+                    />
+                  ) : (
+                    <Image
+                      source={{ uri: post.photoUri }}
+                      style={styles.image}
+                      blurRadius={50}
+                    />
+                  )}
+                </View>
               ) : (
                 <Text>画像がありません。</Text>
               )}
@@ -157,20 +196,28 @@ export default function UserPosts(uid) {
         animationType="fade"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {selectedPost && (
               <>
                 {selectedPost.spotName && ( // スポット名が存在する場合に表示
-                  <Text style={styles.spotContent}>
-                    {selectedPost.spotName}
-                  </Text> // スポット名を表示
+                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text> // スポット名を表示
                 )}
                 {selectedPost.photoUri ? (
-                  <Image
-                    source={{ uri: selectedPost.photoUri }}
-                    style={styles.modalImage}
-                  />
+                  <View>
+                    {selectedPost.visited ? (
+                      <Image
+                        source={{ uri: selectedPost.photoUri }}
+                        style={styles.modalImage}
+                      />
+                    ) : (
+                      <Image
+                        source={{ uri: selectedPost.photoUri }}
+                        style={styles.modalImage}
+                        blurRadius={50}
+                      />
+                    )}
+                  </View>
                 ) : (
                   <Text>画像がありません。</Text>
                 )}
@@ -187,8 +234,8 @@ export default function UserPosts(uid) {
                 </Text>
               </>
             )}
-            <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>✖</Text>
+            <TouchableOpacity style={styles.button} onPress={closeModal}>
+              <Text style={styles.buttonText}>閉じる</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -200,7 +247,7 @@ export default function UserPosts(uid) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
   },
   loadingContainer: {
     flex: 1,
@@ -214,72 +261,64 @@ const styles = StyleSheet.create({
   },
   postContainer: {
     width: "30%", // 1行に3つの画像を表示
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 5,
+    margin: 5,
+    borderWidth: 4,
+    borderColor: "#ffffff",
   },
   image: {
     width: "100%",
     height: 100,
-    borderRadius: 8,
   },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.6)", // 背景の透明度を少し高めました
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
   },
   modalContent: {
-    width: 320,
-    backgroundColor: "#fff",
-    padding: 25,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6, // モーダルに軽い影を追加
-    alignItems: "center",
+    width: "90%",
+    padding: 20,
+    paddingTop: 15,
+    backgroundColor: "#F2F5C2",
+    borderRadius: 10,
   },
   modalImage: {
     width: 280,
     height: 280,
-    borderRadius: 12, // 画像の角を少し丸く
-    marginBottom: 20,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: "#ddd", // 画像に軽い枠を追加
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5, // 画像にも軽い影を追加
+    borderWidth: 4,
+    borderColor: "#ffffff",
   },
   postContent: {
-    marginTop: 2,
-    fontSize: 24, // フォントサイズを16から18に変更
+    fontSize: 18, // フォントサイズを16から18に変更
     color: "#333",
     textAlign: "center",
   },
-  spotContent: {
-    marginTop: 5,
-    fontSize: 25,
-    fontWeight: "600", // スポット名を強調
+  subtitle: {
+    fontSize: 18,
+    margin: 10,
     textAlign: "center",
+    fontWeight: "600",
+    color: "#000000",
   },
   likeCountText: {
-    marginTop: 10,
-    fontSize: 20,
-    color: "#555", // いいねのカウントを少し大きく、色を変更
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 10,
+  },
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#A3DE83",
+    height: 50,
+    margin: 10, // ボタン間にスペースを追加
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "#000000",
     textAlign: "center",
-  },
-  closeButton: {
-    position: "absolute", // 閉じるボタンの位置
-    top: 10, // 上からの位置
-    right: 10, // 右からの位置
-    padding: 10, // ボタンのパディング調整
-  },
-  closeButtonText: {
-    fontSize: 24, // "X" を少し大きく
-    fontWeight: "bold",
+    fontWeight: "300",
   },
 });

@@ -42,8 +42,6 @@ export default function edit() {
   const [tests2, settest2] = useState(Composition);
   const viewRef = useRef();
 
-  const [orientation, setOrientation] = useState("");
-
   const resizeImage = async (uri, uri2, rotation) => {
     try {
       const newImage = await ImageResizer.createResizedImage(
@@ -72,6 +70,8 @@ export default function edit() {
 
   const uploadPost = async () => {
     setIsoading(true);
+    const currentTime = new Date().toISOString();
+
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
     try {
@@ -80,106 +80,58 @@ export default function edit() {
       console.error("Error uploading image:", error);
     }
 
-    if (spotId == 0) {
-      const querySnapshot = await firestore()
-        .collection("spot")
-        .orderBy("id", "desc")
-        .get();
+    const querySpot = await firestore()
+      .collection("spot")
+      .where("id", "==", parseInt(spotId))
+      .get();
 
-      const maxId = querySnapshot.docs[0].data().id + 1;
+    const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
 
-      await firestore().collection("spot").add({
-        id: maxId,
-        mapLatitude: latitude,
-        mapLongitude: longitude,
-        name: text,
-        areaRadius: 50,
-      });
+    await firestore().collection("spot").doc(spotDocId).update({
+      lastUpdateAt: currentTime,
+    });
 
-      const queryPost = await firestore()
-        .collection("post")
-        .orderBy("id", "desc")
-        .get();
+    const queryPost = await firestore()
+      .collection("post")
+      .orderBy("id", "desc")
+      .get();
 
-      const maxPostId = queryPost.docs[0].data().id + 1;
+    const maxPostId = queryPost.docs[0].data().id + 1;
 
-      await firestore()
-        .collection("photo")
-        .add({
-          imagePath: imagePath,
-          postId: maxPostId,
-          spotId: maxId,
-          userId: auth.currentUser.uid,
-        })
-        .catch((error) => console.log(error));
+    await firestore()
+      .collection("photo")
+      .add({
+        imagePath: imagePath,
+        postId: maxPostId,
+        spotId: parseInt(spotId),
+        userId: auth.currentUser.uid,
+        timeStamp: currentTime,
+      })
+      .catch((error) => console.log(error));
 
-      const currentTime = new Date().toISOString();
+    await firestore()
+      .collection("post")
+      .add({
+        id: maxPostId,
+        imagePath: imagePath,
+        postTxt: post,
+        spotId: parseInt(spotId),
+        userId: auth.currentUser.uid,
+        timeStamp: currentTime,
+      })
+      .catch((error) => console.log(error));
 
-      await firestore()
-        .collection("post")
-        .add({
-          id: maxPostId,
-          postTxt: post,
-          spotId: maxId,
-          userId: auth.currentUser.uid,
-          timeStamp: currentTime,
-        })
-        .catch((error) => console.log(error));
+    await firestore()
+      .collection("like")
+      .add({
+        count: 0,
+        postId: maxPostId,
+      })
+      .catch((error) => console.log(error));
 
-      await firestore()
-        .collection("like")
-        .add({
-          count: 0,
-          postId: maxPostId,
-        })
-        .catch((error) => console.log(error));
-
-      await firestore().collection("users").doc(auth.currentUser.uid).update({
-        lastPostAt: currentTime,
-      });
-    } else {
-      const queryPost = await firestore()
-        .collection("post")
-        .orderBy("id", "desc")
-        .get();
-
-      const maxPostId = queryPost.docs[0].data().id + 1;
-
-      await firestore()
-        .collection("photo")
-        .add({
-          imagePath: imagePath,
-          postId: maxPostId,
-          spotId: parseInt(spotId),
-          userId: auth.currentUser.uid,
-        })
-        .catch((error) => console.log(error));
-
-      const currentTime = new Date().toISOString();
-
-      await firestore()
-        .collection("post")
-        .add({
-          id: maxPostId,
-          postTxt: post,
-          spotId: parseInt(spotId),
-          userId: auth.currentUser.uid,
-          timeStamp: currentTime,
-        })
-        .then()
-        .catch((error) => console.log(error));
-
-      await firestore()
-        .collection("like")
-        .add({
-          count: 0,
-          postId: maxPostId,
-        })
-        .catch((error) => console.log(error));
-      await firestore().collection("users").doc(auth.currentUser.uid).update({
-        lastPostAt: currentTime,
-      });
-    }
+    await firestore().collection("users").doc(auth.currentUser.uid).update({
+      lastPostAt: currentTime,
+    });
 
     setIsoading(false);
     router.replace("/");
