@@ -17,10 +17,10 @@ import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 const reference = storage();
 
-const myPage = () => {
+export default function myPage() {
+  const router = useRouter();
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
@@ -186,7 +186,7 @@ const myPage = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -325,5 +325,3 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
 });
-
-export default myPage;

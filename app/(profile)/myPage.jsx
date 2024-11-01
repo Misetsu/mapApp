@@ -20,9 +20,8 @@ import SwitchWithIcons from "react-native-switch-with-icons";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const myPage = () => {
+export default function myPage() {
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
@@ -352,7 +351,7 @@ const myPage = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -496,5 +495,3 @@ const styles = StyleSheet.create({
     left: 0,
   },
 });
-
-export default myPage;

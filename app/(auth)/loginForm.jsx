@@ -14,14 +14,14 @@ import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
 GoogleSignin.configure({
   webClientId:
     "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
 });
 
-const LoginScreen = () => {
+export default function LoginScreen() {
+  const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
@@ -155,7 +155,7 @@ const LoginScreen = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -259,5 +259,3 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
 });
-
-export default LoginScreen;

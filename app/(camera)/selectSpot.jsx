@@ -22,9 +22,9 @@ const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const SelectSpot = () => {
+export default function SelectSpot() {
+  const router = useRouter();
   const params = useLocalSearchParams();
   const { latitude, longitude } = params;
   const [position, setPosition] = useState({
@@ -288,6 +288,4 @@ const SelectSpot = () => {
       </View>
     </SafeAreaView>
   );
-};
-
-export default SelectSpot;
+}
