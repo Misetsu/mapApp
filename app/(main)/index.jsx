@@ -805,7 +805,12 @@ export default function TrackUserMapView() {
         },
       });
     } else {
-      alert("ポイントが足りない。");
+      alert(
+        "ポイントが足りません。新しいピンを作成するには" +
+          pointRequired +
+          "ポイントが必要です。\n現在所持しているポイント：" +
+          userData.spotPoint
+      );
     }
   };
 

@@ -41,54 +41,6 @@ export default function MyModal({
     }));
   };
 
-  // useEffect(() => {
-  // postData.map(async(post) => {
-  //   const queryReplay = await firestore()
-  //   .collection("replies")
-  //   .where("postId", "==", post.postId)
-  //   .limit(2)
-  //   .get();
-  // })
-  // if (!queryReplay.empty) {
-  //   const size = queryReplay.size
-  //   let cnt = 0
-  //   let tempArray = []
-  //   const firstKey = "userId";
-  //   const secondKey = "username";
-  //   const thirdKey = "userIcon";
-  //   const forthKey = "postId";
-  //   const fifthKey = "replyId";
-  //   const sixthKey = "replyText";
-
-  //   while (cnt < size) {
-  //     const replaySnapshot = queryReplay.docs[cnt]
-  //     const replayData = replaySnapshot.data()
-
-  //     let tempObj = {};
-
-  //     const queryUser = await firestore()
-  //       .collection("users")
-  //       .where("uid", "==", postData.userId)
-  //       .get();
-  //     const userSnapshot = queryUser.docs[0];
-  //     const userData = userSnapshot.data();
-  //   }
-  // }
-  // const replaypostget = async(postid) =>{
-  //   console.log("X")
-  //   const queryReplay = await firestore()
-  //   .collection("replies")
-  //   .where("postId", "==", postid)
-  //   .get();
-
-  // const replaySnapshot = queryReplay.docs[0];
-  // const replayData = replaySnapshot.data();
-  // console.log("AAAA",replayData)
-
-  // }
-  // replaypostget(postData.id)
-  // },[])
-
   const tempObj1 = {};
   const tempObj2 = {};
 
@@ -343,9 +295,16 @@ export default function MyModal({
                     <View style={styles.replyContainer}>
                       {post.reply && post.reply.length > 0 ? (
                         post.reply.map((reply, index) => (
-                          <Text key={index} style={styles.replyText}>
-                            {reply.replyText}
-                          </Text>
+                          <View key={index}>
+                            <Image
+                              source={{ uri: reply.userIcon }}
+                              style={styles.listProfileImage}
+                            />
+                            <Text>{reply.username}</Text>
+                            <Text style={styles.replyText}>
+                              {reply.replyText}
+                            </Text>
+                          </View>
                         ))
                       ) : (
                         <Text>返信がありません</Text>

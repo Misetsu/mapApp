@@ -104,6 +104,8 @@ export default function edit() {
         spotPoint: point,
         lastPostAt: currentTime,
       });
+
+      handleVisitState(maxId);
     } else {
       const querySpot = await firestore()
         .collection("spot")
@@ -157,10 +159,53 @@ export default function edit() {
       await firestore().collection("users").doc(auth.currentUser.uid).update({
         lastPostAt: currentTime,
       });
+
+      handleVisitState(spotId);
     }
 
     setIsoading(false);
     router.replace("/");
+  };
+
+  const handleVisitState = async (spotId) => {
+    const querySnapshot = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .collection("spot")
+      .where("spotId", "==", spotId)
+      .get();
+
+    const currentTime = new Date().toISOString();
+
+    if (!querySnapshot.empty) {
+      const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .doc(docId)
+        .update({
+          timeStamp: currentTime,
+        });
+    } else {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .add({
+          spotId: spotId,
+          timeStamp: currentTime,
+        });
+      const queryUser = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .get();
+      const spotPoint = queryUser.data().spotPoint + 1;
+
+      await firestore().collection("users").doc(auth.currentUser.uid).update({
+        spotPoint: spotPoint,
+      });
+    }
   };
 
   useEffect(() => {
