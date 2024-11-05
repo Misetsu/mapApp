@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Button, StyleSheet, Text, Alert, Image, ActivityIndicator, FlatList } from "react-native";
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Text,
+  Dimensions,
+  Alert,
+  Image,
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+} from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { formatInTimeZone } from "date-fns-tz";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 
+const width = Dimensions.get("window").width; //デバイスの幅と高さを取得する
+const height = ((width - 40) / 3) * 4;
 const auth = FirebaseAuth();
 
 const ReplyScreen = () => {
@@ -67,9 +82,11 @@ const ReplyScreen = () => {
         .orderBy("timestamp", "asc")
         .get();
 
-      const repliesData = repliesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const repliesData = repliesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setReplies(repliesData);
-      
     } catch (error) {
       console.error("データ取得中にエラーが発生しました: ", error);
     } finally {
@@ -82,6 +99,8 @@ const ReplyScreen = () => {
   }, [postId]);
 
   const handleReplySubmit = async () => {
+    const currentTime = new Date().toISOString();
+
     if (replyText.trim()) {
       if (!auth.currentUser) {
         Alert.alert("エラー", "ログインしてください。");
@@ -94,24 +113,30 @@ const ReplyScreen = () => {
         .orderBy("parentReplyId", "desc")
         .get();
 
-      const maxId = querySnapshot.empty ? 1 : querySnapshot.docs[0].data().parentReplyId + 1;
+      const maxId = querySnapshot.empty
+        ? 1
+        : querySnapshot.docs[0].data().parentReplyId + 1;
 
       try {
-        await firestore().collection("replies").add({
-          postId: parseInt(postId),
-          parentReplyId: maxId,
-          userId: userId,
-          text: replyText,
-          photoUri: photoUri,
-          timestamp: firestore.FieldValue.serverTimestamp(),
-        });
+        await firestore()
+          .collection("replies")
+          .add({
+            postId: parseInt(postId),
+            parentReplyId: maxId,
+            userId: userId,
+            text: replyText,
+            timestamp: currentTime,
+          });
 
         setReplyText("");
         Alert.alert("成功", "返信が送信されました。");
         fetchData();
         router.back();
       } catch (error) {
-        Alert.alert("エラー", `返信の送信中にエラーが発生しました: ${error.message}`);
+        Alert.alert(
+          "エラー",
+          `返信の送信中にエラーが発生しました: ${error.message}`
+        );
         console.error("Error adding reply:", error);
       }
     } else {
@@ -122,7 +147,13 @@ const ReplyScreen = () => {
   const renderReply = ({ item }) => (
     <View style={styles.replyContainer}>
       <Text style={styles.replyText}>{item.text}</Text>
-      <Text style={styles.replyTimestamp}>{item.timestamp?.toDate().toLocaleString()}</Text>
+      <Text style={styles.replyTimestamp}>
+        {formatInTimeZone(
+          new Date(item.timestamp),
+          "Asia/Tokyo",
+          "yyyy年MM月dd日 HH:mm"
+        )}
+      </Text>
     </View>
   );
 
@@ -134,15 +165,24 @@ const ReplyScreen = () => {
         <>
           {selectedPost && (
             <>
-              <Text style={styles.spotName}>スポット名: {selectedPost.spotName}</Text>
+              <Text style={styles.spotName}>
+                スポット名: {selectedPost.spotName}
+              </Text>
               {photoUri && (
                 <View style={styles.imageContainer}>
-                  <Image source={{ uri: photoUri }} style={styles.image} resizeMode="cover" />
+                  <Image
+                    source={{ uri: photoUri }}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
                 </View>
               )}
               <View style={styles.postDetails}>
                 <Text style={styles.spotText}>
-                  投稿詳細: {selectedPost.postDetails ? selectedPost.postDetails.title : "詳細がありません"}
+                  投稿詳細:{" "}
+                  {selectedPost.postDetails
+                    ? selectedPost.postDetails.title
+                    : "詳細がありません"}
                 </Text>
               </View>
             </>
@@ -163,9 +203,11 @@ const ReplyScreen = () => {
       <FlatList
         data={replies}
         renderItem={renderReply}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         style={styles.repliesList}
-        ListEmptyComponent={<Text style={styles.noRepliesText}>まだ返信がありません。</Text>}
+        ListEmptyComponent={
+          <Text style={styles.noRepliesText}>まだ返信がありません。</Text>
+        }
       />
     </View>
   );
@@ -182,28 +224,31 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   imageContainer: {
+    width: 225,
+    height: 300,
     marginBottom: 10,
     borderColor: "gray",
     borderWidth: 1,
     borderRadius: 5,
     overflow: "hidden",
+    alignSelf: "center",
   },
   image: {
-    width: "100%",
-    height: 200,
+    width: 225,
+    height: 300,
   },
   postDetails: {
     padding: 10,
     backgroundColor: "#f9f9f9",
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   spotText: {
     fontSize: 16,
     color: "#333",
   },
   input: {
-    height: 100,
+    height: 80,
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 20,

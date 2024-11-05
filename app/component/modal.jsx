@@ -29,7 +29,6 @@ export default function MyModal({
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
-  const [reply, setReply] = useState([]);
 
   const [showButtons, setShowButtons] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
@@ -296,11 +295,13 @@ export default function MyModal({
                       {post.reply && post.reply.length > 0 ? (
                         post.reply.map((reply, index) => (
                           <View key={index}>
-                            <Image
-                              source={{ uri: reply.userIcon }}
-                              style={styles.listProfileImage}
-                            />
-                            <Text>{reply.username}</Text>
+                            <View style={styles.commentRow}>
+                              <Image
+                                source={{ uri: reply.userIcon }}
+                                style={styles.listProfileImage}
+                              />
+                              <Text>{reply.username}</Text>
+                            </View>
                             <Text style={styles.replyText}>
                               {reply.replyText}
                             </Text>
@@ -554,5 +555,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 10,
     marginTop: 10,
+  },
+  listProfileImage: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignSelf: "center",
+  },
+  commentRow: {
+    display: "flex",
+    flexDirection: "row",
   },
 });

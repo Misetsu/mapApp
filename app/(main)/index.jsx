@@ -52,7 +52,6 @@ export default function TrackUserMapView() {
   const [postButtonVisible, setPostButtonVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [postData, setPostData] = useState([]);
-  const [postReplay, setReplayData] = useState([]);
   const [emptyPost, setEmptyPost] = useState(true);
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
