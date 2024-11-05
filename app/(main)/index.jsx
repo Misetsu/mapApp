@@ -53,6 +53,7 @@ const TrackUserMapView = () => {
   const [postButtonVisible, setPostButtonVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [postData, setPostData] = useState([]);
+  const [postReplay, setReplayData] = useState([]);
   const [emptyPost, setEmptyPost] = useState(true);
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
@@ -118,6 +119,7 @@ const TrackUserMapView = () => {
       const postArray = [];
       const friendList = [];
 
+
       setEmptyPost(true);
 
       const queryFollow = await firestore()
@@ -141,7 +143,7 @@ const TrackUserMapView = () => {
         .collection("post")
         .where("spotId", "==", spotId)
         .orderBy("timeStamp", "desc")
-        .limit(10)
+        .limit(3)
         .get();
 
       if (!querySnapshot.empty) {
@@ -156,6 +158,7 @@ const TrackUserMapView = () => {
         const seventhKey = "timestamp";
         const eighthKey = "likeCount";
         const ninthKey = "likeFlag";
+        const tenthKey = "reply";
 
         while (cnt < size) {
           const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
@@ -202,6 +205,9 @@ const TrackUserMapView = () => {
               likeFlag = false;
             }
 
+            const reply = await fetchReply(postData.id)
+            console.log(reply)
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -211,6 +217,7 @@ const TrackUserMapView = () => {
             tempObj[seventhKey] = postData.timeStamp;
             tempObj[eighthKey] = likeData.count;
             tempObj[ninthKey] = likeFlag;
+            tempObj[tenthKey] = reply;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -245,6 +252,9 @@ const TrackUserMapView = () => {
               likeFlag = false;
             }
 
+            const reply = fetchReply(postData.id)
+            console.log(reply)
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -254,7 +264,8 @@ const TrackUserMapView = () => {
             tempObj[seventhKey] = postData.timeStamp;
             tempObj[eighthKey] = likeData.count;
             tempObj[ninthKey] = likeFlag;
-
+            tempObj[tenthKey] = reply;
+ 
             postArray.push(tempObj);
             setEmptyPost(false);
           }
@@ -270,6 +281,54 @@ const TrackUserMapView = () => {
       console.error("Error fetching documents: ", error);
     }
   };
+
+  const fetchReply = async(postId) => {
+    const tempArray = []
+    const queryReplay = await firestore()
+      .collection("replies")
+      .where("postId", "==", postId)
+      .limit(2)
+      .get();
+
+      if (!queryReplay.empty) {
+          console.log("a")
+          const size = queryReplay.size
+          let cnt = 0
+          const firstKey = "userId";
+          const secondKey = "username";
+          const thirdKey = "userIcon";
+          const forthKey = "postId";
+          const fifthKey = "replyId";
+          const sixthKey = "replyText";
+    
+          while (cnt < size) {
+            const replaySnapshot = queryReplay.docs[cnt]
+            const replayData = replaySnapshot.data()
+    
+            let tempObj = {};
+    
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", replayData.userId)
+              .get();
+            const userSnapshot = queryUser.docs[0];
+            const userData = userSnapshot.data();
+
+            tempObj[firstKey] = userData.uid
+            tempObj[secondKey] = userData.displayName
+            tempObj[thirdKey] = userData.photoURL
+            tempObj[forthKey] = postId
+            tempObj[fifthKey] = replayData.parentReplyId
+            tempObj[sixthKey] = replayData.text
+
+            tempArray.push(tempObj)
+            cnt = cnt + 1
+          }
+        }
+
+    console.log(tempArray)
+    return tempArray
+  }
 
   const getPinColor = (marker) => {
     try {
