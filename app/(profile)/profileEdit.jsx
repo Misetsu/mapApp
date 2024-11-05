@@ -17,15 +17,15 @@ import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 const reference = storage();
 
-const myPage = () => {
+export default function myPage() {
+  const router = useRouter();
   const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
-  const [userStatus, setUserStatus] = useState(0);
+  const [googleProvider, setGoogleProvider] = useState(false);
   const [editable, setEditable] = useState(true);
 
   const handleBackPress = () => {
@@ -39,12 +39,9 @@ const myPage = () => {
       setDisplayEmail(auth.currentUser.email);
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
-      const userData = queryUser.data();
-      setUserStatus(userData.publicStatus);
+      if (auth.currentUser.providerData[0].providerId == "google.com") {
+        setGoogleProvider(true);
+      }
     };
 
     fetchUserData();
@@ -100,6 +97,28 @@ const myPage = () => {
     return url;
   };
 
+  const signout = async () => {
+    await auth.signOut();
+    router.replace({ pathname: "/" });
+  };
+
+  const handleChangePassword = async () => {
+    if (googleProvider) {
+    } else {
+      auth
+        .sendPasswordResetEmail(auth.currentUser.email)
+        .then(() => {
+          alert(
+            "パスワードを変更するメールを登録されているメールアドレスに送信しました。"
+          );
+          signout();
+        })
+        .catch((error) => {
+          alert(error);
+        });
+    }
+  };
+
   return (
     <ScrollView>
       <TouchableOpacity
@@ -145,9 +164,13 @@ const myPage = () => {
           editable={true}
         />
 
-        <Link href={{ pathname: "/" }} asChild>
-          <Text style={styles.linklabel}>Change password?</Text>
-        </Link>
+        {googleProvider ? (
+          <></>
+        ) : (
+          <TouchableOpacity onPress={handleChangePassword}>
+            <Text style={styles.linklabel}>Change password?</Text>
+          </TouchableOpacity>
+        )}
 
         {editable && (
           <TouchableOpacity
@@ -163,7 +186,7 @@ const myPage = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -178,7 +201,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 10, // ボタン間にスペースを追加
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -258,8 +281,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    margin: 10,
+    margin: 5,
     marginTop: 0,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
@@ -268,11 +292,11 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
@@ -301,5 +325,3 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
 });
-
-export default myPage;

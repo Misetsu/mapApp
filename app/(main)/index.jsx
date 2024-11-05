@@ -11,7 +11,7 @@ import {
   StyleSheet,
   Animated,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -27,9 +27,9 @@ const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const TrackUserMapView = () => {
+export default function TrackUserMapView() {
+  const router = useRouter();
   const [position, setPosition] = useState({
     //ユーザーの位置情報を保持
     latitude: 0,
@@ -44,7 +44,6 @@ const TrackUserMapView = () => {
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
   const [Region, setRegion] = useState(null);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
   const [postImage, setPostImage] = useState(false);
@@ -59,6 +58,9 @@ const TrackUserMapView = () => {
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
   const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
+  const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
+  const [chosenUser, setChosenUser] = useState(null);
+
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
   const setmodal = (marker) => {
@@ -73,6 +75,7 @@ const TrackUserMapView = () => {
         setSpotId(marker.id);
         setModalVisible(true);
         setPostImage(true);
+        handleVisitState(marker.id);
         fetchPostData(marker.id);
       } else {
         setSpotId(marker.id);
@@ -115,234 +118,350 @@ const TrackUserMapView = () => {
 
   const fetchPostData = async (spotId) => {
     setLoading(true);
-    try {
-      const postArray = [];
-      const friendList = [];
+    if (chosenUser == null) {
+      try {
+        const postArray = [];
+        const friendList = [];
 
+        setEmptyPost(true);
 
-      setEmptyPost(true);
+        const queryFollow = await firestore()
+          .collection("follow")
+          .where("followerId", "==", auth.currentUser.uid)
+          .get();
 
-      const queryFollow = await firestore()
-        .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
-        .get();
-
-      if (!queryFollow.empty) {
-        let cnt = 0;
-        while (cnt < queryFollow.size) {
-          const followSnapshot = queryFollow.docs[cnt];
-          const followData = followSnapshot.data();
-          friendList.push(followData.followeeId);
-          cnt = cnt + 1;
-        }
-      } else {
-        friendList.push("");
-      }
-
-      const querySnapshot = await firestore()
-        .collection("post")
-        .where("spotId", "==", spotId)
-        .orderBy("timeStamp", "desc")
-        .limit(3)
-        .get();
-
-      if (!querySnapshot.empty) {
-        const size = querySnapshot.size;
-        let cnt = 0;
-        const firstKey = "userId";
-        const secondKey = "username";
-        const thirdKey = "userIcon";
-        const forthKey = "postId";
-        const fifthKey = "postText";
-        const sixthKey = "photoUri";
-        const seventhKey = "timestamp";
-        const eighthKey = "likeCount";
-        const ninthKey = "likeFlag";
-        const tenthKey = "reply";
-
-        while (cnt < size) {
-          const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
-          const postData = documentSnapshot.data();
-
-          let photoUri = "";
-          let tempObj = {};
-
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", postData.userId)
-            .get();
-          const userSnapshot = queryUser.docs[0];
-          const userData = userSnapshot.data();
-
-          if (userData.publicStatus == 0) {
-            const queryPhoto = await firestore()
-              .collection("photo")
-              .where("postId", "==", postData.id) // 特定の条件を指定
-              .get();
-            if (!queryPhoto.empty) {
-              const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
-              const photoData = photoSnapshot.data();
-
-              if (photoData.imagePath) {
-                const url = await storage()
-                  .ref(photoData.imagePath)
-                  .getDownloadURL();
-                photoUri = url;
-              }
-            }
-
-            const queryLike = await firestore()
-              .collection("like")
-              .where("postId", "==", postData.id)
-              .get();
-
-            const likeSnapshot = queryLike.docs[0];
-            const likeData = likeSnapshot.data();
-            let likeFlag;
-            if (likeData[auth.currentUser.uid] !== undefined) {
-              likeFlag = true;
-            } else {
-              likeFlag = false;
-            }
-
-            const reply = await fetchReply(postData.id)
-            console.log(reply)
-
-            tempObj[firstKey] = postData.userId;
-            tempObj[secondKey] = userData.displayName;
-            tempObj[thirdKey] = userData.photoURL;
-            tempObj[forthKey] = postData.id;
-            tempObj[fifthKey] = postData.postTxt;
-            tempObj[sixthKey] = photoUri;
-            tempObj[seventhKey] = postData.timeStamp;
-            tempObj[eighthKey] = likeData.count;
-            tempObj[ninthKey] = likeFlag;
-            tempObj[tenthKey] = reply;
-
-            postArray.push(tempObj);
-            setEmptyPost(false);
-          } else if (friendList.includes(userData.uid)) {
-            const queryPhoto = await firestore()
-              .collection("photo")
-              .where("postId", "==", postData.id) // 特定の条件を指定
-              .get();
-            if (!queryPhoto.empty) {
-              const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
-              const photoData = photoSnapshot.data();
-
-              if (photoData.imagePath) {
-                const url = await storage()
-                  .ref(photoData.imagePath)
-                  .getDownloadURL();
-                photoUri = url;
-              }
-            }
-
-            const queryLike = await firestore()
-              .collection("like")
-              .where("postId", "==", postData.id)
-              .get();
-
-            const likeSnapshot = queryLike.docs[0];
-            const likeData = likeSnapshot.data();
-            let likeFlag;
-            if (likeData[auth.currentUser.uid] !== undefined) {
-              likeFlag = true;
-            } else {
-              likeFlag = false;
-            }
-
-            const reply = fetchReply(postData.id)
-            console.log(reply)
-
-            tempObj[firstKey] = postData.userId;
-            tempObj[secondKey] = userData.displayName;
-            tempObj[thirdKey] = userData.photoURL;
-            tempObj[forthKey] = postData.id;
-            tempObj[fifthKey] = postData.postTxt;
-            tempObj[sixthKey] = photoUri;
-            tempObj[seventhKey] = postData.timeStamp;
-            tempObj[eighthKey] = likeData.count;
-            tempObj[ninthKey] = likeFlag;
-            tempObj[tenthKey] = reply;
- 
-            postArray.push(tempObj);
-            setEmptyPost(false);
+        if (!queryFollow.empty) {
+          let cnt = 0;
+          while (cnt < queryFollow.size) {
+            const followSnapshot = queryFollow.docs[cnt];
+            const followData = followSnapshot.data();
+            friendList.push(followData.followeeId);
+            cnt = cnt + 1;
           }
-
-          cnt = cnt + 1;
+        } else {
+          friendList.push("");
         }
-        setPostData(postArray);
-        setLoading(false);
-      } else {
-        setLoading(false);
+
+        const querySnapshot = await firestore()
+          .collection("post")
+          .where("spotId", "==", spotId)
+          .orderBy("timeStamp", "desc")
+          .limit(5)
+          .get();
+
+        if (!querySnapshot.empty) {
+          const size = querySnapshot.size;
+          let cnt = 0;
+          const firstKey = "userId";
+          const secondKey = "username";
+          const thirdKey = "userIcon";
+          const forthKey = "postId";
+          const fifthKey = "postText";
+          const sixthKey = "photoUri";
+          const seventhKey = "timestamp";
+          const eighthKey = "likeCount";
+          const ninthKey = "likeFlag";
+          const tenthKey = "reply";
+
+          while (cnt < size) {
+            const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
+            const postData = documentSnapshot.data();
+
+            let photoUri = "";
+            let tempObj = {};
+
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", postData.userId)
+              .get();
+            const userSnapshot = queryUser.docs[0];
+            const userData = userSnapshot.data();
+
+            if (userData.publicStatus == 0) {
+              const queryPhoto = await firestore()
+                .collection("photo")
+                .where("postId", "==", postData.id) // 特定の条件を指定
+                .get();
+              if (!queryPhoto.empty) {
+                const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+                const photoData = photoSnapshot.data();
+
+                if (photoData.imagePath) {
+                  const url = await storage()
+                    .ref()
+                    .child(photoData.imagePath)
+                    .getDownloadURL();
+                  photoUri = url;
+                }
+              }
+
+              const queryLike = await firestore()
+                .collection("like")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const likeSnapshot = queryLike.docs[0];
+              const likeData = likeSnapshot.data();
+              let likeFlag;
+              if (likeData[auth.currentUser.uid] !== undefined) {
+                likeFlag = true;
+              } else {
+                likeFlag = false;
+              }
+
+              const reply = await fetchReply(postData.id);
+              console.log(reply);
+
+              tempObj[firstKey] = postData.userId;
+              tempObj[secondKey] = userData.displayName;
+              tempObj[thirdKey] = userData.photoURL;
+              tempObj[forthKey] = postData.id;
+              tempObj[fifthKey] = postData.postTxt;
+              tempObj[sixthKey] = photoUri;
+              tempObj[seventhKey] = postData.timeStamp;
+              tempObj[eighthKey] = likeData.count;
+              tempObj[ninthKey] = likeFlag;
+              tempObj[tenthKey] = reply;
+
+              postArray.push(tempObj);
+              setEmptyPost(false);
+            } else if (friendList.includes(userData.uid)) {
+              const queryPhoto = await firestore()
+                .collection("photo")
+                .where("postId", "==", postData.id) // 特定の条件を指定
+                .get();
+              if (!queryPhoto.empty) {
+                const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+                const photoData = photoSnapshot.data();
+
+                if (photoData.imagePath) {
+                  const url = await storage()
+                    .ref()
+                    .child(photoData.imagePath)
+                    .getDownloadURL();
+                  photoUri = url;
+                }
+              }
+
+              const queryLike = await firestore()
+                .collection("like")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const likeSnapshot = queryLike.docs[0];
+              const likeData = likeSnapshot.data();
+              let likeFlag;
+              if (likeData[auth.currentUser.uid] !== undefined) {
+                likeFlag = true;
+              } else {
+                likeFlag = false;
+              }
+
+              const reply = fetchReply(postData.id);
+              console.log(reply);
+
+              tempObj[firstKey] = postData.userId;
+              tempObj[secondKey] = userData.displayName;
+              tempObj[thirdKey] = userData.photoURL;
+              tempObj[forthKey] = postData.id;
+              tempObj[fifthKey] = postData.postTxt;
+              tempObj[sixthKey] = photoUri;
+              tempObj[seventhKey] = postData.timeStamp;
+              tempObj[eighthKey] = likeData.count;
+              tempObj[ninthKey] = likeFlag;
+              tempObj[tenthKey] = reply;
+
+              postArray.push(tempObj);
+              setEmptyPost(false);
+            }
+
+            cnt = cnt + 1;
+          }
+          setPostData(postArray);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching documents: ", error);
       }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
+    } else {
+      try {
+        const postArray = [];
+
+        setEmptyPost(true);
+
+        const querySnapshot = await firestore()
+          .collection("post")
+          .where("spotId", "==", spotId)
+          .where("userId", "==", chosenUser)
+          .orderBy("timeStamp", "desc")
+          .limit(5)
+          .get();
+
+        const queryUser = await firestore()
+          .collection("users")
+          .where("uid", "==", chosenUser)
+          .get();
+        const userSnapshot = queryUser.docs[0];
+        const userData = userSnapshot.data();
+
+        if (!querySnapshot.empty) {
+          const size = querySnapshot.size;
+          let cnt = 0;
+          const firstKey = "userId";
+          const secondKey = "username";
+          const thirdKey = "userIcon";
+          const forthKey = "postId";
+          const fifthKey = "postText";
+          const sixthKey = "photoUri";
+          const seventhKey = "timestamp";
+          const eighthKey = "likeCount";
+          const ninthKey = "likeFlag";
+          const tenthKey = "reply";
+
+          while (cnt < size) {
+            const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
+            const postData = documentSnapshot.data();
+
+            let photoUri = "";
+            let tempObj = {};
+
+            const queryPhoto = await firestore()
+              .collection("photo")
+              .where("postId", "==", postData.id) // 特定の条件を指定
+              .get();
+            if (!queryPhoto.empty) {
+              const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+              const photoData = photoSnapshot.data();
+
+              if (photoData.imagePath) {
+                const url = await storage()
+                  .ref()
+                  .child(photoData.imagePath)
+                  .getDownloadURL();
+                photoUri = url;
+              }
+            }
+
+            const queryLike = await firestore()
+              .collection("like")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const likeSnapshot = queryLike.docs[0];
+            const likeData = likeSnapshot.data();
+            let likeFlag;
+            if (likeData[auth.currentUser.uid] !== undefined) {
+              likeFlag = true;
+            } else {
+              likeFlag = false;
+            }
+
+            const reply = await fetchReply(postData.id);
+            console.log(reply);
+
+            tempObj[firstKey] = postData.userId;
+            tempObj[secondKey] = userData.displayName;
+            tempObj[thirdKey] = userData.photoURL;
+            tempObj[forthKey] = postData.id;
+            tempObj[fifthKey] = postData.postTxt;
+            tempObj[sixthKey] = photoUri;
+            tempObj[seventhKey] = postData.timeStamp;
+            tempObj[eighthKey] = likeData.count;
+            tempObj[ninthKey] = likeFlag;
+            tempObj[tenthKey] = reply;
+
+            postArray.push(tempObj);
+            setEmptyPost(false);
+
+            cnt = cnt + 1;
+          }
+          setPostData(postArray);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching documents: ", error);
+      }
     }
   };
 
-  const fetchReply = async(postId) => {
-    const tempArray = []
+  const fetchReply = async (postId) => {
+    const tempArray = [];
     const queryReplay = await firestore()
       .collection("replies")
       .where("postId", "==", postId)
       .limit(2)
       .get();
 
-      if (!queryReplay.empty) {
-          console.log("a")
-          const size = queryReplay.size
-          let cnt = 0
-          const firstKey = "userId";
-          const secondKey = "username";
-          const thirdKey = "userIcon";
-          const forthKey = "postId";
-          const fifthKey = "replyId";
-          const sixthKey = "replyText";
-    
-          while (cnt < size) {
-            const replaySnapshot = queryReplay.docs[cnt]
-            const replayData = replaySnapshot.data()
-    
-            let tempObj = {};
-    
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", replayData.userId)
-              .get();
-            const userSnapshot = queryUser.docs[0];
-            const userData = userSnapshot.data();
+    if (!queryReplay.empty) {
+      console.log("a");
+      const size = queryReplay.size;
+      let cnt = 0;
+      const firstKey = "userId";
+      const secondKey = "username";
+      const thirdKey = "userIcon";
+      const forthKey = "postId";
+      const fifthKey = "replyId";
+      const sixthKey = "replyText";
 
-            tempObj[firstKey] = userData.uid
-            tempObj[secondKey] = userData.displayName
-            tempObj[thirdKey] = userData.photoURL
-            tempObj[forthKey] = postId
-            tempObj[fifthKey] = replayData.parentReplyId
-            tempObj[sixthKey] = replayData.text
+      while (cnt < size) {
+        const replaySnapshot = queryReplay.docs[cnt];
+        const replayData = replaySnapshot.data();
 
-            tempArray.push(tempObj)
-            cnt = cnt + 1
-          }
-        }
+        let tempObj = {};
 
-    console.log(tempArray)
-    return tempArray
-  }
+        const queryUser = await firestore()
+          .collection("users")
+          .where("uid", "==", replayData.userId)
+          .get();
+        const userSnapshot = queryUser.docs[0];
+        const userData = userSnapshot.data();
+
+        tempObj[firstKey] = userData.uid;
+        tempObj[secondKey] = userData.displayName;
+        tempObj[thirdKey] = userData.photoURL;
+        tempObj[forthKey] = postId;
+        tempObj[fifthKey] = replayData.parentReplyId;
+        tempObj[sixthKey] = replayData.text;
+
+        tempArray.push(tempObj);
+        cnt = cnt + 1;
+      }
+    }
+
+    console.log(tempArray);
+    return tempArray;
+  };
 
   const getPinColor = (marker) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
-      return distance < marker.areaRadius
-        ? require("../image/pin_orange.png")
-        : require("../image/pin_blue.png");
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
+    const distance = calculateDistance(
+      position.latitude,
+      position.longitude,
+      marker.mapLatitude,
+      marker.mapLongitude
+    );
+
+    if (distance < marker.areaRadius) {
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/ActionPin_New.png");
+      } else {
+        return require("../image/ActionPin.png");
+      }
+    } else if (marker.visited == "") {
+      if (marker.lastUpdateAt == "") {
+        return require("../image/UnvisitedPin.png");
+      } else {
+        return require("../image/UnvisitedPin_New.png");
+      }
+    } else {
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/VisitedPin_New.png");
+      } else {
+        return require("../image/VisitedPin.png");
+      }
     }
   };
 
@@ -384,6 +503,22 @@ const TrackUserMapView = () => {
   };
 
   const fetchAllMarkerCord = async () => {
+    let vivstedSpot = {};
+
+    const querySnapshot = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .collection("spot")
+      .orderBy("spotId", "asc")
+      .get();
+
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((docs) => {
+        const item = docs.data();
+        vivstedSpot[item.spotId] = item.timeStamp;
+      });
+    }
+
     const fetchResult = [];
     setLoading(true);
     try {
@@ -391,20 +526,23 @@ const TrackUserMapView = () => {
         .collection("spot")
         .orderBy("id")
         .get();
-
       if (!querySnapshot.empty) {
         querySnapshot.forEach((docs) => {
           const item = docs.data();
+          if (item.id in vivstedSpot) {
+            item.visited = vivstedSpot[item.id];
+          } else {
+            item.visited = "";
+          }
+
           fetchResult.push(item);
         });
-
         setMarkerCords(fetchResult);
-      } else {
-        console.log("empty");
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
     } finally {
+      setChosenUser(null);
       setLoading(false);
     }
   };
@@ -506,6 +644,23 @@ const TrackUserMapView = () => {
     setUserList(tempList);
   };
 
+  const handleIconPress = () => {
+    if (iconName === "times") {
+      fetchAllMarkerCord();
+      if (indexStatus == "follow") {
+        setIconName("user-friends"); // アイコン名を "times" に変更
+      } else {
+        setIconName("star");
+      }
+    } else if (indexStatus == "follow") {
+      handleChangeIndex();
+      setIconName("star"); // アイコン名を "times" に変更
+    } else {
+      handleChangeIndex();
+      setIconName("user-friends");
+    }
+  };
+
   const handleUserChoose = async (userId) => {
     const queryPost = await firestore()
       .collection("post")
@@ -542,6 +697,8 @@ const TrackUserMapView = () => {
       });
       setMarkerCords(fetchResult);
     }
+    setIconName("times");
+    setChosenUser(userId);
   };
 
   const handleChangeIndex = () => {
@@ -549,9 +706,11 @@ const TrackUserMapView = () => {
     if (indexStatus == "follow") {
       status = "star";
       setIndexStatus("star");
+      setIconName("user-friends");
     } else {
       status = "follow";
       setIndexStatus("follow");
+      setIconName("star");
     }
     fetchIndexBar(status);
   };
@@ -575,6 +734,79 @@ const TrackUserMapView = () => {
     }).start(() => {
       setShowButtons(false); // フェードアウト完了後にボタンを非表示
     });
+  };
+
+  const handleVisitState = async (spotId) => {
+    const querySnapshot = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .collection("spot")
+      .where("spotId", "==", spotId)
+      .get();
+
+    const currentTime = new Date().toISOString();
+
+    if (!querySnapshot.empty) {
+      const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .doc(docId)
+        .update({
+          timeStamp: currentTime,
+        });
+    } else {
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .add({
+          spotId: spotId,
+          timeStamp: currentTime,
+        });
+      const queryUser = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .get();
+      const spotPoint = queryUser.data().spotPoint + 1;
+
+      await firestore().collection("users").doc(auth.currentUser.uid).update({
+        spotPoint: spotPoint,
+      });
+    }
+  };
+
+  function fibonacci(num) {
+    if (num == 1) return 0;
+    if (num == 2) return 1;
+    return fibonacci(num - 1) + fibonacci(num - 2);
+  }
+
+  const handleAddNewPin = async () => {
+    const queryUser = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .get();
+
+    const userData = queryUser.data();
+
+    const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
+    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
+    if (pointRequired <= userData.spotPoint) {
+      router.push({
+        pathname: "/camera",
+        params: {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          spotId: 0,
+          point: pointLeft,
+          spotNo: parseInt(userData.spotCreate) + 1,
+        },
+      });
+    } else {
+      alert("ポイントが足りない。");
+    }
   };
 
   useEffect(() => {
@@ -610,7 +842,7 @@ const TrackUserMapView = () => {
         setError(err.message);
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
@@ -665,26 +897,35 @@ const TrackUserMapView = () => {
           </Marker>
 
           {markerCords.map((marker) => (
-            <TouchableOpacity style={styles.hitSlop} key={marker.id}>
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(marker.mapLatitude),
-                  longitude: parseFloat(marker.mapLongitude),
-                }}
-                title={marker.name}
-                onPress={() => setmodal(marker)}
-              >
-                <Image
-                  source={getPinColor(marker)}
-                  style={styles.markerImage} //ピンの色
-                />
-              </Marker>
-            </TouchableOpacity>
+            <Marker
+              key={marker.id}
+              coordinate={{
+                latitude: parseFloat(marker.mapLatitude),
+                longitude: parseFloat(marker.mapLongitude),
+              }}
+              title={marker.name}
+              onPress={() => setmodal(marker)}
+            >
+              <Image
+                source={getPinColor(marker)}
+                style={styles.markerImage} //ピンの色
+              />
+            </Marker>
           ))}
         </MapView>
       )}
       {/* タスクバーアイコン */}
       <SafeAreaView style={styles.indexContainer}>
+        <TouchableOpacity
+          style={styles.listProfileIndexButton}
+          onPress={() => {
+            router.push({
+              pathname: "/search",
+            });
+          }}
+        >
+          <Icon name="search" size={30} color="#000"></Icon>
+        </TouchableOpacity>
         <FlatList
           horizontal={true}
           data={userList}
@@ -707,9 +948,9 @@ const TrackUserMapView = () => {
         />
         <TouchableOpacity
           style={styles.listProfileIndexButton}
-          onPress={handleChangeIndex}
+          onPress={handleIconPress} // 変更した関数を呼び出す
         >
-          <Icon name="exchange-alt" size={30} color="#000"></Icon>
+          <Icon name={iconName} size={30} color="#000"></Icon>
         </TouchableOpacity>
       </SafeAreaView>
 
@@ -731,24 +972,52 @@ const TrackUserMapView = () => {
           <TouchableOpacity style={styles.roundButton} onPress={hideButtons}>
             <Icon name="times" size={25} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.roundButton} onPress={() => {}}>
-            <Icon name="map-marked-alt" size={25} color="#000" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.roundButton}
-            onPress={() => {
-              router.push({
-                pathname: "/camera",
-                params: {
-                  latitude: position.latitude,
-                  longitude: position.longitude,
-                  spotId: 0,
-                },
-              });
-            }}
-          >
-            <Icon name="map-marker-alt" size={25} color="#000" />
-          </TouchableOpacity>
+          {user ? (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/selectSpot",
+                  params: {
+                    latitude: position.latitude,
+                    longitude: position.longitude,
+                  },
+                });
+              }}
+            >
+              <Icon name="map-marked-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/loginForm",
+                });
+              }}
+            >
+              <Icon name="map-marked-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          )}
+          {user ? (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={handleAddNewPin}
+            >
+              <Icon name="map-marker-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.roundButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/loginForm",
+                });
+              }}
+            >
+              <Icon name="map-marker-alt" size={25} color="#000" />
+            </TouchableOpacity>
+          )}
         </Animated.View>
       )}
 
@@ -757,6 +1026,8 @@ const TrackUserMapView = () => {
           style={{
             position: "absolute",
             alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
             bottom: 30,
             width: 70,
             height: 70,
@@ -765,28 +1036,29 @@ const TrackUserMapView = () => {
             display: postButtonVisible ? "flex" : "none",
           }}
           onPress={showAnimatedButtons}
-        />
-      ) : (
-        // </Link>
-        <Link
-          href={{
-            pathname: "/loginForm",
-          }}
-          asChild
         >
-          <Pressable
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              bottom: 30,
-              width: 70,
-              height: 70,
-              backgroundColor: "blue",
-              borderRadius: 35,
-              display: postButtonVisible ? "flex" : "none",
-            }}
-          ></Pressable>
-        </Link>
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
+      ) : (
+        <Pressable
+          style={{
+            position: "absolute",
+            alignSelf: "center",
+            justifyContent: "center", // ボタン内のテキストを中央に配置
+            alignItems: "center",
+            bottom: 30,
+            width: 70,
+            height: 70,
+            backgroundColor: "blue",
+            borderRadius: 35,
+            display: postButtonVisible ? "flex" : "none",
+          }}
+          onPress={() => {
+            router.push({ pathname: "/loginForm" });
+          }}
+        >
+          <Icon name="camera" size={30} color="#000" />
+        </Pressable>
       )}
 
       {user ? (
@@ -846,8 +1118,14 @@ const TrackUserMapView = () => {
           <Icon name="crosshairs" size={24} color="#3333ff" />
         </TouchableOpacity>
       </View>
+      <View style={styles.settingButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/setting")}
+          style={styles.button}
+        >
+          <Icon name="cog" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
-};
-
-export default TrackUserMapView;
+}

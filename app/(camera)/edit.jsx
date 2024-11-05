@@ -32,13 +32,15 @@ export default function edit() {
   const reference = storage();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { imageUri, latitude, longitude, spotId } = params;
+  const { imageUri, latitude, longitude, spotId, point, spotNo } = params;
 
   const uploadPost = async () => {
     setIsoading(true);
+
+    const currentTime = new Date().toISOString();
+
     const randomNumber = Math.floor(Math.random() * 100) + 1;
-    const imagePath =
-      "photo/image-" + new Date().getTime().toString() + randomNumber;
+    const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
 
     await reference.ref(imagePath).putFile(imageUri);
 
@@ -56,6 +58,7 @@ export default function edit() {
         mapLongitude: longitude,
         name: text,
         areaRadius: 50,
+        lastUpdateAt: currentTime,
       });
 
       const queryPost = await firestore()
@@ -72,15 +75,15 @@ export default function edit() {
           postId: maxPostId,
           spotId: maxId,
           userId: auth.currentUser.uid,
+          timeStamp: currentTime,
         })
         .catch((error) => console.log(error));
-
-      const currentTime = new Date().toISOString();
 
       await firestore()
         .collection("post")
         .add({
           id: maxPostId,
+          imagePath: imagePath,
           postTxt: post,
           spotId: maxId,
           userId: auth.currentUser.uid,
@@ -97,9 +100,22 @@ export default function edit() {
         .catch((error) => console.log(error));
 
       await firestore().collection("users").doc(auth.currentUser.uid).update({
+        spotCreate: spotNo,
+        spotPoint: point,
         lastPostAt: currentTime,
       });
     } else {
+      const querySpot = await firestore()
+        .collection("spot")
+        .where("id", "==", parseInt(spotId))
+        .get();
+
+      const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
+
+      await firestore().collection("spot").doc(spotDocId).update({
+        lastUpdateAt: currentTime,
+      });
+
       const queryPost = await firestore()
         .collection("post")
         .orderBy("id", "desc")
@@ -114,15 +130,15 @@ export default function edit() {
           postId: maxPostId,
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,
+          timeStamp: currentTime,
         })
         .catch((error) => console.log(error));
-
-      const currentTime = new Date().toISOString();
 
       await firestore()
         .collection("post")
         .add({
           id: maxPostId,
+          imagePath: imagePath,
           postTxt: post,
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,
@@ -137,6 +153,7 @@ export default function edit() {
           postId: maxPostId,
         })
         .catch((error) => console.log(error));
+
       await firestore().collection("users").doc(auth.currentUser.uid).update({
         lastPostAt: currentTime,
       });

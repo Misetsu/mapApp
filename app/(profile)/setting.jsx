@@ -7,101 +7,20 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
-import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { Animated, PanResponder } from "react-native";
-import SwitchWithIcons from "react-native-switch-with-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const auth = FirebaseAuth();
-const router = useRouter();
-const reference = storage();
 
-// const SlideButton = ({ onComplete, slideBtn }) => {
-//   const [slideAnim] = useState(new Animated.Value(0)); // スライド位置のアニメーション値
-
-//   const panResponder = PanResponder.create({
-//     onMoveShouldSetPanResponder: () => true,
-//     onPanResponderMove: (e, gestureState) => {
-//       const { dx } = gestureState;
-
-//       // 左右の制限を設定（ボタンの幅を考慮）
-//       if (dx >= 0 && dx <= 250) {
-//         slideAnim.setValue(dx);
-//       } else if (dx < 0) {
-//         slideAnim.setValue(0); // 左にスライドしたときは元の位置に戻す
-//       }
-//     },
-//     onPanResponderRelease: (e, gestureState) => {
-//       const { dx } = gestureState;
-
-//       if (dx >= 250) {
-//         // スライドが成功した場合のアクション（右から左へのスライド）
-//         onComplete();
-//       } else if (dx <= -250) {
-//         // スライドが成功した場合のアクション（左から右へのスライド）
-//         onComplete();
-//       } else {
-//         // スライドが不十分の場合、元に戻す
-//         Animated.spring(slideAnim, {
-//           toValue: 0,
-//           useNativeDriver: false,
-//         }).start();
-//       }
-//     },
-//   });
-
-//   return (
-//     <View style={styles.track}>
-//       <Animated.View
-//         {...panResponder.panHandlers}
-//         style={[styles.slider, { transform: [{ translateX: slideAnim }] }]}
-//       ></Animated.View>
-//       <Text style={styles.slideBtn}>{slideBtn}</Text>
-//     </View>
-//   );
-// };
-
-const myPage = () => {
-  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
-  const [userStatus, setUserStatus] = useState(0);
+export default function myPage() {
+  const router = useRouter();
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
 
-  useEffect(() => {
-    // ユーザーデータを取得するための非同期関数
-    const fetchUserData = async () => {
-      setUser(auth.currentUser);
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
-      const userData = queryUser.data();
-      setUserStatus(userData.publicStatus);
-    };
-
-    fetchUserData();
-  }, []);
-
-  const handleStatus = async () => {
-    if (userStatus == 1) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 0 });
-      setUserStatus(0); // 公開状態に設定
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
-      setUserStatus(1); // 非公開状態に設定
-    }
-  };
+  const navigation = useNavigation();
 
   const signout = async () => {
     await auth.signOut();
@@ -113,7 +32,7 @@ const myPage = () => {
   return (
     <ScrollView>
       <TouchableOpacity
-        onPress={() => router.push({ pathname: "/myPage" })}
+        onPress={handleBackPress}
         style={{
           width: 50, // 横幅を設定
           height: 50, // 高さを設定
@@ -126,28 +45,32 @@ const myPage = () => {
       </TouchableOpacity>
 
       <View style={styles.container}>
+        <Text style={styles.pagetitle}>SETTING</Text>
+
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push("/profileEdit")}
+          onPress={() => router.push("/userPolicy")}
         >
-          <Text style={styles.buttonText}>EDIT</Text>
+          <Text style={styles.buttonText}>USER POLICY</Text>
         </TouchableOpacity>
 
-        <View>
-          <Text>公開非公開</Text>
-          <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
-        </View>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/privacyPolicy")}
+        >
+          <Text style={styles.buttonText}>PRIVACY POLICY</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#FF6666" }]}
-          onPress={signout}
+          style={styles.button}
+          onPress={() => router.push("/myPage")}
         >
-          <Text style={styles.buttonText}>LOGOUT</Text>
+          <Text style={styles.buttonText}>HELP</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -162,7 +85,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 10, // ボタン間にスペースを追加
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -179,7 +102,7 @@ const styles = StyleSheet.create({
   },
   pagetitle: {
     fontSize: 30,
-    margin: 10,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
   },
@@ -219,12 +142,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   FFcontainer: {
+    justifyContent: "space-between",
     flexDirection: "row", // 子要素を横並びに配置
-    justifyContent: "space-between", // 子要素間にスペースを空ける
     alignItems: "center", // 垂直方向の中央に揃える
-    width: "80%", // 横幅を80%に設定（任意）
     padding: 5, // 全体にパディング
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
   },
+  SwitchBtn: {},
   FFnum: {
     padding: 10,
   },
@@ -242,8 +167,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    margin: 10,
-    marginTop: 0,
+    margin: 5,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
@@ -252,11 +177,11 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
@@ -321,5 +246,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-export default myPage;

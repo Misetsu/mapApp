@@ -14,59 +14,69 @@ import storage from "@react-native-firebase/storage";
 
 const auth = FirebaseAuth();
 
-export default function UserPosts() {
-  const [posts, setPosts] = useState([]);
+export default function UserLikedPosts() {
+  const [likedPosts, setLikedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
   const [modalVisible, setModalVisible] = useState(false); // モーダル表示の制御用
   const userId = auth.currentUser?.uid;
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchLikedPosts = async () => {
       setLoading(true);
       try {
-        const PhotoArray = [];
+        const likedPostArray = [];
 
-        // photo コレクションからデータを取得
-        const photoSnapshot = await firestore()
-          .collection("photo")
-          .where("userId", "==", userId)
-          .orderBy("postId", "desc")
+        // like コレクションからユーザーがいいねしたデータを取得
+        const likeSnapshot = await firestore()
+          .collection("like")
+          .where(userId, "==", userId) // 自分の userId に基づいたいいねを取得
           .get();
 
-        if (photoSnapshot.empty) {
+        if (likeSnapshot.empty) {
           return;
         }
 
-        // photo の各ドキュメントをループ処理
-        const photoPromises = photoSnapshot.docs.map(async (photoDoc) => {
-          const photoData = photoDoc.data();
-          let photoUri = "";
+        const likedPostPromises = likeSnapshot.docs.map(async (likeDoc) => {
+          const likeData = likeDoc.data();
+          const postId = likeData.postId;
 
-          // 画像パスが存在する場合、URL を取得
-          if (photoData.imagePath) {
-            photoUri = await storage()
-              .ref(photoData.imagePath)
-              .getDownloadURL();
+          // postId を使って photo コレクションからデータを取得
+          const photoSnapshot = await firestore()
+            .collection("photo")
+            .where("postId", "==", postId) // postId に基づいて photo データを取得
+            .get();
+
+          if (!photoSnapshot.empty) {
+            const photoData = photoSnapshot.docs[0].data(); // 1つ目の一致したデータを取得
+            let photoUri = "";
+
+            // 画像パスが存在する場合、URL を取得
+            if (photoData.imagePath) {
+              photoUri = await storage()
+                .ref(photoData.imagePath)
+                .getDownloadURL();
+            }
+
+            return {
+              postId: photoData.postId,
+              photoUri: photoUri,
+              postTxt: photoData.postTxt, // 投稿テキスト
+              spotId: photoData.spotId, // スポットIDも保存
+            };
           }
-
-          return {
-            photoUri: photoUri,
-            postId: photoData.postId, // postId も保存
-            spotId: photoData.spotId, // spotId も保存
-          };
         });
 
-        const photos = await Promise.all(photoPromises);
-        setPosts(photos);
+        const likedPostsData = await Promise.all(likedPostPromises);
+        setLikedPosts(likedPostsData);
       } catch (error) {
-        console.error("投稿の取得中にエラーが発生しました: ", error);
+        console.error("いいねした投稿の取得中にエラーが発生しました: ", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPosts();
+    fetchLikedPosts();
   }, [userId]);
 
   const handleImagePress = async (post) => {
@@ -129,11 +139,11 @@ export default function UserPosts() {
 
   return (
     <View style={styles.container}>
-      {posts.length === 0 ? (
-        <Text>投稿がありません。</Text>
+      {likedPosts.length === 0 ? (
+        <Text>いいねした投稿がありません。</Text>
       ) : (
         <View style={styles.grid}>
-          {posts.map((post) => (
+          {likedPosts.map((post) => (
             <TouchableOpacity
               key={post.postId}
               onPress={() => handleImagePress(post)}
@@ -160,8 +170,8 @@ export default function UserPosts() {
           <View style={styles.modalContent}>
             {selectedPost && (
               <>
-                {selectedPost.spotName && ( // スポット名が存在する場合に表示
-                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text> // スポット名を表示
+                {selectedPost.spotName && (
+                  <Text style={styles.subtitle}>{selectedPost.spotName}</Text>
                 )}
                 {selectedPost.photoUri ? (
                   <Image
@@ -172,10 +182,10 @@ export default function UserPosts() {
                   <Text>画像がありません。</Text>
                 )}
                 {selectedPost.postDetails &&
-                  selectedPost.postDetails.postTxt && ( // 投稿内容が存在する場合に表示
+                  selectedPost.postDetails.postTxt && (
                     <Text style={styles.postContent}>
                       {selectedPost.postDetails.postTxt}
-                    </Text> // 投稿内容を表示
+                    </Text>
                   )}
                 {selectedPost.likeCount > 0 && (
                   <Text style={styles.likeCountText}>
@@ -235,7 +245,7 @@ const styles = StyleSheet.create({
   modalImage: {
     width: 280,
     height: 280,
-    marginBottom: 10,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: "#ddd", // 画像に軽い枠を追加
     borderWidth: 4,

@@ -12,9 +12,9 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
-const SignupScreen = () => {
+export default function SignupScreen() {
+  const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [userPasswordVal, setUserPasswordVal] = useState("");
@@ -45,8 +45,11 @@ const SignupScreen = () => {
         .set({
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
+          email: auth.currentUser.email,
           lastPostAt: "0", // TODO
           publicStatus: 0, // TODO
+          spotCreate: 0,
+          spotPoint: 0,
           photoURL:
             "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
         })
@@ -117,7 +120,7 @@ const SignupScreen = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -138,8 +141,9 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   textInput: {
-    margin: 10,
+    margin: 5,
     marginTop: 0,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
@@ -164,11 +168,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
@@ -177,11 +181,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   button: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   buttonText: {
     fontSize: 18,
@@ -201,5 +205,3 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
 });
-
-export default SignupScreen;

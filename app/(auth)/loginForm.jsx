@@ -14,14 +14,14 @@ import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
-const router = useRouter();
 
 GoogleSignin.configure({
   webClientId:
     "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
 });
 
-const LoginScreen = () => {
+export default function LoginScreen() {
+  const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
@@ -40,7 +40,7 @@ const LoginScreen = () => {
 
     // 取得した認証情報 (ID トークン) を元にサインインする
     const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
-    
+
     await auth.signInWithCredential(credential);
 
     const querySnapshot = await firestore()
@@ -55,8 +55,11 @@ const LoginScreen = () => {
         .set({
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
+          email: auth.currentUser.email,
           lastPostAt: "0", // TODO
           publicStatus: 0, // TODO
+          spotCreate: 0,
+          spotPoint: 0,
           photoURL: auth.currentUser.photoURL,
         })
         .then()
@@ -69,13 +72,30 @@ const LoginScreen = () => {
   };
 
   const signInWithEmail = async () => {
-    console.log("a")
-    await auth.signInWithEmailAndPassword(
-      userEmail,
-      userPassword
-    );
-    console.log("a")
+    await auth.signInWithEmailAndPassword(userEmail, userPassword);
     router.replace({ pathname: "/" });
+  };
+
+  const handleChangePassword = async () => {
+    const userSnapshot = await firestore()
+      .collection("users")
+      .where("email", "==", userEmail)
+      .get();
+
+    if (!userSnapshot.empty) {
+      auth
+        .sendPasswordResetEmail(userEmail)
+        .then(() => {
+          alert(
+            "パスワードを変更するメールを入力されたメールアドレスに送信しました。"
+          );
+        })
+        .catch((error) => {
+          alert(error);
+        });
+    } else {
+      alert("入力されたメールアドレスが登録されていません。");
+    }
   };
 
   return (
@@ -117,9 +137,9 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <Link href={{ pathname: "/" }} asChild>
+        <TouchableOpacity onPress={handleChangePassword}>
           <Text style={styles.linklabel}>Forgot password?</Text>
-        </Link>
+        </TouchableOpacity>
 
         <Text style={styles.noamllabel}>Don't have an account?</Text>
 
@@ -135,7 +155,7 @@ const LoginScreen = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -156,8 +176,9 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   textInput: {
-    margin: 10,
+    margin: 5,
     marginTop: 0,
+    marginBottom: 0,
     fontSize: 20,
     height: 40,
     borderBottomWidth: 2,
@@ -186,7 +207,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: 50,
-    marginBottom: 10, // ボタン間にスペースを追加
+    marginTop: 10, // ボタン間にスペースを追加
   },
   buttonText: {
     fontSize: 18,
@@ -204,18 +225,17 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F2F2",
     height: "auto",
-    padding: 4,
+    margin: 10,
     width: "65%",
     borderRadius: 5,
     justifyContent: "center", // 垂直方向の中央揃え
-    marginBottom: 10, // ボタン間にスペースを追加
   },
   submit: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "black",
     height: 50,
-    marginBottom: 10,
+    marginTop: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
@@ -239,5 +259,3 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
 });
-
-export default LoginScreen;
