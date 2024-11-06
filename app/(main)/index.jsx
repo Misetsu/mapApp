@@ -121,6 +121,7 @@ export default function TrackUserMapView() {
       try {
         const postArray = [];
         const friendList = [];
+        friendList.push(auth.currentUser.uid);
 
         setEmptyPost(true);
 
@@ -137,8 +138,6 @@ export default function TrackUserMapView() {
             friendList.push(followData.followeeId);
             cnt = cnt + 1;
           }
-        } else {
-          friendList.push("");
         }
 
         const querySnapshot = await firestore()
@@ -221,7 +220,6 @@ export default function TrackUserMapView() {
               tempObj[ninthKey] = likeFlag;
               tempObj[tenthKey] = reply;
 
-              console.log(tempObj);
               postArray.push(tempObj);
               setEmptyPost(false);
             } else if (friendList.includes(userData.uid)) {
@@ -269,7 +267,6 @@ export default function TrackUserMapView() {
               tempObj[ninthKey] = likeFlag;
               tempObj[tenthKey] = reply;
 
-              console.log(tempObj);
               postArray.push(tempObj);
               setEmptyPost(false);
             }

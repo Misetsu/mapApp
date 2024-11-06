@@ -167,7 +167,6 @@ const ReplyScreen = () => {
 
   const renderReply = ({ item }) => (
     <View style={styles.replyContainer}>
-      {console.log(item)}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.userBar}
