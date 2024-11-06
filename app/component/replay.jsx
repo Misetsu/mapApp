@@ -5,7 +5,6 @@ import {
   Button,
   StyleSheet,
   Text,
-  Dimensions,
   Alert,
   Image,
   ActivityIndicator,

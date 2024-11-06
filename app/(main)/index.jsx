@@ -221,6 +221,7 @@ export default function TrackUserMapView() {
               tempObj[ninthKey] = likeFlag;
               tempObj[tenthKey] = reply;
 
+              console.log(tempObj);
               postArray.push(tempObj);
               setEmptyPost(false);
             } else if (friendList.includes(userData.uid)) {
@@ -255,7 +256,7 @@ export default function TrackUserMapView() {
                 likeFlag = false;
               }
 
-              const reply = fetchReply(postData.id);
+              const reply = await fetchReply(postData.id);
 
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
@@ -268,6 +269,7 @@ export default function TrackUserMapView() {
               tempObj[ninthKey] = likeFlag;
               tempObj[tenthKey] = reply;
 
+              console.log(tempObj);
               postArray.push(tempObj);
               setEmptyPost(false);
             }
@@ -426,7 +428,6 @@ export default function TrackUserMapView() {
         cnt = cnt + 1;
       }
     }
-
     return tempArray;
   };
 

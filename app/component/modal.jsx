@@ -10,7 +10,7 @@ import {
   ScrollView,
   Animated,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
@@ -146,6 +146,15 @@ export default function MyModal({
     });
   };
 
+  const navigateProfile = (uid) => {
+    router.push({
+      pathname: "/profile",
+      params: {
+        uid: uid,
+      },
+    });
+  };
+
   return (
     <Modal
       animationType="fade"
@@ -169,23 +178,18 @@ export default function MyModal({
                 return (
                   <View key={post.postId} style={styles.postView}>
                     <View style={styles.profileBar}>
-                      <Link
-                        href={{
-                          pathname: "/profile",
-                          params: {
-                            uid: post.userId,
-                          },
+                      <TouchableOpacity
+                        style={styles.userInfo}
+                        onPress={() => {
+                          navigateProfile(post.userId);
                         }}
-                        asChild
                       >
-                        <TouchableOpacity style={styles.userInfo}>
-                          <Image
-                            source={{ uri: post.userIcon }}
-                            style={styles.userIcon}
-                          />
-                          <Text>{post.username}</Text>
-                        </TouchableOpacity>
-                      </Link>
+                        <Image
+                          source={{ uri: post.userIcon }}
+                          style={styles.userIcon}
+                        />
+                        <Text>{post.username}</Text>
+                      </TouchableOpacity>
                       <TouchableOpacity onPress={onClose}>
                         <Text style={styles.closeButtonText}>
                           {/* スタイルを設定 */}✖

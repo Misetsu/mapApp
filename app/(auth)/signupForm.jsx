@@ -24,6 +24,10 @@ export default function SignupScreen() {
     router.back(); // 前の画面に戻る
   };
 
+  const navigateLogin = () => {
+    router.push("/loginForm");
+  };
+
   const signUpWithEmail = async () => {
     try {
       await auth.createUserWithEmailAndPassword(userEmail, userPassword);
@@ -108,11 +112,9 @@ export default function SignupScreen() {
 
         <Text style={styles.noamllabel}>Have an account?</Text>
 
-        <Link href={{ pathname: "/loginForm" }} asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>LOGIN</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity style={styles.button} onPress={navigateLogin}>
+          <Text style={styles.buttonText}>LOGIN</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <Text style={styles.backButtonText}>{"<"} Back</Text>

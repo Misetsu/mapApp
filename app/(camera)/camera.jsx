@@ -1,11 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Pressable, Dimensions } from "react-native";
-import {
-  Stack,
-  useFocusEffect,
-  router,
-  useLocalSearchParams,
-} from "expo-router";
+import { useFocusEffect, router, useLocalSearchParams } from "expo-router";
 import {
   useCameraPermission,
   useCameraDevice,

@@ -9,11 +9,9 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
-import * as ImagePicker from "expo-image-picker";
 import UserPosts from "./UserPosts";
 import LikedPosts from "./LikedPosts";
 import SwitchWithIcons from "react-native-switch-with-icons";

@@ -8,7 +8,7 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -27,6 +27,10 @@ export default function LoginScreen() {
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
+  };
+
+  const navigateSignup = () => {
+    router.push("/signupForm");
   };
 
   const signInWithGoogle = async () => {
@@ -143,11 +147,9 @@ export default function LoginScreen() {
 
         <Text style={styles.noamllabel}>Don't have an account?</Text>
 
-        <Link href={{ pathname: "/signupForm" }} asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>SIGN UP</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity style={styles.button} onPress={navigateSignup}>
+          <Text style={styles.buttonText}>SIGN UP</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <Text style={styles.backButtonText}>{"<"} Back</Text>
