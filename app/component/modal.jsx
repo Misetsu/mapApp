@@ -1,5 +1,4 @@
-// MyModal.js
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,7 +21,7 @@ const auth = FirebaseAuth();
 export default function MyModal({
   visible,
   empty,
-  postData,
+  postData = [], // デフォルト値を空の配列に設定
   postImage,
   spotId,
   loading,
@@ -30,6 +29,7 @@ export default function MyModal({
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
+
   const [showButtons, setShowButtons] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
@@ -39,16 +39,21 @@ export default function MyModal({
       [postId]: !prevLikes[postId],
     }));
   };
+
   const tempObj1 = {};
   const tempObj2 = {};
+
   postData.map((post) => {
-    tempObj1[post.postId] = post.likeFlag;
-    tempObj2[post.postId] = post.likeCount;
+    if (post) {
+      // postが未定義でないことを確認
+      tempObj1[post.id] = post.likeFlag; // postIdをidに修正
+      tempObj2[post.id] = post.likeCount;
+    }
   });
 
-  const handleUnlike = async (postId, index) => {
+  const handleUnlike = async (postId) => {
     if (likes[postId] == true) {
-      handleSimpleLike(postId, index);
+      handleSimpleLike(postId);
     } else {
       handleLikePress(postId);
       tempObj2[postId] = tempObj2[postId] - 1;
@@ -67,7 +72,7 @@ export default function MyModal({
     }
   };
 
-  const handleSimpleUnlike = async (postId, index) => {
+  const handleSimpleUnlike = async (postId) => {
     handleLikePress(postId);
     const querylike = await firestore()
       .collection("like")
@@ -83,9 +88,9 @@ export default function MyModal({
       });
   };
 
-  const handleLike = async (postId, index) => {
+  const handleLike = async (postId) => {
     if (likes[postId] == true) {
-      handleSimpleUnlike(postId, index);
+      handleSimpleUnlike(postId);
     } else {
       handleLikePress(postId);
       tempObj2[postId] = tempObj2[postId] + 1;
@@ -104,7 +109,7 @@ export default function MyModal({
     }
   };
 
-  const handleSimpleLike = async (postId, index) => {
+  const handleSimpleLike = async (postId) => {
     handleLikePress(postId);
     const querylike = await firestore()
       .collection("like")
@@ -156,10 +161,11 @@ export default function MyModal({
                 <Text>読み込み中...</Text>
               </View>
             ) : !empty && postData.length > 0 ? (
-              postData.map((post, index) => {
-                const isLiked = likes[post.postId];
-                const flag = tempObj1[post.postId];
-                const count = tempObj2[post.postId];
+              postData.map((post) => {
+                if (!post) return null; // postが未定義の場合はスキップ
+                const isLiked = likes[post.id]; // idを使用する
+                const flag = tempObj1[post.id];
+                const count = tempObj2[post.id];
                 return (
                   <View key={post.postId} style={styles.postView}>
                     <View style={styles.profileBar}>
@@ -199,7 +205,6 @@ export default function MyModal({
                       />
                     )}
 
-                    {/* 日付といいねボタンの表示 */}
                     <View style={styles.dateLikeRow}>
                       {/* いいねボタン */}
                       {postImage ? (
@@ -280,6 +285,44 @@ export default function MyModal({
                     </View>
 
                     <Text>{post.postText}</Text>
+
+                    {/* postTextと返信の間の区切り線 */}
+
+                    <View style={styles.divider} />
+
+                    {/* 返信リストの表示 */}
+                    <View style={styles.replyContainer}>
+                      {post.reply && post.reply.length > 0 ? (
+                        post.reply.map((reply, index) => (
+                          <View key={index}>
+                            <View style={styles.commentRow}>
+                              <Image
+                                source={{ uri: reply.userIcon }}
+                                style={styles.listProfileImage}
+                              />
+                              <Text>{reply.username}</Text>
+                            </View>
+                            <Text style={styles.replyText}>
+                              {reply.replyText}
+                            </Text>
+                          </View>
+                        ))
+                      ) : (
+                        <Text>返信がありません</Text>
+                      )}
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.replyButton}
+                      onPress={() => {
+                        router.push({
+                          pathname: "/component/replay",
+                          params: { postId: post.postId }, // idを使用
+                        });
+                      }}
+                    >
+                      <Text style={styles.replyButtonText}>返信</Text>
+                    </TouchableOpacity>
 
                     {postImage ? (
                       <View style={styles.toolView}>
@@ -430,6 +473,10 @@ const styles = StyleSheet.create({
   },
   toolView: {
     marginTop: 10,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  buttonView: {
     flexDirection: "row", // 横方向に要素を配置
     justifyContent: "flex-end", // 右寄せにする
   },
@@ -441,8 +488,8 @@ const styles = StyleSheet.create({
     width: 75,
     height: 25,
     backgroundColor: "blue",
-    justifyContent: "center", // 垂直方向の中央揃え
-    alignItems: "center", // 水平方向の中央揃え
+    justifyContent: "center",
+    alignItems: "center",
   },
   postButtonText: {
     color: "#FFFFFF",
@@ -465,15 +512,27 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   closeButtonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "black",
+    fontSize: 24,
+  },
+  replyButton: {
+    marginVertical: 10,
+    backgroundColor: "#007BFF",
+    borderRadius: 5,
+    padding: 10,
+  },
+  replyButtonText: {
+    color: "#FFFFFF",
   },
   dateLikeRow: {
-    flexDirection: "row", //右端に配置
+    display: "flex",
+    flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 10,
+  },
+  // 追加: postTextと返信リストの間に区切り線を入れるためのスタイル
+  divider: {
+    height: 1,
+    backgroundColor: "#E0E0E0", // 薄いグレーの線
+    marginVertical: 10,
   },
   roundButton: {
     backgroundColor: "#007AFF", // ボタンの背景色
@@ -496,5 +555,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 10,
     marginTop: 10,
+  },
+  listProfileImage: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignSelf: "center",
+  },
+  commentRow: {
+    display: "flex",
+    flexDirection: "row",
   },
 });
