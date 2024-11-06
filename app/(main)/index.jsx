@@ -209,7 +209,6 @@ export default function TrackUserMapView() {
               }
 
               const reply = await fetchReply(postData.id);
-              console.log(reply);
 
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
@@ -257,7 +256,6 @@ export default function TrackUserMapView() {
               }
 
               const reply = fetchReply(postData.id);
-              console.log(reply);
 
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
@@ -358,7 +356,6 @@ export default function TrackUserMapView() {
             }
 
             const reply = await fetchReply(postData.id);
-            console.log(reply);
 
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
@@ -396,7 +393,6 @@ export default function TrackUserMapView() {
       .get();
 
     if (!queryReplay.empty) {
-      console.log("a");
       const size = queryReplay.size;
       let cnt = 0;
       const firstKey = "userId";
@@ -431,7 +427,6 @@ export default function TrackUserMapView() {
       }
     }
 
-    console.log(tempArray);
     return tempArray;
   };
 
