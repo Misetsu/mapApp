@@ -968,12 +968,21 @@ export default function TrackUserMapView() {
         <Animated.View
           style={[styles.newButtonContainer, { opacity: fadeAnim }]}
         >
-          <TouchableOpacity style={styles.roundButton} onPress={hideButtons}>
-            <Icon name="times" size={25} color="#000" />
+          <TouchableOpacity
+            style={styles.horizontalContainer}
+            onPress={hideButtons}
+          >
+            <View style={styles.menuTextHolder} />
+            <View style={styles.roundButton}>
+              <Icon name="times" size={25} color="#000" />
+            </View>
+            <View style={styles.menuText}>
+              <Text>キャンセル</Text>
+            </View>
           </TouchableOpacity>
           {user ? (
             <TouchableOpacity
-              style={styles.roundButton}
+              style={styles.horizontalContainer}
               onPress={() => {
                 router.push({
                   pathname: "/selectSpot",
@@ -984,7 +993,13 @@ export default function TrackUserMapView() {
                 });
               }}
             >
-              <Icon name="map-marked-alt" size={25} color="#000" />
+              <View style={styles.menuTextHolder} />
+              <View style={styles.roundButton}>
+                <Icon name="map-marked-alt" size={25} color="#000" />
+              </View>
+              <View style={styles.menuText}>
+                <Text>既存ピンに投稿</Text>
+              </View>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -1000,10 +1015,16 @@ export default function TrackUserMapView() {
           )}
           {user ? (
             <TouchableOpacity
-              style={styles.roundButton}
+              style={styles.horizontalContainer}
               onPress={handleAddNewPin}
             >
-              <Icon name="map-marker-alt" size={25} color="#000" />
+              <View style={styles.menuTextHolder} />
+              <View style={styles.roundButton}>
+                <Icon name="map-marker-alt" size={25} color="#000" />
+              </View>
+              <View style={styles.menuText}>
+                <Text>新規ピンに投稿</Text>
+              </View>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity

@@ -166,6 +166,25 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10, // ボタン間の余白
   },
+  menuText: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+    width: 125,
+    padding: 8,
+    borderRadius: 10,
+  },
+  menuTextHolder: {
+    width: 125,
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center",
+  },
+  horizontalContainer: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    flexDirection: "row",
+    gap: 10,
+  },
   buttonText: {
     color: "#fff", // テキストの色
     fontSize: 12,
