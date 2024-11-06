@@ -81,12 +81,12 @@ export default function TrackUserMapView() {
   }, []);
 
   const configureBackgroundFetch = async () => {
-    const status = await BackgroundFetch.configure({
-        minimumFetchInterval: 1, // 15分ごとに実行
-        enableHeadless: true, 
 
+    const status = await BackgroundFetch.configure({
+        minimumFetchInterval: 2, // 15分ごとに実行
+        enableHeadless: true, 
         stopOnTerminate: false,   // アプリ終了時にバックグラウンドフェッチを停止するか
-        startOnBoot: true,        // デバイス起動時にバックグラウンドフェッチを再起動するか
+        startOnBoot: true,        // デバイス起動時にバックグラウンドフェッチを再起動する
     }, async taskId => {
       console.log("AA")
         const unsubscribe = firestore()

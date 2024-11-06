@@ -345,6 +345,7 @@ export default function MyModal({
                   </View>
                 );
               })
+              
             ) : (
               <View>
                 <Text>投稿がありません</Text>
