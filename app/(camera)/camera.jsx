@@ -153,8 +153,6 @@ export default function CameraScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: false }} />
-
         <View style={styles.cameraContainer}>
           <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
             <ReanimatedCamera
@@ -167,33 +165,29 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
+          {showSlider && (
+            <View style={styles.sliderContainer}>
+              <Slider
+                style={styles.slider}
+                minimumValue={-10}
+                maximumValue={10}
+                value={exposureSlider.value}
+                onValueChange={(value) => (exposureSlider.value = value)}
+              />
+            </View>
+          )}
         </View>
-        {showSlider && (
-          <View style={styles.sliderContainer}>
-            <Slider
-              style={styles.slider}
-              minimumValue={-10}
-              maximumValue={10}
-              value={exposureSlider.value}
-              onValueChange={(value) => (exposureSlider.value = value)}
-            />
-          </View>
-        )}
 
         <Pressable
           onPress={onTakePicturePressed}
           style={styles.captureButton}
         />
         <Pressable onPress={pickImage} style={styles.pickImageButton} />
-        {/* exposuer exposure */}
         <Pressable
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
         >
-          {/* <Reanimated.Text style={styles.exposureButtonText}>
-            {exposureSlider.value.toFixed(1)} 
-          </Reanimated.Text> */}
           <Icon name="light-up" size={24} color="#FFF" />
         </Pressable>
       </View>
@@ -204,13 +198,15 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    paddingTop: 100,
     alignItems: "center",
     backgroundColor: "black",
   },
   cameraContainer: {
     height: height,
     width: width,
+    marginLeft: "auto",
+    marginRight: "auto",
     backgroundColor: "black",
   },
   camera: {
@@ -219,15 +215,14 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     position: "absolute",
-    bottom: 150,
+    bottom: 80,
     left: 20,
     right: 20,
     alignItems: "stretch",
   },
   slider: {
     width: "100%",
-    height: 40,
-    marginBottom: 20,
+    height: 20,
   },
   captureButton: {
     position: "absolute",

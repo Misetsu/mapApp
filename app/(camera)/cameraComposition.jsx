@@ -168,35 +168,20 @@ export default function CameraScreen() {
             />
           </GestureDetector>
           <View style={styles.cameraDisplayContainer}>
-            {/* <Svg width="100%" height="100%"> */}
-            {/* <ClipPath id="clipLeft">
-                <Rect x="0" y="0" width="400" height="400" />
-              </ClipPath>
-              <ClipPath id="clipRight">
-                <Rect x="50%" y="0%" width="400" height="400"></Rect>
-              </ClipPath> */}
-            <Image
-              source={{ uri: photoUri }}
-              style={styles.cameraDisplay}
-              // preserveAspectRatio="xMidYMid slice"
-              // clipPath="url(#clip)"
-              // resizeMode="cover"
-            />
-            {/* </Svg> */}
+            <Image source={{ uri: photoUri }} style={styles.cameraDisplay} />
           </View>
+          {showSlider && (
+            <View style={styles.sliderContainer}>
+              <Slider
+                style={styles.slider}
+                minimumValue={-10}
+                maximumValue={10}
+                value={exposureSlider.value}
+                onValueChange={(value) => (exposureSlider.value = value)}
+              />
+            </View>
+          )}
         </View>
-
-        {showSlider && (
-          <View style={styles.sliderContainer}>
-            <Slider
-              style={styles.slider}
-              minimumValue={-10}
-              maximumValue={10}
-              value={exposureSlider.value}
-              onValueChange={(value) => (exposureSlider.value = value)}
-            />
-          </View>
-        )}
 
         <Pressable
           onPress={onTakePicturePressed}
@@ -221,17 +206,13 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    paddingTop: 100,
     alignItems: "center",
     backgroundColor: "black",
   },
   cameraContainer: {
-    // flex: 0.8,
     width: "100%",
     height: height,
-    // position: "absolute",
-    // left: 0,
-    // top: "10%",
     marginLeft: "auto",
     marginRight: "auto",
     backgroundColor: "black",
@@ -242,15 +223,14 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     position: "absolute",
-    bottom: 150,
+    bottom: 80,
     left: 20,
     right: 20,
     alignItems: "stretch",
   },
   slider: {
     width: "100%",
-    height: 40,
-    marginBottom: 20,
+    height: 20,
   },
   captureButton: {
     position: "absolute",
