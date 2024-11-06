@@ -10,6 +10,7 @@ import {
   Dimensions,
   StyleSheet,
   Animated,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -22,6 +23,7 @@ import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import * as Notifications from 'expo-notifications';
 import BackgroundFetch from "react-native-background-fetch";
+import messaging from '@react-native-firebase/messaging';
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
