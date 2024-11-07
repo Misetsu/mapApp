@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 
@@ -103,57 +104,55 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.scrview}>
       <View style={styles.container}>
-        <Text style={styles.pagetitle}>LOGIN</Text>
-        <Text style={styles.displayName}>Email</Text>
+        <Text style={styles.pagetitle}>ログイン</Text>
+        <Text style={styles.displayName}>メールアドレス</Text>
         <TextInput
           style={styles.textInput}
           value={userEmail}
           onChangeText={setUserEmail}
           keyboardType="email-address"
           autoCapitalize="none"
-          placeholder="Email"
+          placeholder="メールアドレス"
         />
 
-        <Text style={styles.displayName}>Password</Text>
+        <Text style={styles.displayName}>パスワード</Text>
         <TextInput
           style={styles.textInput}
           value={userPassword}
           onChangeText={setUserPassword}
           secureTextEntry
-          placeholder="Password"
+          placeholder="パスワード"
         />
 
         <TouchableOpacity style={styles.submit} onPress={signInWithEmail}>
-          <Text style={styles.submitText}>Login</Text>
+          <Text style={styles.submitText}>ログイン</Text>
         </TouchableOpacity>
-
-        <View style={styles.buttonCenter}>
-          <TouchableOpacity
-            style={styles.Googlebutton}
-            onPress={signInWithGoogle}
-          >
-            <Image
-              source={require("./../image/android_neutral_sq_SI.png")}
-              style={styles.imageButton}
-            />
+        <TouchableOpacity
+          style={styles.Googlebutton}
+          onPress={signInWithGoogle}
+        >
+          <Image
+            source={require("./../image/android_light_rd_SI.png")}
+            style={styles.imageButton}
+          />
+        </TouchableOpacity>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <TouchableOpacity onPress={handleChangePassword}>
+            <Text style={styles.linklabel}>パスワードを忘れた場合</Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity onPress={handleChangePassword}>
-          <Text style={styles.linklabel}>Forgot password?</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.noamllabel}>Don't have an account?</Text>
+        <Text style={styles.noamllabel}>━━━  はじめての方はこちら  ━━━</Text>
 
         <TouchableOpacity style={styles.button} onPress={navigateSignup}>
-          <Text style={styles.buttonText}>SIGN UP</Text>
+          <Text style={styles.buttonText}>新規アカウント作成</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Text style={styles.backButtonText}>{"<"} Back</Text>
-        </TouchableOpacity>
+        <View style={styles.Back}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Icon name="angle-left" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -164,14 +163,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  scrview: {
+    backgroundColor: "#F2F5C8",
+  },
   pagetitle: {
     fontSize: 30,
+    height: 70,
+    marginTop: 0,
     textAlign: "center",
     fontWeight: "300",
+    color: "#000000",
   },
   displayName: {
     fontSize: 15,
-    marginTop: 20,
+    marginTop: 10,
     marginLeft: 10,
     textAlign: "left",
     alignItems: "flex-start",
@@ -183,22 +188,23 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     fontSize: 20,
     height: 40,
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
+    borderColor: "#239D60",
     marginVertical: 16,
     color: "black",
     fontWeight: "300",
   },
   noamllabel: {
-    fontSize: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
+    fontSize: 15,
+    margin: 10,
     textAlign: "center",
-    fontWeight: "300",
+    fontWeight: "600",
+    color: "#239D60",
   },
   linklabel: {
-    fontSize: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
+    fontSize: 15,
+    margin: 10,
+    width: "70%",
     textAlign: "center",
     textDecorationLine: "underline",
     color: "#1a0dab",
@@ -207,37 +213,29 @@ const styles = StyleSheet.create({
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#A3DE83",
     height: 50,
-    marginTop: 10, // ボタン間にスペースを追加
+    margin: 10, // ボタン間にスペースを追加
   },
   buttonText: {
     fontSize: 18,
-    color: "black",
+    color: "#000000",
     textAlign: "center",
     fontWeight: "300",
-  },
-  buttonCenter: {
-    flex: 1,
-    justifyContent: "center", // 垂直方向の中央揃え
-    alignItems: "center", // 水平方向の中央揃え
   },
   Googlebutton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F2F2",
-    height: "auto",
+    backgroundColor: "#F2F5C8",
+    height: 50,
     margin: 10,
-    width: "65%",
-    borderRadius: 5,
-    justifyContent: "center", // 垂直方向の中央揃え
   },
   submit: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "black",
+    backgroundColor: "#239D60",
     height: 50,
-    marginTop: 10, // ボタン間にスペースを追加
+    margin: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
@@ -246,18 +244,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   imageButton: {
-    height: 45, // 画像のサイズを指定
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    height: 50, // 画像のサイズを指定
+    width: 300,
     resizeMode: "contain", // 画像のリサイズ方法を指定
   },
   backButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    height: 50,
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
-  backButtonText: {
-    fontSize: 18,
-    color: "black",
-    textAlign: "center",
-    fontWeight: "300",
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
 });

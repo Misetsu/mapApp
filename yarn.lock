@@ -2413,6 +2413,11 @@
     "@babel/runtime" "^7.13.10"
     "@radix-ui/react-compose-refs" "1.0.0"
 
+"@react-native-community/checkbox@^0.5.17":
+  version "0.5.17"
+  resolved "https://registry.npmjs.org/@react-native-community/checkbox/-/checkbox-0.5.17.tgz"
+  integrity sha512-ZZx/eOH3SIxBg+hvA2zRd7lX5zPQEWcZU8C8Dn7WLdpJkiTkPmIUDFHWrmzxCnwZcyoD+BIt6gUZPKGGb9WmeQ==
+
 "@react-native-community/cli-clean@13.6.8":
   version "13.6.8"
   resolved "https://registry.npmjs.org/@react-native-community/cli-clean/-/cli-clean-13.6.8.tgz"
@@ -8220,7 +8225,7 @@ react-native-webview@^13.12.3, "react-native-webview@>=5.10.0 || >=6.1.0":
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
 
-react-native@*, "react-native@>= 0.64.3", react-native@>=v0.40.0, react-native@0.74.2:
+react-native@*, "react-native@>= 0.62", "react-native@>= 0.64.3", react-native@>=v0.40.0, react-native@0.74.2:
   version "0.74.2"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.74.2.tgz"
   integrity sha512-EBMBjPPL4/GjHMP4NqsZabT3gI5WU9cSmduABGAGrd8uIcmTZ5F2Ng9k6gFmRm7n8e8CULxDNu98ZpQfBjl7Bw==
