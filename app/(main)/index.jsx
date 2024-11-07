@@ -124,7 +124,7 @@ export default function TrackUserMapView() {
 
         setEmptyPost(true);
 
-        if (user != null) {
+        if (auth.currentUser != null) {
           friendList.push(auth.currentUser.uid);
 
           const queryFollow = await firestore()
@@ -204,7 +204,7 @@ export default function TrackUserMapView() {
               const likeSnapshot = queryLike.docs[0];
               const likeData = likeSnapshot.data();
               let likeFlag;
-              if (user != null) {
+              if (auth.currentUser != null) {
                 if (likeData[auth.currentUser.uid] !== undefined) {
                   likeFlag = true;
                 } else {
@@ -502,7 +502,7 @@ export default function TrackUserMapView() {
   const fetchAllMarkerCord = async () => {
     let vivstedSpot = {};
 
-    if (user != null) {
+    if (auth.currentUser != null) {
       const querySnapshot = await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
@@ -548,7 +548,7 @@ export default function TrackUserMapView() {
 
   const fetchIndexBar = async (status) => {
     const tempList = [];
-    if (user != null) {
+    if (auth.currentUser != null) {
       const firstKey = "userId";
       const secondKey = "username";
       const thirdKey = "userIcon";
@@ -738,7 +738,7 @@ export default function TrackUserMapView() {
   };
 
   const handleVisitState = async (spotId) => {
-    if (user != null) {
+    if (auth.currentUser != null) {
       const querySnapshot = await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
