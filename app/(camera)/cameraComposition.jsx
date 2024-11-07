@@ -26,8 +26,9 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
-import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
+import Slider from "@react-native-community/slider";
 import FirebaseAuth from "@react-native-firebase/auth";
+import { TouchableOpacity } from "react-native";
 
 const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
@@ -167,8 +168,28 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
-          <View style={styles.cameraDisplayContainer}>
-            <Image source={{ uri: photoUri }} style={styles.cameraDisplay} />
+          <View
+            style={{
+              position: "absolute",
+              backgroundColor: "black",
+              width: width, // 左半分
+              height: "50%",
+              overflow: "hidden",
+              //下半分
+              top: "50%",
+              // 右半分
+              // left: "50%",
+            }}
+          >
+            <Image
+              source={{ uri: photoUri }}
+              // here
+              style={{
+                width: "100%",
+                height: height,
+                transform: [{ translateY: -height / 2 }],
+              }}
+            />
           </View>
           {showSlider && (
             <View style={styles.sliderContainer}>
@@ -176,6 +197,9 @@ export default function CameraScreen() {
                 style={styles.slider}
                 minimumValue={-10}
                 maximumValue={10}
+                minimumTrackTintColor="white"
+                maximumTrackTintColor="#ababab"
+                thumbTintColor="white"
                 value={exposureSlider.value}
                 onValueChange={(value) => (exposureSlider.value = value)}
               />
@@ -183,12 +207,26 @@ export default function CameraScreen() {
           )}
         </View>
 
+        <View style={styles.chooseHarfDisplayContainer}>
+          <TouchableOpacity
+            style={styles.chooseTopHarfDisplay}
+          ></TouchableOpacity>
+          <TouchableOpacity
+            style={styles.chooseBottomHarfDisplay}
+          ></TouchableOpacity>
+          <TouchableOpacity
+            style={styles.chooseLeftHarfDisplay}
+          ></TouchableOpacity>
+          <TouchableOpacity
+            style={styles.chooseRightHarfDisplay}
+          ></TouchableOpacity>
+        </View>
+
         <Pressable
           onPress={onTakePicturePressed}
           style={styles.captureButton}
         />
         <Pressable onPress={pickImage} style={styles.pickImageButton} />
-        {/* exposuer exposure */}
         <Pressable
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
@@ -223,14 +261,18 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     position: "absolute",
-    bottom: 80,
+    bottom: 0,
     left: 20,
     right: 20,
     alignItems: "stretch",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    padding: 5,
+    borderRadius: 15,
   },
   slider: {
     width: "100%",
     height: 20,
+    color: "white",
   },
   captureButton: {
     position: "absolute",
@@ -283,5 +325,33 @@ const styles = StyleSheet.create({
     width: "50%", // 左半分
     height: height,
     overflow: "hidden",
+  },
+  chooseHarfDisplayContainer: {
+    backgroundColor: "green",
+    paddingTop: 5,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    height: 50,
+    width: "50%",
+  },
+  chooseTopHarfDisplay: {
+    backgroundColor: "purple",
+    height: 40,
+    width: 40,
+  },
+  chooseBottomHarfDisplay: {
+    backgroundColor: "pink",
+    height: 40,
+    width: 40,
+  },
+  chooseLeftHarfDisplay: {
+    backgroundColor: "red",
+    height: 40,
+    width: 40,
+  },
+  chooseRightHarfDisplay: {
+    backgroundColor: "orange",
+    height: 40,
+    width: 40,
   },
 });
