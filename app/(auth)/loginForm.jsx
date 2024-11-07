@@ -35,47 +35,45 @@ export default function LoginScreen() {
 
   const signInWithGoogle = async () => {
     // Google のログイン画面を表示して認証用の ID トークンを取得する
-    const { type, user } = await GoogleSignin.signIn();
+    const user = await GoogleSignin.signIn();
 
-    if (type === "success") {
-      const idToken = user.idToken;
+    const idToken = user.idToken;
 
-      if (idToken === null) {
-        return;
-      }
-
-      // 取得した認証情報 (ID トークン) を元にサインインする
-      const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
-
-      await auth.signInWithCredential(credential);
-
-      const querySnapshot = await firestore()
-        .collection("users")
-        .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
-        .get();
-
-      if (querySnapshot.empty) {
-        firestore()
-          .collection("users")
-          .doc(auth.currentUser.uid)
-          .set({
-            uid: auth.currentUser.uid,
-            displayName: auth.currentUser.displayName,
-            email: auth.currentUser.email,
-            lastPostAt: "0", // TODO
-            publicStatus: 0, // TODO
-            spotCreate: 0,
-            spotPoint: 0,
-            photoURL: auth.currentUser.photoURL,
-          })
-          .then()
-          .catch((error) => console.log(error));
-
-        firestore().collection("star").doc(auth.currentUser.uid).set({});
-      }
-
-      router.replace({ pathname: "/" });
+    if (idToken === null) {
+      return;
     }
+
+    // 取得した認証情報 (ID トークン) を元にサインインする
+    const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
+
+    await auth.signInWithCredential(credential);
+
+    const querySnapshot = await firestore()
+      .collection("users")
+      .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
+      .get();
+
+    if (querySnapshot.empty) {
+      firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .set({
+          uid: auth.currentUser.uid,
+          displayName: auth.currentUser.displayName,
+          email: auth.currentUser.email,
+          lastPostAt: "0", // TODO
+          publicStatus: 0, // TODO
+          spotCreate: 0,
+          spotPoint: 0,
+          photoURL: auth.currentUser.photoURL,
+        })
+        .then()
+        .catch((error) => console.log(error));
+
+      firestore().collection("star").doc(auth.currentUser.uid).set({});
+    }
+
+    router.replace({ pathname: "/" });
   };
 
   const signInWithEmail = async () => {
