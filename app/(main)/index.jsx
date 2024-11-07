@@ -59,6 +59,7 @@ export default function TrackUserMapView() {
   const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
+  const [spotAround, setSpotAround] = useState([]);
 
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
@@ -437,18 +438,21 @@ export default function TrackUserMapView() {
     );
 
     if (distance < marker.areaRadius) {
+      setSpotAround((prev) => [...prev, marker.id]);
       if (marker.visited < marker.lastUpdateAt) {
         return require("../image/ActionPin_New.png");
       } else {
         return require("../image/ActionPin.png");
       }
     } else if (marker.visited == "") {
+      setSpotAround((prev) => [...prev.filter((id) => id != marker.id)]);
       if (marker.lastUpdateAt == "") {
         return require("../image/UnvisitedPin.png");
       } else {
         return require("../image/UnvisitedPin_New.png");
       }
     } else {
+      setSpotAround((prev) => [...prev.filter((id) => id != marker.id)]);
       if (marker.visited < marker.lastUpdateAt) {
         return require("../image/VisitedPin_New.png");
       } else {
@@ -985,8 +989,7 @@ export default function TrackUserMapView() {
                 router.push({
                   pathname: "/selectSpot",
                   params: {
-                    latitude: position.latitude,
-                    longitude: position.longitude,
+                    spotAround: spotAround,
                   },
                 });
               }}
