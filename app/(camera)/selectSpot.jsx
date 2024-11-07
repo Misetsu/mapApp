@@ -24,7 +24,7 @@ const auth = FirebaseAuth();
 export default function SelectSpot() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { spotAround } = params;
+  const { latitude, longitude } = params;
   const [spotList, setSpotList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,16 +33,21 @@ export default function SelectSpot() {
   };
 
   const fetchSpotList = async () => {
-    const querySpot = await firestore()
-      .collection("spot")
-      .where("id", "in", spotAround)
-      .get();
+    const querySpot = await firestore().collection("spot").orderBy("id").get();
 
     const tempArray = [];
     if (!querySpot.empty) {
       querySpot.forEach((docs) => {
         const item = docs.data();
-        tempArray.push(item);
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          item.mapLatitude,
+          item.mapLongitude
+        );
+        if (distance < item.areaRadius) {
+          tempArray.push({ id: item.id, name: item.name });
+        }
       });
 
       setSpotList(tempArray);
@@ -50,9 +55,36 @@ export default function SelectSpot() {
     setLoading(false);
   };
 
+  function toRadians(degrees) {
+    try {
+      return (degrees * Math.PI) / 180;
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
+  }
+
+  // 2点間の距離を計算する関数
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    try {
+      const R = 6371; // 地球の半径（単位: km）
+      const dLat = toRadians(lat2 - lat1);
+      const dLon = toRadians(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat1)) *
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
+      return distance;
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+    }
+  }
+
   useEffect(() => {
     setLoading(true);
-    setUser(auth.currentUser);
     fetchSpotList();
   }, []);
 
