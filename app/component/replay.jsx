@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
+  ScrollView,
   Button,
   StyleSheet,
   Text,
@@ -193,72 +194,79 @@ const ReplyScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
-      {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
-        </View>
-      ) : (
-        <>
-          {selectedPost && (
-            <>
-              <View style={styles.header}>
-                <TouchableOpacity
-                  onPress={handleBackPress}
-                  style={styles.iconButton}
-                >
-                  <Icon name="angle-left" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.spotName}>{selectedPost.spotName}</Text>
-                <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
-              </View>
-              <View style={styles.contentContainer}>
-                {photoUri && (
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: photoUri }}
-                      style={styles.image}
-                      resizeMode="cover"
-                    />
-                  </View>
-                )}
-                <View style={styles.postDetails}>
-                  <Text style={styles.spotText}>
-                    投稿詳細：{" "}
-                    {selectedPost.postDetails
-                      ? selectedPost.postDetails.postTxt
-                      : "詳細がありません"}
-                  </Text>
+    <View>
+      <ScrollView>
+      <View style={styles.container}>
+        {loading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : (
+          <>
+            {selectedPost && (
+              <>
+                <View style={styles.header}>
+                  <TouchableOpacity
+                    onPress={handleBackPress}
+                    style={styles.iconButton}
+                  >
+                    <Icon name="angle-left" size={24} color="#000" />
+                  </TouchableOpacity>
+                  <Text style={styles.spotName}>{selectedPost.spotName}</Text>
+                  <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
                 </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="返信を入力..."
-                  value={replyText}
-                  onChangeText={setReplyText}
-                  multiline
-                />
-
-                <Button title="送信" onPress={handleReplySubmit} />
-
-                <FlatList
-                  data={replies}
-                  renderItem={renderReply}
-                  keyExtractor={(item) => item.id}
-                  style={styles.repliesList}
-                  ListEmptyComponent={
-                    <Text style={styles.noRepliesText}>
-                      まだ返信がありません。
+                <View style={styles.contentContainer}>
+                  {photoUri && (
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{ uri: photoUri }}
+                        style={styles.image}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  )}
+                  <View style={styles.postDetails}>
+                    <Text style={styles.spotText}>
+                      投稿詳細：{" "}
+                      {selectedPost.postDetails
+                        ? selectedPost.postDetails.postTxt
+                        : "詳細がありません"}
                     </Text>
-                  }
-                />
-              </View>
-            </>
-          )}
-        </>
-      )}
+                  </View>
+
+                  <FlatList
+                    data={replies}
+                    renderItem={renderReply}
+                    keyExtractor={(item) => item.id}
+                    style={styles.repliesList}
+                    ListEmptyComponent={
+                      <Text style={styles.noRepliesText}>
+                        まだ返信がありません。
+                      </Text>
+                    }
+                  />
+                </View>
+              </>
+            )}
+          </>
+        )}
+      </View>
+      </ScrollView>
+      <View style={styles.sendReply}>
+      <TextInput
+        style={styles.input}
+        placeholder="返信を入力..."
+        value={replyText}
+        onChangeText={setReplyText}
+         multiline
+      />
+
+      <Button title="送信" onPress={handleReplySubmit} />
+      </View>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -284,6 +292,7 @@ const styles = StyleSheet.create({
     height: 50, // 高さを設定
     justifyContent: "center", // 縦中央揃え
     alignItems: "center", // 横中央揃え
+    
   },
   userBar: {
     flexDirection: "row",
@@ -324,12 +333,13 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   input: {
-    height: 80,
+    height: 50,
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 20,
     padding: 10,
     borderRadius: 5,
+    width: '100%',
   },
   repliesList: {
     marginTop: 20,
@@ -351,6 +361,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "gray",
     marginTop: 10,
+  },
+  sendReply: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height:110,
+    backgroundColor: '#fafafa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 
