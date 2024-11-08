@@ -227,7 +227,7 @@ const ReplyScreen = () => {
                   )}
                   <View style={styles.postDetails}>
                     <Text style={styles.spotText}>
-                      投稿詳細：{" "}
+                      {" "}
                       {selectedPost.postDetails
                         ? selectedPost.postDetails.postTxt
                         : "詳細がありません"}
@@ -271,6 +271,7 @@ const ReplyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingBottom: 110
   },
   centerContainer: {
     width: "100%",
@@ -363,14 +364,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sendReply: {
-    position: 'absolute',
-    bottom: 0,
+    bottom: 110,
     width: '100%',
-    height:110,
+    //height:110,
     backgroundColor: '#fafafa',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
   },
 });
 
