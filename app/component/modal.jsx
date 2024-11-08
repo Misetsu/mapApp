@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  ActivityIndicator,
   ScrollView,
   Animated,
 } from "react-native";
@@ -166,8 +167,9 @@ export default function MyModal({
         <View>
           <ScrollView showsVerticalScrollIndicator={false} style={styles.modalView}>
             {loading ? (
-              <View style={styles.postView}>
-                <Text>読み込み中...</Text>
+              <View style={styles.postViewCentering}>
+              <ActivityIndicator size="large" color="#239D60" />
+              <Text>読み込み中...</Text>
               </View>
             ) : !empty && postData.length > 0 ? (
               postData.map((post) => {
@@ -284,6 +286,45 @@ export default function MyModal({
                             color={isLiked ? "#f00" : "#000"}
                           />
                         </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.actionButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/cameraComposition",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                                photoUri: encodeURIComponent(post.photoUri),
+                              },
+                            });
+                          }}>
+                          <Icon
+                            name="images"
+                            size={25}
+                            color={isLiked ? "#f00" : "#000"}
+                          />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.actionButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/camera",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                                point: 0,
+                                spotNo: 0,
+                              },
+                            });
+                          }}>
+                          <Icon
+                            name="map-marked-alt"
+                            size={25}
+                            color={isLiked ? "#f00" : "#000"}
+                          />
+                        </TouchableOpacity>
                       </View>
                       <View style={styles.postText}>
                         <Text>{post.postText}</Text>
@@ -296,132 +337,12 @@ export default function MyModal({
                         </Text>
                       </View>
                     </View>
-
-
-
-                    {postImage ? (
-                      <View style={styles.toolView}>
-                        {showButtons && (
-                          <Animated.View
-                            style={[styles.buttonView, { opacity: fadeAnim }]}
-                          >
-                            <Pressable
-                              style={styles.roundButton}
-                              onPress={hideButtons}
-                            >
-                              <Icon name="times" size={25} color="#000" />
-                            </Pressable>
-                            <Pressable
-                              style={styles.roundButton}
-                              onPress={() => {
-                                router.push({
-                                  pathname: "/cameraComposition",
-                                  params: {
-                                    latitude: 0,
-                                    longitude: 0,
-                                    spotId: spotId,
-                                    photoUri: encodeURIComponent(post.photoUri),
-                                  },
-                                });
-                              }}
-                            >
-                              <Icon name="images" size={25} color="#000" />
-                            </Pressable>
-                            <Pressable
-                              style={styles.roundButton}
-                              onPress={() => {
-                                router.push({
-                                  pathname: "/camera",
-                                  params: {
-                                    latitude: 0,
-                                    longitude: 0,
-                                    spotId: spotId,
-                                    point: 0,
-                                    spotNo: 0,
-                                  },
-                                });
-                              }}
-                            >
-                              <Icon
-                                name="map-marked-alt"
-                                size={25}
-                                color="#000"
-                              />
-                            </Pressable>
-                          </Animated.View>
-                        )}
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={showAnimatedButtons}
-                        >
-                          <Icon name="camera" size={25} color="#000" />
-                        </Pressable>
-                      </View>
-                    ) : (
-                      <View style={styles.toolView} />
-                    )}
                   </View>
                 );
               })
             ) : (
-              <View>
+              <View style={styles.postViewCentering}>
                 <Text>投稿がありません</Text>
-                {postImage ? (
-                  <View style={styles.toolView}>
-                    {showButtons && (
-                      <Animated.View
-                        style={[styles.buttonView, { opacity: fadeAnim }]}
-                      >
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={hideButtons}
-                        >
-                          <Icon name="times" size={25} color="#000" />
-                        </Pressable>
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={() => {
-                            router.push({
-                              pathname: "/cameraComposition",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                              },
-                            });
-                          }}
-                        >
-                          <Icon name="images" size={25} color="#000" />
-                        </Pressable>
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={() => {
-                            router.push({
-                              pathname: "/camera",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                                point: 0,
-                                spotNo: 0,
-                              },
-                            });
-                          }}
-                        >
-                          <Icon name="camera" size={25} color="#000" />
-                        </Pressable>
-                      </Animated.View>
-                    )}
-                    <Pressable
-                      style={styles.roundButton}
-                      onPress={showAnimatedButtons}
-                    >
-                      <Icon name="map-marked-alt" size={25} color="#000" />
-                    </Pressable>
-                  </View>
-                ) : (
-                  <View style={styles.toolView} />
-                )}
               </View>
             )}
           </ScrollView>
@@ -440,7 +361,6 @@ const styles = StyleSheet.create({
     margin: 20,
     marginBottom: 0,
     marginTop: 85,
-    borderRadius: 20,
     alignSelf: "center",
     position: "relative",
   },
@@ -448,7 +368,16 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 20,
     backgroundColor: "#F2F5C2",
-    borderRadius: 10,
+    borderRadius: 20,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  postViewCentering: {
+    width: "100%",
+    padding: 20,
+    alignItems: 'center',      // 横方向の中央揃え
+    backgroundColor: "#F2F5C2",
+    borderRadius: 20,
     marginBottom: 10,
     marginTop: 10,
   },
@@ -487,27 +416,26 @@ const styles = StyleSheet.create({
   LikeCommentRow: {
     display: "flex",
     flexDirection: "row",
-    width: "95%",
-    margin: 10,
-    marginTop: 0,
+    justifyContent: 'space-between',
+    width: "90%",
+    marginBottom: 10,
   },
   actionButton: {
     width: 40,
     height: 40,
+    padding: 5,
     display: "flex",
     flexDirection: "row",
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
-    marginLeft: 5,
-    marginRight: 5,
   },
   likeNum: {
     marginLeft: 10,
     fontSize: 16,
   },
   postText: {
-    justifyContent: "flex-end",
-    width: "95%"
+    justifyContent: "flex-start",
+    width: "95%",
   },
   toolView: {
     marginTop: 10,
