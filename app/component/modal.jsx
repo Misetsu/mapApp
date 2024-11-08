@@ -168,8 +168,8 @@ export default function MyModal({
           <ScrollView showsVerticalScrollIndicator={false} style={styles.modalView}>
             {loading ? (
               <View style={styles.postViewCentering}>
-              <ActivityIndicator size="large" color="#239D60" />
-              <Text>読み込み中...</Text>
+                <ActivityIndicator size="large" color="#239D60" />
+                <Text>読み込み中...</Text>
               </View>
             ) : !empty && postData.length > 0 ? (
               postData.map((post) => {
@@ -345,6 +345,18 @@ export default function MyModal({
                 <Text>投稿がありません</Text>
               </View>
             )}
+
+
+            <View style={styles.closeButton}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => {onClose;
+                }}
+              >
+                <Icon name="times" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+
           </ScrollView>
         </View>
       </View>
@@ -436,6 +448,19 @@ const styles = StyleSheet.create({
   postText: {
     justifyContent: "flex-start",
     width: "95%",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 20,
+    right: 0,
+  },
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+    width: 70,
+    height: 70,
+    marginBottom: 10, // ボタン間にスペースを追加
   },
   toolView: {
     marginTop: 10,
