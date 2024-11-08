@@ -350,8 +350,7 @@ export default function MyModal({
             <View style={styles.closeButton}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => {onClose;
-                }}
+                onPress={onClose}
               >
                 <Icon name="times" size={24} color="#000" />
               </TouchableOpacity>
