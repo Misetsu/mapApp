@@ -10,21 +10,16 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.01;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-
-const auth = FirebaseAuth();
 
 export default function SelectSpot() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { latitude, longitude } = params;
+  const { latitude, longitude, pointRequired, userPoint, newFlag } = params;
   const [spotList, setSpotList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +41,13 @@ export default function SelectSpot() {
           item.mapLongitude
         );
         if (distance < item.areaRadius) {
-          tempArray.push({ id: item.id, name: item.name });
+          tempArray.push({
+            id: item.id,
+            name: item.name,
+            latitude: item.mapLatitude,
+            longitude: item.mapLongitude,
+            distance: distance.toFixed(1),
+          });
         }
       });
 
@@ -125,34 +126,126 @@ export default function SelectSpot() {
       </View>
       <View>
         {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
+          <View style={styles.centerView}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
         ) : (
-          <FlatList
-            data={spotList}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    router.push({
-                      pathname: "/camera",
-                      params: {
-                        latitude: 0,
-                        longitude: 0,
-                        spotId: item.id,
-                        point: 0,
-                        spotNo: 0,
-                      },
-                    });
-                  }}
-                >
-                  <Text>{item.name}</Text>
-                </TouchableOpacity>
-              );
-            }}
-          />
+          <View>
+            <View style={styles.positionContainer}>
+              <Text style={styles.boldText}>
+                現在地：
+                <Text style={styles.text}>
+                  {latitude}
+                  {"    "}
+                  {longitude}
+                </Text>
+              </Text>
+            </View>
+            {newFlag == "true" ? (
+              <View style={styles.pointText}>
+                <Text>
+                  {"新しいピンを作るに必要なポイント："}
+                  <Text style={styles.boldText}>{pointRequired}</Text>
+                </Text>
+                <Text>
+                  {"現在所持しているポイント："}
+                  <Text style={styles.boldText}>{userPoint}</Text>
+                </Text>
+                <Text>以下に既存ピンに投稿することができます。</Text>
+              </View>
+            ) : (
+              <></>
+            )}
+            <FlatList
+              style={styles.listContainer}
+              data={spotList}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                return (
+                  <TouchableOpacity
+                    style={styles.itemContainer}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/camera",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: item.id,
+                          point: 0,
+                          spotNo: 0,
+                        },
+                      });
+                    }}
+                  >
+                    <View>
+                      <Text style={styles.nameText}>{item.name}</Text>
+                      <Text style={styles.positionText}>
+                        {item.latitude}
+                        {"    "}
+                        {item.longitude}
+                      </Text>
+                    </View>
+                    <Text style={styles.distanceText}>{item.distance}m</Text>
+                  </TouchableOpacity>
+                );
+              }}
+              ListEmptyComponent={
+                <Text style={styles.boldText}>
+                  現在地の近くにピンがありません。
+                </Text>
+              }
+            />
+          </View>
         )}
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  centerView: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  itemContainer: {
+    padding: 10,
+    paddingBottom: 20,
+    flexDirection: "row",
+    borderBottomWidth: 2,
+    borderBottomColor: "#ADADAD",
+    marginBottom: 20,
+    justifyContent: "space-between",
+  },
+  nameText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  distanceText: {
+    color: "#7D7D7D",
+    fontSize: 12,
+  },
+  positionText: {
+    color: "#9D9D9D",
+    fontSize: 10,
+  },
+  positionContainer: {
+    alignItems: "center",
+    paddingTop: 20,
+  },
+  boldText: {
+    fontWeight: "bold",
+  },
+  text: {
+    fontWeight: "normal",
+  },
+  pointText: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+});
