@@ -29,6 +29,7 @@ import {
 import Slider from "@react-native-community/slider";
 import FirebaseAuth from "@react-native-firebase/auth";
 import { TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
@@ -105,7 +106,7 @@ export default function CameraScreen() {
       }
       const photo = await cameraRef.current.takePhoto();
       router.navigate({
-        pathname: "/editComposition",
+        pathname: "/editComposition2",
         params: {
           imageUri: "file://" + photo.path,
           latitude: latitude,
@@ -172,11 +173,9 @@ export default function CameraScreen() {
             style={{
               position: "absolute",
               backgroundColor: "black",
-              width: width, // 左半分
-              height: "50%",
+              width: "50%", // 左半分
+              height: height,
               overflow: "hidden",
-              //下半分
-              top: "50%",
               // 右半分
               // left: "50%",
             }}
@@ -184,11 +183,7 @@ export default function CameraScreen() {
             <Image
               source={{ uri: photoUri }}
               // here
-              style={{
-                width: "100%",
-                height: height,
-                transform: [{ translateY: -height / 2 }],
-              }}
+              style={{ width: width, height: "100%" }}
             />
           </View>
           {showSlider && (
@@ -208,18 +203,18 @@ export default function CameraScreen() {
         </View>
 
         <View style={styles.chooseHarfDisplayContainer}>
-          <TouchableOpacity
-            style={styles.chooseTopHarfDisplay}
-          ></TouchableOpacity>
-          <TouchableOpacity
-            style={styles.chooseBottomHarfDisplay}
-          ></TouchableOpacity>
-          <TouchableOpacity
-            style={styles.chooseLeftHarfDisplay}
-          ></TouchableOpacity>
-          <TouchableOpacity
-            style={styles.chooseRightHarfDisplay}
-          ></TouchableOpacity>
+          <TouchableOpacity style={styles.chooseTopHarfDisplay}>
+            <Icon name="angle-double-up" size={30} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chooseBottomHarfDisplay}>
+            <Icon name="angle-double-down" size={30} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chooseLeftHarfDisplay}>
+            <Icon name="angle-double-left" size={30} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chooseRightHarfDisplay}>
+            <Icon name="angle-double-right" size={30} color="#FFF" />
+          </TouchableOpacity>
         </View>
 
         <Pressable
@@ -244,7 +239,7 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 100,
+    paddingTop: 80,
     alignItems: "center",
     backgroundColor: "black",
   },
@@ -261,7 +256,7 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     position: "absolute",
-    bottom: 0,
+    bottom: 10,
     left: 20,
     right: 20,
     alignItems: "stretch",
@@ -277,7 +272,7 @@ const styles = StyleSheet.create({
   captureButton: {
     position: "absolute",
     alignSelf: "center",
-    bottom: 50,
+    bottom: 40,
     width: 75,
     height: 75,
     backgroundColor: "white",
@@ -297,7 +292,7 @@ const styles = StyleSheet.create({
   },
   exposureButton: {
     position: "absolute",
-    top: 30,
+    top: 20,
     right: 20,
     width: 50,
     height: 40,
@@ -327,30 +322,41 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   chooseHarfDisplayContainer: {
-    backgroundColor: "green",
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
     paddingTop: 5,
+    paddingHorizontal: 10,
+    marginTop: 10,
     flexDirection: "row",
     justifyContent: "space-around",
     height: 50,
     width: "50%",
+    borderRadius: 30,
   },
   chooseTopHarfDisplay: {
-    backgroundColor: "purple",
+    //backgroundColor: "purple",
+    justifyContent: "center",
+    alignItems: "center",
     height: 40,
     width: 40,
   },
   chooseBottomHarfDisplay: {
-    backgroundColor: "pink",
+    //backgroundColor: "pink",
+    justifyContent: "center",
+    alignItems: "center",
     height: 40,
     width: 40,
   },
   chooseLeftHarfDisplay: {
-    backgroundColor: "red",
+    //backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
     height: 40,
     width: 40,
   },
   chooseRightHarfDisplay: {
-    backgroundColor: "orange",
+    //backgroundColor: "orange",
+    justifyContent: "center",
+    alignItems: "center",
     height: 40,
     width: 40,
   },
