@@ -82,6 +82,78 @@ export default function TrackUserMapView() {
   }
   }, []);
 
+  // const onMessageReceived = async (remoteMessage) => {
+  //   const data = remoteMessage.data;
+  
+  //   if (data.key_event === 'ACTION_TYPE_1') {
+  //     Alert.alert('Action 1', 'Triggered by key event ACTION_TYPE_1');
+  //     // ここに特定のキーイベントに対するアクションを記述
+  //   } else if (data.key_event === 'ACTION_TYPE_2') {
+  //     Alert.alert('Action 2', 'Triggered by key event ACTION_TYPE_2');
+  //     // こちらに別のアクションを実装
+  //   }
+  // };
+
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+exports.sendNotificationOnDatabaseChange = functions.firestore
+    .document('like') // 監視するコレクションを指定
+    .onWrite(async (change, context) => {
+        const newValue = change.after.data();
+        const previousValue = change.before.data();
+
+        // 例えば、新しいドキュメントが追加された場合
+        if (!previousValue && newValue) {
+            const payload = {
+                notification: {
+                    title: '新しい項目が追加されました！',
+                    body: 'データベースが更新されました。詳細を確認してください。',
+                },
+                data: {
+                    key_event: 'DATABASE_UPDATE'
+                }
+            };
+
+            // 通知を送信するデバイストークンを取得
+            const tokens = await getUserTokens(); // デバイストークン取得関数
+
+            if (tokens.length > 0) {
+                await admin.messaging().sendToDevice(tokens, payload);
+                console.log('通知が送信されました');
+            } else {
+                console.log('トークンが見つかりません');
+            }
+        }
+    });
+
+// ユーザーのデバイストークンをFirestoreから取得する仮の関数
+async function getUserTokens() {
+    const tokensSnapshot = await admin.firestore().collection('userTokens').get();
+    return tokensSnapshot.docs.map(doc => doc.data().token);
+}
+  
+  // アプリのバックグラウンドおよびフォアグラウンドでメッセージを受信するよう設定
+  messaging().onMessage(onMessageReceived);
+  messaging().setBackgroundMessageHandler(onMessageReceived);
+
+const onMessageReceived = async (remoteMessage) => {
+    const data = remoteMessage.data;
+
+    if (data.key_event === 'DATABASE_UPDATE') {
+        Alert.alert('通知', 'データベースが更新されました！');
+    }
+};
+
+messaging().onMessage(onMessageReceived);
+messaging().setBackgroundMessageHandler(onMessageReceived);
+
+
+  async function getUserTokens() {
+    const tokensSnapshot = await admin.firestore().collection('userTokens').get();
+    return tokensSnapshot.docs.map(doc => doc.data().token);
+}
   const configureBackgroundFetch = async () => {
 
     const status = await BackgroundFetch.configure({
