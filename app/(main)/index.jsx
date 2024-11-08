@@ -146,14 +146,6 @@ const onMessageReceived = async (remoteMessage) => {
     }
 };
 
-messaging().onMessage(onMessageReceived);
-messaging().setBackgroundMessageHandler(onMessageReceived);
-
-
-  async function getUserTokens() {
-    const tokensSnapshot = await admin.firestore().collection('userTokens').get();
-    return tokensSnapshot.docs.map(doc => doc.data().token);
-}
   const configureBackgroundFetch = async () => {
 
     const status = await BackgroundFetch.configure({
