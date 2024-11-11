@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
-  Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -56,11 +55,8 @@ export default function TrackUserMapView() {
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
-  const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
-
-  const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
   const setmodal = (marker) => {
     try {
@@ -660,27 +656,6 @@ export default function TrackUserMapView() {
     fetchIndexBar(status);
   };
 
-  // ボタンを表示してフェードイン
-  const showAnimatedButtons = () => {
-    setShowButtons(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1, // 完全に表示
-      duration: 500, // 0.5秒でフェードイン
-      useNativeDriver: true,
-    }).start();
-  };
-
-  // 新しいボタン1を押したときにボタンをフェードアウトして非表示
-  const hideButtons = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0, // 完全に非表示
-      duration: 500, // 0.5秒でフェードアウト
-      useNativeDriver: true,
-    }).start(() => {
-      setShowButtons(false); // フェードアウト完了後にボタンを非表示
-    });
-  };
-
   const handleVisitState = async (spotId) => {
     if (auth.currentUser != null) {
       const querySnapshot = await firestore()
@@ -730,7 +705,7 @@ export default function TrackUserMapView() {
     return fibonacci(num - 1) + fibonacci(num - 2);
   }
 
-  const handleAddNewPin = async () => {
+  const handlePost = async () => {
     const queryUser = await firestore()
       .collection("users")
       .doc(auth.currentUser.uid)
@@ -739,30 +714,16 @@ export default function TrackUserMapView() {
     const userData = queryUser.data();
 
     const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
-    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
-    if (pointRequired <= userData.spotPoint) {
-      router.push({
-        pathname: "/camera",
-        params: {
-          latitude: position.latitude,
-          longitude: position.longitude,
-          spotId: 0,
-          point: pointLeft,
-          spotNo: parseInt(userData.spotCreate) + 1,
-        },
-      });
-    } else {
-      router.push({
-        pathname: "/selectSpot",
-        params: {
-          latitude: position.latitude,
-          longitude: position.longitude,
-          pointRequired: pointRequired,
-          userPoint: userData.spotPoint,
-          newFlag: true,
-        },
-      });
-    }
+
+    router.push({
+      pathname: "/selectSpot",
+      params: {
+        latitude: position.latitude,
+        longitude: position.longitude,
+        pointRequired: pointRequired,
+        userPoint: userData.spotPoint,
+      },
+    });
   };
 
   useEffect(() => {
@@ -920,87 +881,6 @@ export default function TrackUserMapView() {
         onClose={() => setModalVisible(false)}
       />
 
-      {/* 新しいボタンを表示 */}
-      {showButtons && (
-        <Animated.View
-          style={[styles.newButtonContainer, { opacity: fadeAnim }]}
-        >
-          <TouchableOpacity
-            style={styles.horizontalContainer}
-            onPress={hideButtons}
-          >
-            <View style={styles.menuTextHolder} />
-            <View style={styles.roundButton}>
-              <Icon name="times" size={25} color="#000" />
-            </View>
-            <View style={styles.menuText}>
-              <Text>キャンセル</Text>
-            </View>
-          </TouchableOpacity>
-          {user ? (
-            <TouchableOpacity
-              style={styles.horizontalContainer}
-              onPress={() => {
-                router.push({
-                  pathname: "/selectSpot",
-                  params: {
-                    latitude: position.latitude,
-                    longitude: position.longitude,
-                    pointRequired: 0,
-                    userPoint: 0,
-                    newFlag: false,
-                  },
-                });
-              }}
-            >
-              <View style={styles.menuTextHolder} />
-              <View style={styles.roundButton}>
-                <Icon name="map-marked-alt" size={25} color="#000" />
-              </View>
-              <View style={styles.menuText}>
-                <Text>既存ピンに投稿</Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.roundButton}
-              onPress={() => {
-                router.push({
-                  pathname: "/loginForm",
-                });
-              }}
-            >
-              <Icon name="map-marked-alt" size={25} color="#000" />
-            </TouchableOpacity>
-          )}
-          {user ? (
-            <TouchableOpacity
-              style={styles.horizontalContainer}
-              onPress={handleAddNewPin}
-            >
-              <View style={styles.menuTextHolder} />
-              <View style={styles.roundButton}>
-                <Icon name="map-marker-alt" size={25} color="#000" />
-              </View>
-              <View style={styles.menuText}>
-                <Text>新規ピンに投稿</Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.roundButton}
-              onPress={() => {
-                router.push({
-                  pathname: "/loginForm",
-                });
-              }}
-            >
-              <Icon name="map-marker-alt" size={25} color="#000" />
-            </TouchableOpacity>
-          )}
-        </Animated.View>
-      )}
-
       {user ? (
         <Pressable
           style={{
@@ -1015,7 +895,7 @@ export default function TrackUserMapView() {
             borderRadius: 35,
             display: postButtonVisible ? "flex" : "none",
           }}
-          onPress={showAnimatedButtons}
+          onPress={handlePost}
         >
           <Icon name="camera" size={30} color="#000" />
         </Pressable>

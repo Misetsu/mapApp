@@ -3,6 +3,7 @@ import {
   SafeAreaView,
   View,
   Text,
+  Image,
   TouchableOpacity,
   Dimensions,
   StyleSheet,
@@ -10,16 +11,18 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
+const auth = FirebaseAuth();
 
 export default function SelectSpot() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { latitude, longitude, pointRequired, userPoint, newFlag } = params;
+  const { latitude, longitude, pointRequired, userPoint } = params;
   const [spotList, setSpotList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -84,46 +87,44 @@ export default function SelectSpot() {
     }
   }
 
+  function fibonacci(num) {
+    if (num == 1) return 0;
+    if (num == 2) return 1;
+    return fibonacci(num - 1) + fibonacci(num - 2);
+  }
+
+  const handleAddNewPin = async () => {
+    const queryUser = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .get();
+
+    const userData = queryUser.data();
+
+    const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
+    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
+    if (pointRequired <= userData.spotPoint) {
+      router.push({
+        pathname: "/camera",
+        params: {
+          latitude: latitude,
+          longitude: longitude,
+          spotId: 0,
+          point: pointLeft,
+          spotNo: parseInt(userData.spotCreate) + 1,
+        },
+      });
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
     fetchSpotList();
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View
-        style={{
-          top: 0,
-          width: "100%",
-          backgroundColor: "#F2F2F2",
-          flexDirection: "row", // 横並びに配置
-          justifyContent: "space-between", // 左右にスペースを均等に配置
-          alignItems: "center", // 縦方向の中央揃え
-          height: 50, // 高さを指定
-        }}
-      >
-        <TouchableOpacity
-          onPress={handleBackPress}
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        >
-          {/* 右側のアイコンやテキストをここに追加 */}
-          <Icon name="angle-left" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text>投稿したいピンを選択してください</Text>
-        <TouchableOpacity
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        />
-      </View>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.pagetitle}>投稿</Text>
       <View>
         {loading ? (
           <View style={styles.centerView}>
@@ -131,31 +132,39 @@ export default function SelectSpot() {
           </View>
         ) : (
           <View>
-            <View style={styles.positionContainer}>
-              <Text style={styles.boldText}>
-                現在地：
-                <Text style={styles.text}>
-                  {latitude}
-                  {"    "}
-                  {longitude}
-                </Text>
+            <View style={styles.listContainer}>
+              <Text style={styles.subtitle}>
+                現在地に新しいピンを立てて投稿
               </Text>
+              <Text style={styles.subtitle}>
+                必要なポイント：{pointRequired}
+              </Text>
+              <Text style={styles.subtitle}>
+                所持しているポイント：{userPoint}
+              </Text>
+              <TouchableOpacity
+                style={styles.itemContainer}
+                onPress={handleAddNewPin}
+              >
+                <View style={{ flexDirection: "row" }}>
+                  <Image
+                    source={require("../image/UnvisitedPin.png")}
+                    style={styles.listImage}
+                  />
+                  <View>
+                    <Text style={styles.nameText}>新規ピン</Text>
+                    <Text style={styles.positionText}>
+                      {latitude}
+                      {"    "}
+                      {longitude}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             </View>
-            {newFlag == "true" ? (
-              <View style={styles.pointText}>
-                <Text>
-                  {"新しいピンを作るに必要なポイント："}
-                  <Text style={styles.boldText}>{pointRequired}</Text>
-                </Text>
-                <Text>
-                  {"現在所持しているポイント："}
-                  <Text style={styles.boldText}>{userPoint}</Text>
-                </Text>
-                <Text>以下に既存ピンに投稿することができます。</Text>
-              </View>
-            ) : (
-              <></>
-            )}
+
+            <Text style={styles.subtitle}>近くのピンに投稿</Text>
+
             <FlatList
               style={styles.listContainer}
               data={spotList}
@@ -177,13 +186,19 @@ export default function SelectSpot() {
                       });
                     }}
                   >
-                    <View>
-                      <Text style={styles.nameText}>{item.name}</Text>
-                      <Text style={styles.positionText}>
-                        {item.latitude}
-                        {"    "}
-                        {item.longitude}
-                      </Text>
+                    <View style={{ flexDirection: "row" }}>
+                      <Image
+                        source={require("../image/ActionPin.png")}
+                        style={styles.listImage}
+                      />
+                      <View>
+                        <Text style={styles.nameText}>{item.name}</Text>
+                        <Text style={styles.positionText}>
+                          {item.latitude}
+                          {"    "}
+                          {item.longitude}
+                        </Text>
+                      </View>
                     </View>
                     <Text style={styles.distanceText}>{item.distance}m</Text>
                   </TouchableOpacity>
@@ -198,11 +213,34 @@ export default function SelectSpot() {
           </View>
         )}
       </View>
+      <View style={styles.Back}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#F2F5C8",
+  },
+  pagetitle: {
+    fontSize: 30,
+    textAlign: "center",
+    fontWeight: "300",
+  },
+  subtitle: {
+    fontSize: 18,
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "600",
+    color: "#000000",
+    paddingTop: 5,
+  },
   centerView: {
     width: "100%",
     height: "100%",
@@ -210,29 +248,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingBottom: 5,
   },
   itemContainer: {
     padding: 10,
-    paddingBottom: 20,
     flexDirection: "row",
-    borderBottomWidth: 2,
-    borderBottomColor: "#ADADAD",
-    marginBottom: 20,
+    backgroundColor: "#A3DE83",
     justifyContent: "space-between",
+    margin: 10, // ボタン間にスペースを追加
+    marginLeft: 0,
+    marginRight: 0,
+  },
+  listImage: {
+    height: 40,
+    width: 40,
+    marginRight: 10,
   },
   nameText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
   },
   distanceText: {
-    color: "#7D7D7D",
-    fontSize: 12,
+    color: "#239D60",
+    fontSize: 14,
+    fontWeight: "600",
   },
   positionText: {
-    color: "#9D9D9D",
-    fontSize: 10,
+    color: "#239D60",
+    fontSize: 12,
+    fontWeight: "400",
   },
   positionContainer: {
     alignItems: "center",
@@ -247,5 +291,18 @@ const styles = StyleSheet.create({
   pointText: {
     paddingHorizontal: 20,
     paddingTop: 10,
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
 });
