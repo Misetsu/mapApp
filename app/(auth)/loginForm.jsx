@@ -36,6 +36,7 @@ export default function LoginScreen() {
   const signInWithGoogle = async () => {
     // Google のログイン画面を表示して認証用の ID トークンを取得する
     const user = await GoogleSignin.signIn();
+
     const idToken = user.idToken;
 
     if (idToken === null) {

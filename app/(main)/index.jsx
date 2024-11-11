@@ -121,22 +121,25 @@ export default function TrackUserMapView() {
       try {
         const postArray = [];
         const friendList = [];
-        friendList.push(auth.currentUser.uid);
 
         setEmptyPost(true);
 
-        const queryFollow = await firestore()
-          .collection("follow")
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
+        if (auth.currentUser != null) {
+          friendList.push(auth.currentUser.uid);
 
-        if (!queryFollow.empty) {
-          let cnt = 0;
-          while (cnt < queryFollow.size) {
-            const followSnapshot = queryFollow.docs[cnt];
-            const followData = followSnapshot.data();
-            friendList.push(followData.followeeId);
-            cnt = cnt + 1;
+          const queryFollow = await firestore()
+            .collection("follow")
+            .where("followerId", "==", auth.currentUser.uid)
+            .get();
+
+          if (!queryFollow.empty) {
+            let cnt = 0;
+            while (cnt < queryFollow.size) {
+              const followSnapshot = queryFollow.docs[cnt];
+              const followData = followSnapshot.data();
+              friendList.push(followData.followeeId);
+              cnt = cnt + 1;
+            }
           }
         }
 
@@ -200,10 +203,12 @@ export default function TrackUserMapView() {
               const likeSnapshot = queryLike.docs[0];
               const likeData = likeSnapshot.data();
               let likeFlag;
-              if (likeData[auth.currentUser.uid] !== undefined) {
-                likeFlag = true;
-              } else {
-                likeFlag = false;
+              if (auth.currentUser != null) {
+                if (likeData[auth.currentUser.uid] !== undefined) {
+                  likeFlag = true;
+                } else {
+                  likeFlag = false;
+                }
               }
 
               tempObj[firstKey] = postData.userId;
@@ -441,18 +446,20 @@ export default function TrackUserMapView() {
   const fetchAllMarkerCord = async () => {
     let vivstedSpot = {};
 
-    const querySnapshot = await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .collection("spot")
-      .orderBy("spotId", "asc")
-      .get();
+    if (auth.currentUser != null) {
+      const querySnapshot = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .orderBy("spotId", "asc")
+        .get();
 
-    if (!querySnapshot.empty) {
-      querySnapshot.forEach((docs) => {
-        const item = docs.data();
-        vivstedSpot[item.spotId] = item.timeStamp;
-      });
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach((docs) => {
+          const item = docs.data();
+          vivstedSpot[item.spotId] = item.timeStamp;
+        });
+      }
     }
 
     const fetchResult = [];
@@ -485,85 +492,87 @@ export default function TrackUserMapView() {
 
   const fetchIndexBar = async (status) => {
     const tempList = [];
-    const firstKey = "userId";
-    const secondKey = "username";
-    const thirdKey = "userIcon";
-    const forthKey = "lastPostAt";
-    if (status == "follow") {
-      try {
-        const queryFollow = await firestore()
-          .collection("follow")
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
+    if (auth.currentUser != null) {
+      const firstKey = "userId";
+      const secondKey = "username";
+      const thirdKey = "userIcon";
+      const forthKey = "lastPostAt";
+      if (status == "follow") {
+        try {
+          const queryFollow = await firestore()
+            .collection("follow")
+            .where("followerId", "==", auth.currentUser.uid)
+            .get();
 
-        if (!queryFollow.empty) {
-          let cnt = 0;
-          while (cnt < queryFollow.size) {
-            let tempObj = {};
-            const followSnapshot = queryFollow.docs[cnt];
-            const followData = followSnapshot.data();
+          if (!queryFollow.empty) {
+            let cnt = 0;
+            while (cnt < queryFollow.size) {
+              let tempObj = {};
+              const followSnapshot = queryFollow.docs[cnt];
+              const followData = followSnapshot.data();
 
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", followData.followeeId)
-              .get();
-            const userSnapshot = queryUser.docs[0];
-            const userData = userSnapshot.data();
+              const queryUser = await firestore()
+                .collection("users")
+                .where("uid", "==", followData.followeeId)
+                .get();
+              const userSnapshot = queryUser.docs[0];
+              const userData = userSnapshot.data();
 
-            if (!(userData.lastPostAt == "0")) {
-              tempObj[firstKey] = userData.uid;
-              tempObj[secondKey] = userData.displayName;
-              tempObj[thirdKey] = userData.photoURL;
-              tempObj[forthKey] = userData.lastPostAt;
+              if (!(userData.lastPostAt == "0")) {
+                tempObj[firstKey] = userData.uid;
+                tempObj[secondKey] = userData.displayName;
+                tempObj[thirdKey] = userData.photoURL;
+                tempObj[forthKey] = userData.lastPostAt;
 
-              tempList.push(tempObj);
+                tempList.push(tempObj);
+              }
+
+              cnt = cnt + 1;
             }
-
-            cnt = cnt + 1;
           }
+        } catch (error) {
+          console.log("Error fetching documents: ", error);
         }
-      } catch (error) {
-        console.log("Error fetching documents: ", error);
-      }
-    } else if (status == "star") {
-      try {
-        const queryFav = await firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .get();
+      } else if (status == "star") {
+        try {
+          const queryFav = await firestore()
+            .collection("star")
+            .doc(auth.currentUser.uid)
+            .get();
 
-        const starList = [];
-        for (const [key, value] of Object.entries(queryFav.data())) {
-          if (key == value) {
-            starList.push(value);
-          }
-        }
-        if (!(starList.length == 0)) {
-          let cnt = 0;
-          while (cnt < starList.length) {
-            let tempObj = {};
-
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", starList[cnt])
-              .get();
-            const userSnapshot = queryUser.docs[0];
-            const userData = userSnapshot.data();
-
-            if (!(userData.lastPostAt == "0")) {
-              tempObj[firstKey] = userData.uid;
-              tempObj[secondKey] = userData.displayName;
-              tempObj[thirdKey] = userData.photoURL;
-              tempObj[forthKey] = userData.lastPostAt;
-
-              tempList.push(tempObj);
+          const starList = [];
+          for (const [key, value] of Object.entries(queryFav.data())) {
+            if (key == value) {
+              starList.push(value);
             }
-
-            cnt = cnt + 1;
           }
+          if (!(starList.length == 0)) {
+            let cnt = 0;
+            while (cnt < starList.length) {
+              let tempObj = {};
+
+              const queryUser = await firestore()
+                .collection("users")
+                .where("uid", "==", starList[cnt])
+                .get();
+              const userSnapshot = queryUser.docs[0];
+              const userData = userSnapshot.data();
+
+              if (!(userData.lastPostAt == "0")) {
+                tempObj[firstKey] = userData.uid;
+                tempObj[secondKey] = userData.displayName;
+                tempObj[thirdKey] = userData.photoURL;
+                tempObj[forthKey] = userData.lastPostAt;
+
+                tempList.push(tempObj);
+              }
+
+              cnt = cnt + 1;
+            }
+          }
+        } catch (error) {
+          console.log("Error fetching documents: ", error);
         }
-      } catch (error) {
-        console.log("Error fetching documents: ", error);
       }
     }
 
@@ -673,43 +682,45 @@ export default function TrackUserMapView() {
   };
 
   const handleVisitState = async (spotId) => {
-    const querySnapshot = await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .collection("spot")
-      .where("spotId", "==", parseInt(spotId))
-      .get();
-
-    const currentTime = new Date().toISOString();
-
-    if (!querySnapshot.empty) {
-      const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
-      await firestore()
+    if (auth.currentUser != null) {
+      const querySnapshot = await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
         .collection("spot")
-        .doc(docId)
-        .update({
-          timeStamp: currentTime,
-        });
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .collection("spot")
-        .add({
-          spotId: parseInt(spotId),
-          timeStamp: currentTime,
-        });
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
+        .where("spotId", "==", parseInt(spotId))
         .get();
-      const spotPoint = queryUser.data().spotPoint + 1;
 
-      await firestore().collection("users").doc(auth.currentUser.uid).update({
-        spotPoint: spotPoint,
-      });
+      const currentTime = new Date().toISOString();
+
+      if (!querySnapshot.empty) {
+        const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
+        await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .doc(docId)
+          .update({
+            timeStamp: currentTime,
+          });
+      } else {
+        await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .add({
+            spotId: parseInt(spotId),
+            timeStamp: currentTime,
+          });
+        const queryUser = await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .get();
+        const spotPoint = queryUser.data().spotPoint + 1;
+
+        await firestore().collection("users").doc(auth.currentUser.uid).update({
+          spotPoint: spotPoint,
+        });
+      }
     }
   };
 
