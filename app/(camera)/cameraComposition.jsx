@@ -40,6 +40,8 @@ export default function CameraScreen() {
   const cameraRef = useRef(null);
   const device = useCameraDevice("back");
   const { hasPermission, requestPermission } = useCameraPermission();
+  // スタイルの状態を保持するuseState
+  const [currentStyle, setCurrentStyle] = useState("left");
   const [isActive, setIsActive] = useState(false);
   const [showSlider, setShowSlider] = useState(false); // スライダーの表示状態を管理するステート
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
@@ -113,6 +115,7 @@ export default function CameraScreen() {
           longitude: longitude,
           spotId: spotId,
           Composition: encodeURIComponent(photoUri),
+          direction: currentStyle,
         },
       });
     } catch (error) {
@@ -152,6 +155,25 @@ export default function CameraScreen() {
     );
   }, [exposureSlider, device]);
 
+  // 左側のボタンを押した時の処理
+  const handleLeftPress = () => {
+    setCurrentStyle("left");
+  };
+
+  // 右側のボタンを押した時の処理
+  const handleRightPress = () => {
+    setCurrentStyle("right");
+  };
+  // 左側のボタンを押した時の処理
+  const handleTopPress = () => {
+    setCurrentStyle("top");
+  };
+
+  // 右側のボタンを押した時の処理
+  const handleBottomPress = () => {
+    setCurrentStyle("bottom");
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -170,20 +192,27 @@ export default function CameraScreen() {
             />
           </GestureDetector>
           <View
-            style={{
-              position: "absolute",
-              backgroundColor: "black",
-              width: "50%", // 左半分
-              height: height,
-              overflow: "hidden",
-              // 右半分
-              // left: "50%",
-            }}
+            style={
+              currentStyle === "left"
+                ? styles.LeftHarfDisplayContainer
+                : currentStyle === "right"
+                ? styles.RightHarfDisplayContainer
+                : currentStyle === "top"
+                ? styles.TopHarfDisplayContainer
+                : styles.BottomHarfDisplayContainer
+            }
           >
             <Image
               source={{ uri: photoUri }}
-              // here
-              style={{ width: width, height: "100%" }}
+              style={
+                currentStyle === "left"
+                  ? styles.LeftHarfDisplay
+                  : currentStyle === "right"
+                  ? styles.RightHarfDisplay
+                  : currentStyle === "top"
+                  ? styles.TopHarfDisplay
+                  : styles.BottomHarfDisplay
+              }
             />
           </View>
           {showSlider && (
@@ -203,16 +232,28 @@ export default function CameraScreen() {
         </View>
 
         <View style={styles.chooseHarfDisplayContainer}>
-          <TouchableOpacity style={styles.chooseTopHarfDisplay}>
+          <TouchableOpacity
+            onPress={handleTopPress}
+            style={styles.chooseTopHarfDisplay}
+          >
             <Icon name="angle-double-up" size={30} color="#FFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chooseBottomHarfDisplay}>
+          <TouchableOpacity
+            onPress={handleBottomPress}
+            style={styles.chooseBottomHarfDisplay}
+          >
             <Icon name="angle-double-down" size={30} color="#FFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chooseLeftHarfDisplay}>
+          <TouchableOpacity
+            onPress={handleLeftPress}
+            style={styles.chooseLeftHarfDisplay}
+          >
             <Icon name="angle-double-left" size={30} color="#FFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chooseRightHarfDisplay}>
+          <TouchableOpacity
+            onPress={handleRightPress}
+            style={styles.chooseRightHarfDisplay}
+          >
             <Icon name="angle-double-right" size={30} color="#FFF" />
           </TouchableOpacity>
         </View>
@@ -359,5 +400,53 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 40,
     width: 40,
+  },
+  TopHarfDisplayContainer: {
+    position: "absolute",
+    backgroundColor: "black",
+    width: width,
+    height: "50%",
+    overflow: "hidden",
+  },
+  TopHarfDisplay: {
+    width: "100%",
+    height: height,
+  },
+  BottomHarfDisplayContainer: {
+    position: "absolute",
+    backgroundColor: "black",
+    width: width,
+    height: "50%",
+    overflow: "hidden",
+    top: "50%",
+  },
+  BottomHarfDisplay: {
+    width: "100%",
+    height: height,
+    transform: [{ translateY: -height / 2 }],
+  },
+  LeftHarfDisplayContainer: {
+    position: "absolute",
+    backgroundColor: "black",
+    width: "50%",
+    height: height,
+    overflow: "hidden",
+  },
+  LeftHarfDisplay: {
+    width: width,
+    height: "100%",
+  },
+  RightHarfDisplayContainer: {
+    position: "absolute",
+    backgroundColor: "black",
+    width: "50%",
+    height: height,
+    overflow: "hidden",
+    left: "50%",
+  },
+  RightHarfDisplay: {
+    width: width,
+    height: "100%",
+    transform: [{ translateX: -width / 2 }],
   },
 });
