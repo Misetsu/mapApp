@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,9 @@ import {
   Modal,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
+  ActivityIndicator,
+  Dimensions,
   ScrollView,
-  Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -16,6 +16,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
+const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
 
 export default function MyModal({
@@ -29,9 +30,6 @@ export default function MyModal({
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
-
-  const [showButtons, setShowButtons] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
@@ -125,27 +123,6 @@ export default function MyModal({
       });
   };
 
-  // ボタンを表示してフェードイン
-  const showAnimatedButtons = () => {
-    setShowButtons(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1, // 完全に表示
-      duration: 500, // 0.5秒でフェードイン
-      useNativeDriver: true,
-    }).start();
-  };
-
-  // 新しいボタン1を押したときにボタンをフェードアウトして非表示
-  const hideButtons = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0, // 完全に非表示
-      duration: 500, // 0.5秒でフェードアウト
-      useNativeDriver: true,
-    }).start(() => {
-      setShowButtons(false); // フェードアウト完了後にボタンを非表示
-    });
-  };
-
   const navigateProfile = (uid) => {
     router.push({
       pathname: "/profile",
@@ -163,84 +140,87 @@ export default function MyModal({
       onRequestClose={onClose}
     >
       <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {loading ? (
-              <View style={styles.postView}>
-                <Text>読み込み中...</Text>
-              </View>
-            ) : !empty && postData.length > 0 ? (
-              postData.map((post) => {
-                if (!post) return null; // postが未定義の場合はスキップ
-                const isLiked = likes[post.id]; // idを使用する
-                const flag = tempObj1[post.id];
-                const count = tempObj2[post.id];
-                return (
-                  <View key={post.postId} style={styles.postView}>
-                    <View style={styles.profileBar}>
-                      <TouchableOpacity
-                        style={styles.userInfo}
-                        onPress={() => {
-                          navigateProfile(post.userId);
-                        }}
-                      >
-                        <Image
-                          source={{ uri: post.userIcon }}
-                          style={styles.userIcon}
-                        />
-                        <Text>{post.username}</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={onClose}>
-                        <Text style={styles.closeButtonText}>
-                          {/* スタイルを設定 */}✖
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+        {loading ? (
+          <View style={styles.postViewCentering}>
+            <ActivityIndicator size="large" color="#239D60" />
+            <Text>読み込み中...</Text>
+          </View>
+        ) : !empty && postData.length > 0 ? (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.modalView}
+          >
+            {postData.map((post) => {
+              if (!post) return null; // postが未定義の場合はスキップ
+              const isLiked = likes[post.id]; // idを使用する
+              const flag = tempObj1[post.id];
+              const count = tempObj2[post.id];
+              return (
+                <View key={post.postId} style={styles.postView}>
+                  <TouchableOpacity
+                    style={styles.profileBar}
+                    onPress={() => {
+                      navigateProfile(post.userId);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: post.userIcon }}
+                      style={styles.userIcon}
+                    />
+                    <Text style={styles.userName}>{post.username}</Text>
+                  </TouchableOpacity>
+                  <View style={styles.postDetail}>
                     {postImage ? (
                       <Image
                         source={{ uri: post.photoUri }}
-                        style={{ width: 300, height: 400 }}
+                        style={styles.postImage}
                       />
                     ) : (
                       <Image
                         source={{ uri: post.photoUri }}
-                        style={{ width: 300, height: 400 }}
+                        style={styles.postImage}
                         blurRadius={50}
                       />
                     )}
 
-                    <View style={styles.dateLikeRow}>
+                    <View style={styles.LikeCommentRow}>
                       {/* いいねボタン */}
                       {postImage ? (
                         <View>
                           {flag ? (
                             <TouchableOpacity
-                              style={styles.likeButton}
-                              onPress={() => handleUnlike(post.postId)}
+                              style={styles.actionButton}
+                              onPress={() => handleUnlike(post.postId, index)}
                             >
                               <Icon
                                 name="heart"
-                                size={16}
+                                size={25}
                                 color={isLiked ? "#000" : "#f00"}
                               />
                               <Text
-                                style={{ color: isLiked ? "black" : "red" }}
+                                style={[
+                                  { color: isLiked ? "black" : "red" },
+                                  styles.likeNum,
+                                ]}
                               >
                                 {isLiked ? count - 1 : count}
                               </Text>
                             </TouchableOpacity>
                           ) : (
                             <TouchableOpacity
-                              style={styles.likeButton}
-                              onPress={() => handleLike(post.postId)}
+                              style={styles.actionButton}
+                              onPress={() => handleLike(post.postId, index)}
                             >
                               <Icon
                                 name="heart"
-                                size={16}
+                                size={25}
                                 color={isLiked ? "#f00" : "#000"}
                               />
                               <Text
-                                style={{ color: isLiked ? "red" : "black" }}
+                                style={[
+                                  { color: isLiked ? "red" : "black" },
+                                  styles.likeNum,
+                                ]}
                               >
                                 {isLiked ? count + 1 : count}
                               </Text>
@@ -250,10 +230,10 @@ export default function MyModal({
                       ) : (
                         <View>
                           {flag ? (
-                            <TouchableOpacity style={styles.likeButton}>
+                            <TouchableOpacity style={styles.actionButton}>
                               <Icon
                                 name="heart"
-                                size={16}
+                                size={25}
                                 color={isLiked ? "#000" : "#f00"}
                               />
                               <Text
@@ -263,10 +243,10 @@ export default function MyModal({
                               </Text>
                             </TouchableOpacity>
                           ) : (
-                            <TouchableOpacity style={styles.likeButton}>
+                            <TouchableOpacity style={styles.actionButton}>
                               <Icon
                                 name="heart"
-                                size={16}
+                                size={25}
                                 color={isLiked ? "#f00" : "#000"}
                               />
                               <Text
@@ -278,7 +258,67 @@ export default function MyModal({
                           )}
                         </View>
                       )}
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => {
+                          router.push({
+                            pathname: "/component/replay",
+                            params: { postId: post.postId }, // idを使用
+                          });
+                        }}
+                      >
+                        <Icon
+                          name="comment"
+                          size={25}
+                          color={isLiked ? "#f00" : "#000"}
+                        />
+                      </TouchableOpacity>
 
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => {
+                          router.push({
+                            pathname: "/cameraComposition",
+                            params: {
+                              latitude: 0,
+                              longitude: 0,
+                              spotId: spotId,
+                              photoUri: encodeURIComponent(post.photoUri),
+                            },
+                          });
+                        }}
+                      >
+                        <Icon
+                          name="images"
+                          size={25}
+                          color={isLiked ? "#f00" : "#000"}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => {
+                          router.push({
+                            pathname: "/camera",
+                            params: {
+                              latitude: 0,
+                              longitude: 0,
+                              spotId: spotId,
+                              point: 0,
+                              spotNo: 0,
+                            },
+                          });
+                        }}
+                      >
+                        <Icon
+                          name="map-marked-alt"
+                          size={25}
+                          color={isLiked ? "#f00" : "#000"}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View style={styles.postText}>
+                      <Text>{post.postText}</Text>
                       <Text style={{ fontSize: 10, color: "#4d4d4d" }}>
                         {formatInTimeZone(
                           new Date(post.timestamp),
@@ -287,174 +327,26 @@ export default function MyModal({
                         )}
                       </Text>
                     </View>
-
-                    <Text>{post.postText}</Text>
-
-                    {/* postTextと返信の間の区切り線 */}
-
-                    <View style={styles.divider} />
-
-                    {/* 返信リストの表示 */}
-                    <View style={styles.replyContainer}>
-                      {post.reply && post.reply.length > 0 ? (
-                        post.reply.map((reply, index) => (
-                          <View key={index}>
-                            <View style={styles.commentRow}>
-                              <Image
-                                source={{ uri: reply.userIcon }}
-                                style={styles.listProfileImage}
-                              />
-                              <Text>{reply.username}</Text>
-                            </View>
-                            <Text style={styles.replyText}>
-                              {reply.replyText}
-                            </Text>
-                          </View>
-                        ))
-                      ) : (
-                        <Text>返信がありません</Text>
-                      )}
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.replyButton}
-                      onPress={() => {
-                        router.push({
-                          pathname: "/component/replay",
-                          params: { postId: post.postId }, // idを使用
-                        });
-                      }}
-                    >
-                      <Text style={styles.replyButtonText}>返信</Text>
+                  </View>
+                  <View style={styles.closeButton}>
+                    <TouchableOpacity style={styles.button} onPress={onClose}>
+                      <Icon name="times" size={24} color="#000" />
                     </TouchableOpacity>
-
-                    {postImage ? (
-                      <View style={styles.toolView}>
-                        {showButtons && (
-                          <Animated.View
-                            style={[styles.buttonView, { opacity: fadeAnim }]}
-                          >
-                            <Pressable
-                              style={styles.roundButton}
-                              onPress={hideButtons}
-                            >
-                              <Icon name="times" size={25} color="#000" />
-                            </Pressable>
-                            <Pressable
-                              style={styles.roundButton}
-                              onPress={() => {
-                                router.push({
-                                  pathname: "/cameraComposition",
-                                  params: {
-                                    latitude: 0,
-                                    longitude: 0,
-                                    spotId: spotId,
-                                    photoUri: encodeURIComponent(post.photoUri),
-                                  },
-                                });
-                              }}
-                            >
-                              <Icon name="images" size={25} color="#000" />
-                            </Pressable>
-                            <Pressable
-                              style={styles.roundButton}
-                              onPress={() => {
-                                router.push({
-                                  pathname: "/camera",
-                                  params: {
-                                    latitude: 0,
-                                    longitude: 0,
-                                    spotId: spotId,
-                                    point: 0,
-                                    spotNo: 0,
-                                  },
-                                });
-                              }}
-                            >
-                              <Icon
-                                name="map-marked-alt"
-                                size={25}
-                                color="#000"
-                              />
-                            </Pressable>
-                          </Animated.View>
-                        )}
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={showAnimatedButtons}
-                        >
-                          <Icon name="camera" size={25} color="#000" />
-                        </Pressable>
-                      </View>
-                    ) : (
-                      <View style={styles.toolView} />
-                    )}
                   </View>
-                );
-              })
-            ) : (
-              <View>
-                <Text>投稿がありません</Text>
-                {postImage ? (
-                  <View style={styles.toolView}>
-                    {showButtons && (
-                      <Animated.View
-                        style={[styles.buttonView, { opacity: fadeAnim }]}
-                      >
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={hideButtons}
-                        >
-                          <Icon name="times" size={25} color="#000" />
-                        </Pressable>
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={() => {
-                            router.push({
-                              pathname: "/cameraComposition",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                              },
-                            });
-                          }}
-                        >
-                          <Icon name="images" size={25} color="#000" />
-                        </Pressable>
-                        <Pressable
-                          style={styles.roundButton}
-                          onPress={() => {
-                            router.push({
-                              pathname: "/camera",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                                point: 0,
-                                spotNo: 0,
-                              },
-                            });
-                          }}
-                        >
-                          <Icon name="camera" size={25} color="#000" />
-                        </Pressable>
-                      </Animated.View>
-                    )}
-                    <Pressable
-                      style={styles.roundButton}
-                      onPress={showAnimatedButtons}
-                    >
-                      <Icon name="map-marked-alt" size={25} color="#000" />
-                    </Pressable>
-                  </View>
-                ) : (
-                  <View style={styles.toolView} />
-                )}
-              </View>
-            )}
+                </View>
+              );
+            })}
           </ScrollView>
-        </View>
+        ) : (
+          <View style={styles.postViewCentering}>
+            <Text style={styles.userName}>投稿がありません</Text>
+            <View style={styles.closeButton}>
+              <TouchableOpacity style={styles.button} onPress={onClose}>
+                <Icon name="times" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
     </Modal>
   );
@@ -462,112 +354,103 @@ export default function MyModal({
 
 const styles = StyleSheet.create({
   centeredView: {
-    flex: 1,
     justifyContent: "center",
-    alignContent: "center",
+    alignItems: "center",
+    height: height,
   },
   modalView: {
+    flexDirection: "column",
     width: 350,
     margin: 20,
     marginBottom: 0,
-    marginTop: 90,
-    borderRadius: 20,
+    marginTop: 85,
     alignSelf: "center",
     position: "relative",
-  },
-  toolView: {
-    marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  buttonView: {
-    flexDirection: "row", // 横方向に要素を配置
-    justifyContent: "flex-end", // 右寄せにする
-  },
-  buttonView: {
-    flexDirection: "row", // 横方向に要素を配置
-    justifyContent: "flex-end", // 右寄せにする
-  },
-  postButton: {
-    width: 75,
-    height: 25,
-    backgroundColor: "blue",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  postButtonText: {
-    color: "#FFFFFF",
-  },
-  userIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-  },
-  userInfo: {
-    display: "flex",
-    flexDirection: "row",
-    gap: 8,
-  },
-  likeButton: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center", // ボタン内のテキストを中央に配置
-    alignItems: "center",
-    gap: 5,
-  },
-  closeButtonText: {
-    fontSize: 24,
-  },
-  replyButton: {
-    marginVertical: 10,
-    backgroundColor: "#007BFF",
-    borderRadius: 5,
-    padding: 10,
-  },
-  replyButtonText: {
-    color: "#FFFFFF",
-  },
-  dateLikeRow: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  // 追加: postTextと返信リストの間に区切り線を入れるためのスタイル
-  divider: {
-    height: 1,
-    backgroundColor: "#E0E0E0", // 薄いグレーの線
-    marginVertical: 10,
-  },
-  roundButton: {
-    backgroundColor: "#007AFF", // ボタンの背景色
-    borderRadius: 25, // ボタンを丸くするために大きめの値を指定
-    width: 50, // ボタンの幅
-    height: 50, // ボタンの高さ
-    justifyContent: "center", // ボタン内のテキストを中央に配置
-    alignItems: "center",
-    marginBottom: 10, // ボタン間の余白
-  },
-  profileBar: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
   postView: {
     width: "100%",
     padding: 20,
-    backgroundColor: "white",
+    backgroundColor: "#F2F5C2",
     borderRadius: 20,
     marginBottom: 10,
     marginTop: 10,
   },
-  listProfileImage: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignSelf: "center",
+  postViewCentering: {
+    width: 350,
+    padding: 20,
+    alignItems: "center",
+    backgroundColor: "#F2F5C2",
+    borderRadius: 20,
+    marginBottom: 10,
+    marginTop: 10,
   },
-  commentRow: {
+  profileBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 40,
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    padding: 5,
+    paddingLeft: 0,
+  },
+  userIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  userName: {
+    fontSize: 18,
+    color: "#000000",
+    justifyContent: "center",
+    fontWeight: "300",
+  },
+  postDetail: {
+    alignItems: "center",
+  },
+  postImage: {
+    width: "100%", // 幅を指定
+    aspectRatio: 3 / 4, // 高さを3:4の比率に保つ
+    resizeMode: "cover",
+    margin: 10,
+    justifyContent: "center",
+    borderWidth: 4,
+    borderColor: "#ffffff",
+  },
+  LikeCommentRow: {
     display: "flex",
     flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    marginBottom: 10,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    padding: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
+  likeNum: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  postText: {
+    justifyContent: "flex-start",
+    width: "95%",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C2",
+    width: 50,
+    height: 50,
+    marginBottom: 10, // ボタン間にスペースを追加
   },
 });
