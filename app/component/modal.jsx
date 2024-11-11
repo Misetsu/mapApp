@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,8 @@ import {
   Modal,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
   ActivityIndicator,
   ScrollView,
-  Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -30,9 +28,6 @@ export default function MyModal({
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
-
-  const [showButtons, setShowButtons] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
@@ -126,27 +121,6 @@ export default function MyModal({
       });
   };
 
-  // ボタンを表示してフェードイン
-  const showAnimatedButtons = () => {
-    setShowButtons(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1, // 完全に表示
-      duration: 500, // 0.5秒でフェードイン
-      useNativeDriver: true,
-    }).start();
-  };
-
-  // 新しいボタン1を押したときにボタンをフェードアウトして非表示
-  const hideButtons = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0, // 完全に非表示
-      duration: 500, // 0.5秒でフェードアウト
-      useNativeDriver: true,
-    }).start(() => {
-      setShowButtons(false); // フェードアウト完了後にボタンを非表示
-    });
-  };
-
   const navigateProfile = (uid) => {
     router.push({
       pathname: "/profile",
@@ -165,7 +139,10 @@ export default function MyModal({
     >
       <View style={styles.centeredView}>
         <View>
-          <ScrollView showsVerticalScrollIndicator={false} style={styles.modalView}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.modalView}
+          >
             {loading ? (
               <View style={styles.postViewCentering}>
                 <ActivityIndicator size="large" color="#239D60" />
@@ -220,7 +197,10 @@ export default function MyModal({
                                   color={isLiked ? "#000" : "#f00"}
                                 />
                                 <Text
-                                  style={[{ color: isLiked ? "black" : "red" }, styles.likeNum]}
+                                  style={[
+                                    { color: isLiked ? "black" : "red" },
+                                    styles.likeNum,
+                                  ]}
                                 >
                                   {isLiked ? count - 1 : count}
                                 </Text>
@@ -236,7 +216,10 @@ export default function MyModal({
                                   color={isLiked ? "#f00" : "#000"}
                                 />
                                 <Text
-                                  style={[{ color: isLiked ? "red" : "black" }, styles.likeNum]}
+                                  style={[
+                                    { color: isLiked ? "red" : "black" },
+                                    styles.likeNum,
+                                  ]}
                                 >
                                   {isLiked ? count + 1 : count}
                                 </Text>
@@ -274,12 +257,15 @@ export default function MyModal({
                             )}
                           </View>
                         )}
-                        <TouchableOpacity style={styles.actionButton} onPress={() => {
-                          router.push({
-                            pathname: "/component/replay",
-                            params: { postId: post.postId }, // idを使用
-                          });
-                        }}>
+                        <TouchableOpacity
+                          style={styles.actionButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/component/replay",
+                              params: { postId: post.postId }, // idを使用
+                            });
+                          }}
+                        >
                           <Icon
                             name="comment"
                             size={25}
@@ -287,7 +273,8 @@ export default function MyModal({
                           />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.actionButton}
+                        <TouchableOpacity
+                          style={styles.actionButton}
                           onPress={() => {
                             router.push({
                               pathname: "/cameraComposition",
@@ -298,7 +285,8 @@ export default function MyModal({
                                 photoUri: encodeURIComponent(post.photoUri),
                               },
                             });
-                          }}>
+                          }}
+                        >
                           <Icon
                             name="images"
                             size={25}
@@ -306,7 +294,8 @@ export default function MyModal({
                           />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.actionButton}
+                        <TouchableOpacity
+                          style={styles.actionButton}
                           onPress={() => {
                             router.push({
                               pathname: "/camera",
@@ -318,7 +307,8 @@ export default function MyModal({
                                 spotNo: 0,
                               },
                             });
-                          }}>
+                          }}
+                        >
                           <Icon
                             name="map-marked-alt"
                             size={25}
@@ -338,10 +328,7 @@ export default function MyModal({
                       </View>
                     </View>
                     <View style={styles.closeButton}>
-                      <TouchableOpacity
-                        style={styles.button}
-                        onPress={onClose}
-                      >
+                      <TouchableOpacity style={styles.button} onPress={onClose}>
                         <Icon name="times" size={24} color="#000" />
                       </TouchableOpacity>
                     </View>
@@ -352,18 +339,12 @@ export default function MyModal({
               <View style={styles.postViewCentering}>
                 <Text style={styles.userName}>投稿がありません</Text>
                 <View style={styles.closeButton}>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={onClose}
-                  >
+                  <TouchableOpacity style={styles.button} onPress={onClose}>
                     <Icon name="times" size={24} color="#000" />
                   </TouchableOpacity>
                 </View>
               </View>
             )}
-
-
-
           </ScrollView>
         </View>
       </View>
@@ -372,8 +353,7 @@ export default function MyModal({
 }
 
 const styles = StyleSheet.create({
-  centeredView: {
-  },
+  centeredView: {},
   modalView: {
     flexDirection: "column",
     width: 350,
@@ -394,7 +374,7 @@ const styles = StyleSheet.create({
   postViewCentering: {
     width: "100%",
     padding: 20,
-    alignItems: 'center',      // 横方向の中央揃え
+    alignItems: "center", // 横方向の中央揃え
     backgroundColor: "#F2F5C2",
     borderRadius: 20,
     marginBottom: 10,
@@ -404,7 +384,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     height: 40,
-    alignSelf: 'flex-start', // 子要素の横幅に合わせる
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
     padding: 5,
     paddingLeft: 0,
   },
@@ -412,7 +392,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10
+    marginRight: 10,
   },
   userName: {
     fontSize: 18,
@@ -421,12 +401,12 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   postDetail: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   postImage: {
     width: "100%", // 幅を指定
     aspectRatio: 3 / 4, // 高さを3:4の比率に保つ
-    resizeMode: 'cover',
+    resizeMode: "cover",
     margin: 10,
     justifyContent: "center",
     borderWidth: 4,
@@ -435,7 +415,7 @@ const styles = StyleSheet.create({
   LikeCommentRow: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     width: "90%",
     marginBottom: 10,
   },
