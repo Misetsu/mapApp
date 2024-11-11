@@ -271,7 +271,7 @@ const ReplyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 110
+    paddingBottom: 110,
   },
   centerContainer: {
     width: "100%",
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   sendReply: {
     bottom: 110,
     width: '100%',
-    //height:110,
+    height:110,
     backgroundColor: '#fafafa',
     justifyContent: 'center',
     alignItems: 'center',
