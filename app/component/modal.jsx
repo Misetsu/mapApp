@@ -350,7 +350,7 @@ export default function MyModal({
               })
             ) : (
               <View style={styles.postViewCentering}>
-                <Text>投稿がありません</Text>
+                <Text style={styles.userName}>投稿がありません</Text>
                 <View style={styles.closeButton}>
                   <TouchableOpacity
                     style={styles.button}
@@ -458,8 +458,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top: 5,
-    right: 5,
+    top: 10,
+    right: 10,
   },
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
