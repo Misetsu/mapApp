@@ -11,16 +11,18 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
+const auth = FirebaseAuth();
 
 export default function SelectSpot() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { latitude, longitude, pointRequired, userPoint, newFlag } = params;
+  const { latitude, longitude, pointRequired, userPoint } = params;
   const [spotList, setSpotList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -74,9 +76,9 @@ export default function SelectSpot() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -84,6 +86,36 @@ export default function SelectSpot() {
       console.error("Error fetching documents: ", error);
     }
   }
+
+  function fibonacci(num) {
+    if (num == 1) return 0;
+    if (num == 2) return 1;
+    return fibonacci(num - 1) + fibonacci(num - 2);
+  }
+
+  const handleAddNewPin = async () => {
+    const queryUser = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .get();
+
+    const userData = queryUser.data();
+
+    const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
+    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
+    if (pointRequired <= userData.spotPoint) {
+      router.push({
+        pathname: "/camera",
+        params: {
+          latitude: latitude,
+          longitude: longitude,
+          spotId: 0,
+          point: pointLeft,
+          spotNo: parseInt(userData.spotCreate) + 1,
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -100,26 +132,23 @@ export default function SelectSpot() {
           </View>
         ) : (
           <View>
-            <View
-              style={styles.listContainer}>
-              <Text style={styles.subtitle}>現在地に新しいピンを立てて投稿</Text>
+            <View style={styles.listContainer}>
+              <Text style={styles.subtitle}>
+                現在地に新しいピンを立てて投稿
+              </Text>
+              <Text style={styles.subtitle}>
+                必要なポイント：{pointRequired}
+              </Text>
+              <Text style={styles.subtitle}>
+                所持しているポイント：{userPoint}
+              </Text>
               <TouchableOpacity
                 style={styles.itemContainer}
-                onPress={() => {
-                  router.push({
-                    pathname: "/camera",
-                    params: {
-                      latitude: 0,
-                      longitude: 0,
-                      point: 0,
-                      spotNo: 0,
-                    },
-                  });
-                }}
+                onPress={handleAddNewPin}
               >
-                <View style={{ flexDirection: 'row' }}>
+                <View style={{ flexDirection: "row" }}>
                   <Image
-                    source={require('../image/UnvisitedPin.png')}
+                    source={require("../image/UnvisitedPin.png")}
                     style={styles.listImage}
                   />
                   <View>
@@ -134,21 +163,7 @@ export default function SelectSpot() {
               </TouchableOpacity>
             </View>
 
-            {newFlag == "true" ? (
-              <View style={styles.pointText}>
-                <Text>
-                  {"新しいピンを作るに必要なポイント："}
-                  <Text style={styles.boldText}>{pointRequired}</Text>
-                </Text>
-                <Text>
-                  {"現在所持しているポイント："}
-                  <Text style={styles.boldText}>{userPoint}</Text>
-                </Text>
-                <Text>以下に既存ピンに投稿することができます。</Text>
-              </View>
-            ) : (
-              <></>
-            )}<Text style={styles.subtitle}>近くのピンに投稿</Text>
+            <Text style={styles.subtitle}>近くのピンに投稿</Text>
 
             <FlatList
               style={styles.listContainer}
@@ -171,9 +186,9 @@ export default function SelectSpot() {
                       });
                     }}
                   >
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: "row" }}>
                       <Image
-                        source={require('../image/ActionPin.png')}
+                        source={require("../image/ActionPin.png")}
                         style={styles.listImage}
                       />
                       <View>
@@ -182,7 +197,8 @@ export default function SelectSpot() {
                           {item.latitude}
                           {"    "}
                           {item.longitude}
-                        </Text></View>
+                        </Text>
+                      </View>
                     </View>
                     <Text style={styles.distanceText}>{item.distance}m</Text>
                   </TouchableOpacity>
@@ -255,12 +271,12 @@ const styles = StyleSheet.create({
   distanceText: {
     color: "#239D60",
     fontSize: 14,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   positionText: {
     color: "#239D60",
     fontSize: 12,
-    fontWeight: "400"
+    fontWeight: "400",
   },
   positionContainer: {
     alignItems: "center",
