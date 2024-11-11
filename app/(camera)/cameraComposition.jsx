@@ -42,6 +42,7 @@ export default function CameraScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
   // スタイルの状態を保持するuseState
   const [currentStyle, setCurrentStyle] = useState("left");
+  const [isCrosshair, setIsCrosshair] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [showSlider, setShowSlider] = useState(false); // スライダーの表示状態を管理するステート
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
@@ -174,6 +175,10 @@ export default function CameraScreen() {
     setCurrentStyle("bottom");
   };
 
+  const toggleGrid = () => {
+    setIsCrosshair(!isCrosshair); // 十字線とグリッドを切り替え
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -214,6 +219,24 @@ export default function CameraScreen() {
                   : styles.BottomHarfDisplay
               }
             />
+          </View>
+          {/* 十字線または3x3グリッド */}
+          <View style={styles.crosshairContainer}>
+            {isCrosshair ? (
+              // 十字線
+              <>
+                <View style={styles.verticalLine} />
+                <View style={styles.horizontalLine} />
+              </>
+            ) : (
+              // 3x3グリッド
+              <>
+                <View style={styles.verticalLine2} />
+                <View style={styles.verticalLine3} />
+                <View style={styles.horizontalLine2} />
+                <View style={styles.horizontalLine3} />
+              </>
+            )}
           </View>
           {showSlider && (
             <View style={styles.sliderContainer}>
@@ -258,11 +281,15 @@ export default function CameraScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* 切り替えボタン */}
+        <TouchableOpacity style={styles.switchButton} onPress={toggleGrid}>
+          <Icon name={isCrosshair ? "th-large" : "th"} size={35} color="#FFF" />
+        </TouchableOpacity>
         <Pressable
           onPress={onTakePicturePressed}
           style={styles.captureButton}
         />
-        <Pressable onPress={pickImage} style={styles.pickImageButton} />
+        {/* <Pressable onPress={pickImage} style={styles.pickImageButton} /> */}
         <Pressable
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
@@ -448,5 +475,63 @@ const styles = StyleSheet.create({
     width: width,
     height: "100%",
     transform: [{ translateX: -width / 2 }],
+  },
+  crosshairContainer: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  verticalLine: {
+    position: "absolute",
+    left: "50%",
+    width: 0.5,
+    height: "100%",
+    backgroundColor: "white",
+  },
+  verticalLine2: {
+    position: "absolute",
+    left: "66.66%",
+    width: 0.5,
+    height: "100%",
+    backgroundColor: "white",
+  },
+  verticalLine3: {
+    position: "absolute",
+    left: "33.33 %",
+    width: 0.5,
+    height: "100%",
+    backgroundColor: "white",
+  },
+  horizontalLine: {
+    position: "absolute",
+    top: "50%",
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "white",
+  },
+  horizontalLine2: {
+    position: "absolute",
+    top: "66.66%",
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "white",
+  },
+  horizontalLine3: {
+    position: "absolute",
+    top: "33.33%",
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "white",
+  },
+  switchButton: {
+    position: "absolute",
+    bottom: 45,
+    left: 60,
+    width: 50,
+    height: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 25,
   },
 });
