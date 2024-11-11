@@ -337,24 +337,32 @@ export default function MyModal({
                         </Text>
                       </View>
                     </View>
+                    <View style={styles.closeButton}>
+                      <TouchableOpacity
+                        style={styles.button}
+                        onPress={onClose}
+                      >
+                        <Icon name="times" size={24} color="#000" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 );
               })
             ) : (
               <View style={styles.postViewCentering}>
                 <Text>投稿がありません</Text>
+                <View style={styles.closeButton}>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={onClose}
+                  >
+                    <Icon name="times" size={24} color="#000" />
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
 
 
-            <View style={styles.closeButton}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={onClose}
-              >
-                <Icon name="times" size={24} color="#000" />
-              </TouchableOpacity>
-            </View>
 
           </ScrollView>
         </View>
@@ -450,15 +458,15 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top: 20,
-    right: 0,
+    top: 5,
+    right: 5,
   },
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "rgba(255, 255, 255, 0.75)",
-    width: 70,
-    height: 70,
+    backgroundColor: "#F2F5C2",
+    width: 50,
+    height: 50,
     marginBottom: 10, // ボタン間にスペースを追加
   },
   toolView: {
