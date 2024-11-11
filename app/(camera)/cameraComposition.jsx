@@ -106,7 +106,7 @@ export default function CameraScreen() {
       }
       const photo = await cameraRef.current.takePhoto();
       router.navigate({
-        pathname: "/editComposition2",
+        pathname: "/editComposition",
         params: {
           imageUri: "file://" + photo.path,
           latitude: latitude,

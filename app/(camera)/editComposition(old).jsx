@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
-  Image,
   StyleSheet,
   Pressable,
   Dimensions,
@@ -11,12 +10,16 @@ import {
   Platform,
   Text,
   Keyboard,
+  Image as RNImage,
 } from "react-native";
 import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
+import Svg, { Image, ClipPath, Rect } from "react-native-svg";
+import RNEXIF from "react-native-exif";
+import ImageResizer from "react-native-image-resizer";
 
 const { width } = Dimensions.get("window");
 const imageWidth = width * 0.75;
@@ -26,25 +29,56 @@ const auth = FirebaseAuth();
 export default function edit() {
   const [text, setText] = useState("");
   const [post, setPost] = useState("");
+  const [compositionuri, setCompositionuri] = useState(null);
   const [focusedInput, setFocusedInput] = useState(null);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const [isLoading, setIsoading] = useState(false);
-  const [compositionuri, setCompositionuri] = useState(null);
 
   const reference = storage();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const viewRef = useRef();
   const { imageUri, latitude, longitude, spotId, Composition } = params;
+  const [tests, settest] = useState(imageUri);
+  const [tests2, settest2] = useState(Composition);
+  const viewRef = useRef();
+
+  const resizeImage = async (uri, uri2, rotation) => {
+    try {
+      const newImage = await ImageResizer.createResizedImage(
+        uri,
+        3000,
+        4000,
+        "JPEG",
+        100,
+        0
+      );
+
+      const newImage2 = await ImageResizer.createResizedImage(
+        uri2,
+        4000,
+        3000,
+        "JPEG",
+        100,
+        rotation
+      );
+      settest(newImage.uri); // 新しいURIを返す
+      settest2(newImage2.uri); // 新しいURIを返す
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const uploadPost = async () => {
     setIsoading(true);
-
     const currentTime = new Date().toISOString();
 
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
-    await reference.ref(imagePath).putFile(compositionuri);
+    try {
+      await reference.ref(imagePath).putFile(compositionuri);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
 
     const querySpot = await firestore()
       .collection("spot")
@@ -147,6 +181,14 @@ export default function edit() {
   };
 
   useEffect(() => {
+    //compositionuriが設定されたらアップロードの準備をする関数を呼び出すエフェクト(これがないと非同期でキャプチャする前にアップロードしようとしてフリーズする)
+    if (compositionuri != null) {
+      //初回実行時には実行sinaiyouni
+      uploadPost(); //アップロードする
+    }
+  }, [compositionuri]);
+
+  useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardStatus(true);
     });
@@ -154,20 +196,57 @@ export default function edit() {
       setKeyboardStatus(false);
       setFocusedInput(null);
     });
-
+    RNEXIF.getExif(imageUri)
+      .then((exifData) => {
+        if (exifData && exifData.Orientation) {
+          const orientationValue = exifData.Orientation;
+          if (orientationValue === 1 || orientationValue === 3) {
+            RNImage.getSize(
+              Composition,
+              (width, height) => {
+                if (
+                  width > height ||
+                  (width == 844 && height == 1125) ||
+                  (width == 810 && height == 1080)
+                ) {
+                  resizeImage(imageUri, Composition, 0);
+                } else if (height > width) {
+                  resizeImage(imageUri, Composition, 90);
+                } else {
+                }
+              },
+              (error) => {
+                console.error("Failed to get image size:", error);
+              }
+            );
+          } else {
+            RNImage.getSize(
+              Composition,
+              (width, height) => {
+                if (
+                  width > height ||
+                  (width == 844 && height == 1125) ||
+                  (width == 810 && height == 1080)
+                ) {
+                  resizeImage(imageUri, Composition, 0);
+                } else if (height > width) {
+                  resizeImage(imageUri, Composition, 90);
+                } else {
+                }
+              },
+              (error) => {
+                console.error("Failed to get image size:", error);
+              }
+            );
+          }
+        }
+      })
+      .catch((error) => console.log("Error getting EXIF data:", error));
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
   }, []);
-
-  useEffect(() => {
-    //compositionuriが設定されたらアップロードの準備をする関数を呼び出すエフェクト(これがないと非同期でキャプチャする前にアップロードしようとしてフリーズする)
-    if (compositionuri != null) {
-      //初回実行時には実行sinaiyouni
-      uploadPost(); //アップロードする
-    }
-  }, [compositionuri]);
 
   const handleFocus = (inputName) => {
     setFocusedInput(inputName); // フォーカスされた入力フィールドを設定
@@ -199,58 +278,95 @@ export default function edit() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={{ flex: 1 }}>
-            <ViewShot
-              ref={viewRef}
-              options={{ format: "jpg", quality: 1 }}
-              style={styles.imageContainer}
+          <ViewShot
+            ref={viewRef}
+            options={{ format: "jpg", quality: 1 }}
+            style={styles.imageContainer}
+          >
+            <Svg height="100%" width="100%">
+              {/* 画像1の左半分 */}
+              <ClipPath id="clipLeft">
+                <Rect
+                  x="0%"
+                  y="0%"
+                  width={imageWidth / 2}
+                  height={imageHeight}
+                  fill="blue"
+                />
+              </ClipPath>
+              <Image
+                href={{ uri: tests2 }} // 画像1のURL
+                width="300"
+                height="400"
+                preserveAspectRatio="xMidYMid slice"
+                clipPath="url(#clipLeft)"
+                onLoad={(event) => {}}
+                onError={(error) => console.log("Error loading image:", error)}
+              />
+
+              {/* 画像2の右半分 */}
+              <ClipPath id="clipRight">
+                <Rect
+                  x="50%"
+                  y="0%"
+                  width={imageWidth / 2}
+                  height={imageHeight}
+                  fill="blue"
+                />
+              </ClipPath>
+              <Image
+                href={{ uri: tests }} // 画像2のURL
+                width="300"
+                height="400"
+                preserveAspectRatio="xMidYMid slice"
+                clipPath="url(#clipRight)"
+                resizeMode="cover"
+                onLoad={(event) => {}}
+                onError={(error) => console.log("Error loading image:", error)}
+              />
+            </Svg>
+          </ViewShot>
+
+          {spotId == 0 && focusedInput !== "post" ? (
+            <View>
+              <Text style={styles.displayName}>場所の名前を入力</Text>
+              <TextInput
+                style={
+                  focusedInput === "name" && keyboardStatus
+                    ? styles.focusedTextbox
+                    : styles.textbox
+                }
+                maxLength={30}
+                onFocus={() => handleFocus("name")}
+                onBlur={handleBlur}
+                onChangeText={setText}
+                value={text}
+              />
+            </View>
+          ) : null}
+          {focusedInput !== "name" ? (
+            <View>
+              <Text style={styles.displayName}>投稿の文章を入力</Text>
+              <TextInput
+                style={
+                  focusedInput === "post" && keyboardStatus
+                    ? styles.focusedTextbox
+                    : styles.textbox
+                }
+                onFocus={() => handleFocus("post")}
+                onBlur={handleBlur}
+                onChangeText={setPost}
+                value={post}
+              />
+            </View>
+          ) : null}
+          <Pressable onPress={Getcompositionuri} style={styles.uploadButton}>
+            <Text
+              style={{ color: "white", textAlign: "center", marginTop: 25 }}
             >
-              <Image source={{ uri: imageUri }} style={styles.fullImage} />
-              <View style={styles.halfImageContainer}>
-                <Image source={{ uri: Composition }} style={styles.halfImage} />
-              </View>
-            </ViewShot>
-            {spotId == 0 && focusedInput !== "post" ? (
-              <View>
-                <Text style={styles.displayName}>場所の名前を入力</Text>
-                <TextInput
-                  style={
-                    focusedInput === "name" && keyboardStatus
-                      ? styles.focusedTextbox
-                      : styles.textbox
-                  }
-                  maxLength={30}
-                  onFocus={() => handleFocus("name")}
-                  onBlur={handleBlur}
-                  onChangeText={setText}
-                  value={text}
-                />
-              </View>
-            ) : null}
-            {focusedInput !== "name" ? (
-              <View>
-                <Text style={styles.displayName}>投稿の文章を入力</Text>
-                <TextInput
-                  style={
-                    focusedInput === "post" && keyboardStatus
-                      ? styles.focusedTextbox
-                      : styles.textbox
-                  }
-                  onFocus={() => handleFocus("post")}
-                  onBlur={handleBlur}
-                  onChangeText={setPost}
-                  value={post}
-                />
-              </View>
-            ) : null}
-            <Pressable onPress={Getcompositionuri} style={styles.uploadButton}>
-              <Text
-                style={{ color: "white", textAlign: "center", marginTop: 25 }}
-              >
-                Upload
-              </Text>
-            </Pressable>
-          </View>
+              Upload
+            </Text>
+          </Pressable>
         </ScrollView>
       )}
     </KeyboardAvoidingView>
@@ -261,22 +377,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: imageWidth,
     height: imageHeight,
-    alignSelf: "center",
+    alignItems: "center",
     marginTop: 20,
-  },
-  halfImageContainer: {
-    position: "absolute",
-    top: 0,
-    width: "50%",
-    overflow: "hidden",
-  },
-  fullImage: {
-    width: imageWidth,
-    height: imageHeight,
-  },
-  halfImage: {
-    width: imageWidth,
-    height: imageHeight,
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   displayName: {
     fontSize: 15,
