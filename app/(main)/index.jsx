@@ -797,12 +797,16 @@ export default function TrackUserMapView() {
         },
       });
     } else {
-      alert(
-        "ポイントが足りません。新しいピンを作成するには" +
-          pointRequired +
-          "ポイントが必要です。\n現在所持しているポイント：" +
-          userData.spotPoint
-      );
+      router.push({
+        pathname: "/selectSpot",
+        params: {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          pointRequired: pointRequired,
+          userPoint: userData.spotPoint,
+          newFlag: true,
+        },
+      });
     }
   };
 
@@ -987,6 +991,9 @@ export default function TrackUserMapView() {
                   params: {
                     latitude: position.latitude,
                     longitude: position.longitude,
+                    pointRequired: 0,
+                    userPoint: 0,
+                    newFlag: false,
                   },
                 });
               }}
