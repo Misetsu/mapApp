@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -15,6 +16,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
+const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
 
 export default function MyModal({
@@ -138,222 +140,224 @@ export default function MyModal({
       onRequestClose={onClose}
     >
       <View style={styles.centeredView}>
-        <View>
+        {loading ? (
+          <View style={styles.postViewCentering}>
+            <ActivityIndicator size="large" color="#239D60" />
+            <Text>読み込み中...</Text>
+          </View>
+        ) : !empty && postData.length > 0 ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
             style={styles.modalView}
           >
-            {loading ? (
-              <View style={styles.postViewCentering}>
-                <ActivityIndicator size="large" color="#239D60" />
-                <Text>読み込み中...</Text>
-              </View>
-            ) : !empty && postData.length > 0 ? (
-              postData.map((post) => {
-                if (!post) return null; // postが未定義の場合はスキップ
-                const isLiked = likes[post.id]; // idを使用する
-                const flag = tempObj1[post.id];
-                const count = tempObj2[post.id];
-                return (
-                  <View key={post.postId} style={styles.postView}>
-                    <TouchableOpacity
-                      style={styles.profileBar}
-                      onPress={() => {
-                        navigateProfile(post.userId);
-                      }}
-                    >
+            {postData.map((post) => {
+              if (!post) return null; // postが未定義の場合はスキップ
+              const isLiked = likes[post.id]; // idを使用する
+              const flag = tempObj1[post.id];
+              const count = tempObj2[post.id];
+              return (
+                <View key={post.postId} style={styles.postView}>
+                  <TouchableOpacity
+                    style={styles.profileBar}
+                    onPress={() => {
+                      navigateProfile(post.userId);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: post.userIcon }}
+                      style={styles.userIcon}
+                    />
+                    <Text style={styles.userName}>{post.username}</Text>
+                  </TouchableOpacity>
+                  <View style={styles.postDetail}>
+                    {postImage ? (
                       <Image
-                        source={{ uri: post.userIcon }}
-                        style={styles.userIcon}
+                        source={{ uri: post.photoUri }}
+                        style={styles.postImage}
                       />
-                      <Text style={styles.userName}>{post.username}</Text>
-                    </TouchableOpacity>
-                    <View style={styles.postDetail}>
+                    ) : (
+                      <Image
+                        source={{ uri: post.photoUri }}
+                        style={styles.postImage}
+                        blurRadius={50}
+                      />
+                    )}
+
+                    <View style={styles.LikeCommentRow}>
+                      {/* いいねボタン */}
                       {postImage ? (
-                        <Image
-                          source={{ uri: post.photoUri }}
-                          style={styles.postImage}
-                        />
-                      ) : (
-                        <Image
-                          source={{ uri: post.photoUri }}
-                          style={styles.postImage}
-                          blurRadius={50}
-                        />
-                      )}
-
-                      <View style={styles.LikeCommentRow}>
-                        {/* いいねボタン */}
-                        {postImage ? (
-                          <View>
-                            {flag ? (
-                              <TouchableOpacity
-                                style={styles.actionButton}
-                                onPress={() => handleUnlike(post.postId, index)}
+                        <View>
+                          {flag ? (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                              onPress={() => handleUnlike(post.postId, index)}
+                            >
+                              <Icon
+                                name="heart"
+                                size={25}
+                                color={isLiked ? "#000" : "#f00"}
+                              />
+                              <Text
+                                style={[
+                                  { color: isLiked ? "black" : "red" },
+                                  styles.likeNum,
+                                ]}
                               >
-                                <Icon
-                                  name="heart"
-                                  size={25}
-                                  color={isLiked ? "#000" : "#f00"}
-                                />
-                                <Text
-                                  style={[
-                                    { color: isLiked ? "black" : "red" },
-                                    styles.likeNum,
-                                  ]}
-                                >
-                                  {isLiked ? count - 1 : count}
-                                </Text>
-                              </TouchableOpacity>
-                            ) : (
-                              <TouchableOpacity
-                                style={styles.actionButton}
-                                onPress={() => handleLike(post.postId, index)}
+                                {isLiked ? count - 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                              onPress={() => handleLike(post.postId, index)}
+                            >
+                              <Icon
+                                name="heart"
+                                size={25}
+                                color={isLiked ? "#f00" : "#000"}
+                              />
+                              <Text
+                                style={[
+                                  { color: isLiked ? "red" : "black" },
+                                  styles.likeNum,
+                                ]}
                               >
-                                <Icon
-                                  name="heart"
-                                  size={25}
-                                  color={isLiked ? "#f00" : "#000"}
-                                />
-                                <Text
-                                  style={[
-                                    { color: isLiked ? "red" : "black" },
-                                    styles.likeNum,
-                                  ]}
-                                >
-                                  {isLiked ? count + 1 : count}
-                                </Text>
-                              </TouchableOpacity>
-                            )}
-                          </View>
-                        ) : (
-                          <View>
-                            {flag ? (
-                              <TouchableOpacity style={styles.actionButton}>
-                                <Icon
-                                  name="heart"
-                                  size={25}
-                                  color={isLiked ? "#000" : "#f00"}
-                                />
-                                <Text
-                                  style={{ color: isLiked ? "black" : "red" }}
-                                >
-                                  {isLiked ? count - 1 : count}
-                                </Text>
-                              </TouchableOpacity>
-                            ) : (
-                              <TouchableOpacity style={styles.actionButton}>
-                                <Icon
-                                  name="heart"
-                                  size={25}
-                                  color={isLiked ? "#f00" : "#000"}
-                                />
-                                <Text
-                                  style={{ color: isLiked ? "red" : "black" }}
-                                >
-                                  {isLiked ? count + 1 : count}
-                                </Text>
-                              </TouchableOpacity>
-                            )}
-                          </View>
-                        )}
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() => {
-                            router.push({
-                              pathname: "/component/replay",
-                              params: { postId: post.postId }, // idを使用
-                            });
-                          }}
-                        >
-                          <Icon
-                            name="comment"
-                            size={25}
-                            color={isLiked ? "#f00" : "#000"}
-                          />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() => {
-                            router.push({
-                              pathname: "/cameraComposition",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                                photoUri: encodeURIComponent(post.photoUri),
-                              },
-                            });
-                          }}
-                        >
-                          <Icon
-                            name="images"
-                            size={25}
-                            color={isLiked ? "#f00" : "#000"}
-                          />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() => {
-                            router.push({
-                              pathname: "/camera",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                                point: 0,
-                                spotNo: 0,
-                              },
-                            });
-                          }}
-                        >
-                          <Icon
-                            name="map-marked-alt"
-                            size={25}
-                            color={isLiked ? "#f00" : "#000"}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      <View style={styles.postText}>
-                        <Text>{post.postText}</Text>
-                        <Text style={{ fontSize: 10, color: "#4d4d4d" }}>
-                          {formatInTimeZone(
-                            new Date(post.timestamp),
-                            "Asia/Tokyo",
-                            "yyyy年MM月dd日 HH:mm"
+                                {isLiked ? count + 1 : count}
+                              </Text>
+                            </TouchableOpacity>
                           )}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.closeButton}>
-                      <TouchableOpacity style={styles.button} onPress={onClose}>
-                        <Icon name="times" size={24} color="#000" />
+                        </View>
+                      ) : (
+                        <View>
+                          {flag ? (
+                            <TouchableOpacity style={styles.actionButton}>
+                              <Icon
+                                name="heart"
+                                size={25}
+                                color={isLiked ? "#000" : "#f00"}
+                              />
+                              <Text
+                                style={{ color: isLiked ? "black" : "red" }}
+                              >
+                                {isLiked ? count - 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity style={styles.actionButton}>
+                              <Icon
+                                name="heart"
+                                size={25}
+                                color={isLiked ? "#f00" : "#000"}
+                              />
+                              <Text
+                                style={{ color: isLiked ? "red" : "black" }}
+                              >
+                                {isLiked ? count + 1 : count}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      )}
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => {
+                          router.push({
+                            pathname: "/component/replay",
+                            params: { postId: post.postId }, // idを使用
+                          });
+                        }}
+                      >
+                        <Icon
+                          name="comment"
+                          size={25}
+                          color={isLiked ? "#f00" : "#000"}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => {
+                          router.push({
+                            pathname: "/cameraComposition",
+                            params: {
+                              latitude: 0,
+                              longitude: 0,
+                              spotId: spotId,
+                              photoUri: encodeURIComponent(post.photoUri),
+                            },
+                          });
+                        }}
+                      >
+                        <Icon
+                          name="images"
+                          size={25}
+                          color={isLiked ? "#f00" : "#000"}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => {
+                          router.push({
+                            pathname: "/camera",
+                            params: {
+                              latitude: 0,
+                              longitude: 0,
+                              spotId: spotId,
+                              point: 0,
+                              spotNo: 0,
+                            },
+                          });
+                        }}
+                      >
+                        <Icon
+                          name="map-marked-alt"
+                          size={25}
+                          color={isLiked ? "#f00" : "#000"}
+                        />
                       </TouchableOpacity>
                     </View>
+                    <View style={styles.postText}>
+                      <Text>{post.postText}</Text>
+                      <Text style={{ fontSize: 10, color: "#4d4d4d" }}>
+                        {formatInTimeZone(
+                          new Date(post.timestamp),
+                          "Asia/Tokyo",
+                          "yyyy年MM月dd日 HH:mm"
+                        )}
+                      </Text>
+                    </View>
                   </View>
-                );
-              })
-            ) : (
-              <View style={styles.postViewCentering}>
-                <Text style={styles.userName}>投稿がありません</Text>
-                <View style={styles.closeButton}>
-                  <TouchableOpacity style={styles.button} onPress={onClose}>
-                    <Icon name="times" size={24} color="#000" />
-                  </TouchableOpacity>
+                  <View style={styles.closeButton}>
+                    <TouchableOpacity style={styles.button} onPress={onClose}>
+                      <Icon name="times" size={24} color="#000" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            )}
+              );
+            })}
           </ScrollView>
-        </View>
+        ) : (
+          <View style={styles.postViewCentering}>
+            <Text style={styles.userName}>投稿がありません</Text>
+            <View style={styles.closeButton}>
+              <TouchableOpacity style={styles.button} onPress={onClose}>
+                <Icon name="times" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  centeredView: {},
+  centeredView: {
+    justifyContent: "center",
+    alignItems: "center",
+    height: height,
+  },
   modalView: {
     flexDirection: "column",
     width: 350,
@@ -372,9 +376,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   postViewCentering: {
-    width: "100%",
+    width: 350,
     padding: 20,
-    alignItems: "center", // 横方向の中央揃え
+    alignItems: "center",
     backgroundColor: "#F2F5C2",
     borderRadius: 20,
     marginBottom: 10,
