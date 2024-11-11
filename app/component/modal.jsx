@@ -216,7 +216,7 @@ export default function MyModal({
                           {flag ? (
                             <TouchableOpacity
                               style={styles.likeButton}
-                              onPress={() => handleUnlike(post.postId, index)}
+                              onPress={() => handleUnlike(post.postId)}
                             >
                               <Icon
                                 name="heart"
@@ -232,7 +232,7 @@ export default function MyModal({
                           ) : (
                             <TouchableOpacity
                               style={styles.likeButton}
-                              onPress={() => handleLike(post.postId, index)}
+                              onPress={() => handleLike(post.postId)}
                             >
                               <Icon
                                 name="heart"

@@ -35,7 +35,8 @@ export default function edit() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const viewRef = useRef();
-  const { imageUri, latitude, longitude, spotId, Composition } = params;
+  const { imageUri, latitude, longitude, spotId, Composition, direction } =
+    params;
 
   const uploadPost = async () => {
     setIsoading(true);
@@ -206,8 +207,29 @@ export default function edit() {
               style={styles.imageContainer}
             >
               <Image source={{ uri: imageUri }} style={styles.fullImage} />
-              <View style={styles.halfImageContainer}>
-                <Image source={{ uri: Composition }} style={styles.halfImage} />
+              <View
+                style={
+                  direction == "top"
+                    ? styles.topHalfImageContainer
+                    : direction == "bottom"
+                    ? styles.bottomHalfImageContainer
+                    : direction == "left"
+                    ? styles.leftHalfImageContainer
+                    : styles.righthalfImageContainer
+                }
+              >
+                <Image
+                  source={{ uri: Composition }}
+                  style={
+                    direction == "top"
+                      ? styles.topHalfImage
+                      : direction == "bottom"
+                      ? styles.bottomHalfImage
+                      : direction == "left"
+                      ? styles.leftHalfImage
+                      : styles.rightHalfImage
+                  }
+                />
               </View>
             </ViewShot>
             {spotId == 0 && focusedInput !== "post" ? (
@@ -264,19 +286,53 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 20,
   },
-  halfImageContainer: {
+  fullImage: {
+    width: imageWidth,
+    height: imageHeight,
+  },
+  topHalfImageContainer: {
+    position: "absolute",
+    width: imageWidth,
+    height: "50%",
+    overflow: "hidden",
+  },
+  topHalfImage: {
+    width: imageWidth,
+    height: imageHeight,
+  },
+  bottomHalfImageContainer: {
+    position: "absolute",
+    width: imageWidth,
+    height: "50%",
+    overflow: "hidden",
+    top: "50%",
+  },
+  bottomHalfImage: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: -imageHeight / 2 }],
+  },
+  leftHalfImageContainer: {
     position: "absolute",
     top: 0,
     width: "50%",
     overflow: "hidden",
   },
-  fullImage: {
+  leftHalfImage: {
     width: imageWidth,
     height: imageHeight,
   },
-  halfImage: {
+  righthalfImageContainer: {
+    position: "absolute",
+    width: "50%",
+    height: imageHeight,
+    overflow: "hidden",
+    left: "50%",
+  },
+  rightHalfImage: {
     width: imageWidth,
     height: imageHeight,
+    transform: [{ translateX: -imageWidth / 2 }],
   },
   displayName: {
     fontSize: 15,
