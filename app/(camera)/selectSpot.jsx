@@ -3,80 +3,57 @@ import {
   SafeAreaView,
   View,
   Text,
-  Image,
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import Geolocation from "@react-native-community/geolocation";
-import MapView, { Marker } from "react-native-maps";
-import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.01;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-
-const auth = FirebaseAuth();
 
 export default function SelectSpot() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { latitude, longitude } = params;
-  const [position, setPosition] = useState({
-    //ユーザーの位置情報を保持
-    latitude: 0,
-    longitude: 0,
-    accuracy: 0,
-    altitude: 0,
-    altitudeAccuracy: 0,
-    heading: 0,
-    speed: 0,
-  });
-
-  const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
-  const [initialRegion, setInitialRegion] = useState(null);
-  const [Region, setRegion] = useState(null);
-
-  const [spotId, setSpotId] = useState(0);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [markerCords, setMarkerCords] = useState([]);
+  const { latitude, longitude, pointRequired, userPoint, newFlag } = params;
+  const [spotList, setSpotList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
 
-  const setmodal = (marker) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
-      if (distance < marker.areaRadius) {
-        setSpotId(marker.id);
-        router.push({
-          pathname: "/camera",
-          params: {
-            latitude: 0,
-            longitude: 0,
-            spotId: marker.id,
-            point: 0,
-            spotNo: 0,
-          },
-        });
-      } else {
-        setSpotId(marker.id);
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
+  const fetchSpotList = async () => {
+    const querySpot = await firestore().collection("spot").orderBy("id").get();
+
+    const tempArray = [];
+    if (!querySpot.empty) {
+      querySpot.forEach((docs) => {
+        const item = docs.data();
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          item.mapLatitude,
+          item.mapLongitude
+        );
+        if (distance < item.areaRadius) {
+          tempArray.push({
+            id: item.id,
+            name: item.name,
+            latitude: item.mapLatitude,
+            longitude: item.mapLongitude,
+            distance: distance.toFixed(1),
+          });
+        }
+      });
+
+      setSpotList(tempArray);
     }
+    setLoading(false);
   };
 
   function toRadians(degrees) {
@@ -107,154 +84,15 @@ export default function SelectSpot() {
     }
   }
 
-  const getPinColor = (marker) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
-      return distance < marker.areaRadius
-        ? require("../image/pin_orange.png")
-        : require("../image/pin_blue.png");
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-    }
-  };
-
-  const fetchAllMarkerCord = async () => {
-    const fetchResult = [];
+  useEffect(() => {
     setLoading(true);
-    try {
-      const querySnapshot = await firestore()
-        .collection("spot")
-        .orderBy("id")
-        .get();
-
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((docs) => {
-          const item = docs.data();
-          fetchResult.push(item);
-        });
-
-        setMarkerCords(fetchResult);
-      } else {
-        console.log("empty");
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    //リアルタイムでユーザーの位置情報を監視し、更新
-    const watchId = Geolocation.watchPosition(
-      (position) => {
-        try {
-          setPosition(position.coords);
-          if (!initialRegion) {
-            setInitialRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            });
-            setRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-              flag: 0,
-            });
-          } else {
-            setError("Position or coords is undefined");
-          }
-        } catch (error) {
-          setError(`Error updating position: ${error.message}`);
-        }
-      },
-      (err) => {
-        setError(err.message);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        distanceFilter: 5,
-        maximumAge: 1000,
-      }
-    );
-    return () => Geolocation.clearWatch(watchId);
-  }, [initialRegion]);
-
-  useEffect(() => {
-    setUser(auth.currentUser);
-    fetchAllMarkerCord();
+    fetchSpotList();
   }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
-      </View>
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )}
-      {initialRegion && (
-        <MapView
-          key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          style={StyleSheet.absoluteFillObject}
-          customMapStyle={customMapStyle}
-          initialRegion={initialRegion}
-          region={Region}
-          scrollEnabled={true}
-          zoomEnabled={true}
-          rotateEnabled={true}
-          pitchEnabled={true}
-        >
-          <Marker
-            coordinate={{
-              latitude: position.latitude,
-              longitude: position.longitude,
-            }}
-            initialRegion={{
-              latitude: position.latitude,
-              longitude: position.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            }}
-          >
-            <View style={styles.radius}>
-              <View style={styles.marker} />
-            </View>
-          </Marker>
-
-          {markerCords.map((marker) => (
-            <TouchableOpacity style={styles.hitSlop} key={marker.id}>
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(marker.mapLatitude),
-                  longitude: parseFloat(marker.mapLongitude),
-                }}
-                title={marker.name}
-                onPress={() => setmodal(marker)}
-              >
-                <Image
-                  source={getPinColor(marker)}
-                  style={styles.markerImage} //ピンの色
-                />
-              </Marker>
-            </TouchableOpacity>
-          ))}
-        </MapView>
-      )}
       <View
         style={{
-          position: "absolute",
           top: 0,
           width: "100%",
           backgroundColor: "#F2F2F2",
@@ -286,6 +124,128 @@ export default function SelectSpot() {
           }}
         />
       </View>
+      <View>
+        {loading ? (
+          <View style={styles.centerView}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : (
+          <View>
+            <View style={styles.positionContainer}>
+              <Text style={styles.boldText}>
+                現在地：
+                <Text style={styles.text}>
+                  {latitude}
+                  {"    "}
+                  {longitude}
+                </Text>
+              </Text>
+            </View>
+            {newFlag == "true" ? (
+              <View style={styles.pointText}>
+                <Text>
+                  {"新しいピンを作るに必要なポイント："}
+                  <Text style={styles.boldText}>{pointRequired}</Text>
+                </Text>
+                <Text>
+                  {"現在所持しているポイント："}
+                  <Text style={styles.boldText}>{userPoint}</Text>
+                </Text>
+                <Text>以下に既存ピンに投稿することができます。</Text>
+              </View>
+            ) : (
+              <></>
+            )}
+            <FlatList
+              style={styles.listContainer}
+              data={spotList}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                return (
+                  <TouchableOpacity
+                    style={styles.itemContainer}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/camera",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: item.id,
+                          point: 0,
+                          spotNo: 0,
+                        },
+                      });
+                    }}
+                  >
+                    <View>
+                      <Text style={styles.nameText}>{item.name}</Text>
+                      <Text style={styles.positionText}>
+                        {item.latitude}
+                        {"    "}
+                        {item.longitude}
+                      </Text>
+                    </View>
+                    <Text style={styles.distanceText}>{item.distance}m</Text>
+                  </TouchableOpacity>
+                );
+              }}
+              ListEmptyComponent={
+                <Text style={styles.boldText}>
+                  現在地の近くにピンがありません。
+                </Text>
+              }
+            />
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  centerView: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  itemContainer: {
+    padding: 10,
+    paddingBottom: 20,
+    flexDirection: "row",
+    borderBottomWidth: 2,
+    borderBottomColor: "#ADADAD",
+    marginBottom: 20,
+    justifyContent: "space-between",
+  },
+  nameText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  distanceText: {
+    color: "#7D7D7D",
+    fontSize: 12,
+  },
+  positionText: {
+    color: "#9D9D9D",
+    fontSize: 10,
+  },
+  positionContainer: {
+    alignItems: "center",
+    paddingTop: 20,
+  },
+  boldText: {
+    fontWeight: "bold",
+  },
+  text: {
+    fontWeight: "normal",
+  },
+  pointText: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+});

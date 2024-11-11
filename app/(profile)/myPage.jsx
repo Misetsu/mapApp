@@ -310,7 +310,7 @@ export default function myPage() {
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
 
         <View style={styles.ChangeStatus}>
-          <Text>投稿を公開する：{userStatus ? "非公開" : "公開"}</Text>
+          <Text>投稿を非公開にする：{userStatus ? "非公開" : "公開"}</Text>
           <View style={(style = styles.SwitchBtn)}>
             <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
           </View>

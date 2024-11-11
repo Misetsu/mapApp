@@ -162,7 +162,6 @@ export default function TrackUserMapView() {
           const seventhKey = "timestamp";
           const eighthKey = "likeCount";
           const ninthKey = "likeFlag";
-          const tenthKey = "reply";
 
           while (cnt < size) {
             const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
@@ -212,8 +211,6 @@ export default function TrackUserMapView() {
                 }
               }
 
-              const reply = await fetchReply(postData.id);
-
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
               tempObj[thirdKey] = userData.photoURL;
@@ -223,7 +220,6 @@ export default function TrackUserMapView() {
               tempObj[seventhKey] = postData.timeStamp;
               tempObj[eighthKey] = likeData.count;
               tempObj[ninthKey] = likeFlag;
-              tempObj[tenthKey] = reply;
 
               postArray.push(tempObj);
               setEmptyPost(false);
@@ -259,8 +255,6 @@ export default function TrackUserMapView() {
                 likeFlag = false;
               }
 
-              const reply = await fetchReply(postData.id);
-
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
               tempObj[thirdKey] = userData.photoURL;
@@ -270,7 +264,6 @@ export default function TrackUserMapView() {
               tempObj[seventhKey] = postData.timeStamp;
               tempObj[eighthKey] = likeData.count;
               tempObj[ninthKey] = likeFlag;
-              tempObj[tenthKey] = reply;
 
               postArray.push(tempObj);
               setEmptyPost(false);
@@ -319,7 +312,6 @@ export default function TrackUserMapView() {
           const seventhKey = "timestamp";
           const eighthKey = "likeCount";
           const ninthKey = "likeFlag";
-          const tenthKey = "reply";
 
           while (cnt < size) {
             const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
@@ -359,8 +351,6 @@ export default function TrackUserMapView() {
               likeFlag = false;
             }
 
-            const reply = await fetchReply(postData.id);
-
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -370,7 +360,6 @@ export default function TrackUserMapView() {
             tempObj[seventhKey] = postData.timeStamp;
             tempObj[eighthKey] = likeData.count;
             tempObj[ninthKey] = likeFlag;
-            tempObj[tenthKey] = reply;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -386,51 +375,6 @@ export default function TrackUserMapView() {
         console.error("Error fetching documents: ", error);
       }
     }
-  };
-
-  const fetchReply = async (postId) => {
-    const tempArray = [];
-    const queryReplay = await firestore()
-      .collection("replies")
-      .where("postId", "==", postId)
-      .limit(2)
-      .get();
-
-    if (!queryReplay.empty) {
-      const size = queryReplay.size;
-      let cnt = 0;
-      const firstKey = "userId";
-      const secondKey = "username";
-      const thirdKey = "userIcon";
-      const forthKey = "postId";
-      const fifthKey = "replyId";
-      const sixthKey = "replyText";
-
-      while (cnt < size) {
-        const replaySnapshot = queryReplay.docs[cnt];
-        const replayData = replaySnapshot.data();
-
-        let tempObj = {};
-
-        const queryUser = await firestore()
-          .collection("users")
-          .where("uid", "==", replayData.userId)
-          .get();
-        const userSnapshot = queryUser.docs[0];
-        const userData = userSnapshot.data();
-
-        tempObj[firstKey] = userData.uid;
-        tempObj[secondKey] = userData.displayName;
-        tempObj[thirdKey] = userData.photoURL;
-        tempObj[forthKey] = postId;
-        tempObj[fifthKey] = replayData.parentReplyId;
-        tempObj[sixthKey] = replayData.text;
-
-        tempArray.push(tempObj);
-        cnt = cnt + 1;
-      }
-    }
-    return tempArray;
   };
 
   const getPinColor = (marker) => {
@@ -743,7 +687,7 @@ export default function TrackUserMapView() {
         .collection("users")
         .doc(auth.currentUser.uid)
         .collection("spot")
-        .where("spotId", "==", spotId)
+        .where("spotId", "==", parseInt(spotId))
         .get();
 
       const currentTime = new Date().toISOString();
@@ -764,7 +708,7 @@ export default function TrackUserMapView() {
           .doc(auth.currentUser.uid)
           .collection("spot")
           .add({
-            spotId: spotId,
+            spotId: parseInt(spotId),
             timeStamp: currentTime,
           });
         const queryUser = await firestore()
@@ -808,12 +752,16 @@ export default function TrackUserMapView() {
         },
       });
     } else {
-      alert(
-        "ポイントが足りません。新しいピンを作成するには" +
-          pointRequired +
-          "ポイントが必要です。\n現在所持しているポイント：" +
-          userData.spotPoint
-      );
+      router.push({
+        pathname: "/selectSpot",
+        params: {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          pointRequired: pointRequired,
+          userPoint: userData.spotPoint,
+          newFlag: true,
+        },
+      });
     }
   };
 
@@ -998,6 +946,9 @@ export default function TrackUserMapView() {
                   params: {
                     latitude: position.latitude,
                     longitude: position.longitude,
+                    pointRequired: 0,
+                    userPoint: 0,
+                    newFlag: false,
                   },
                 });
               }}

@@ -160,7 +160,7 @@ export default function edit() {
         lastPostAt: currentTime,
       });
 
-      handleVisitState(spotId);
+      handleVisitState(parseInt(spotId));
     }
 
     setIsoading(false);
