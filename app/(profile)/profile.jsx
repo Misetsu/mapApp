@@ -109,28 +109,36 @@ export default function profile() {
     };
 
     const fetchFollowStatus = async () => {
-      const queryStatus = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", uid)
-        .where("followerId", "==", auth.currentUser.uid)
-        .get();
-      if (!queryStatus.empty) {
-        setIsFollowing(true);
-      } else {
+      if (auth.currentUser == null) {
         setIsFollowing(false);
+      } else {
+        const queryStatus = await firestore()
+          .collection("follow")
+          .where("followeeId", "==", uid)
+          .where("followerId", "==", auth.currentUser.uid)
+          .get();
+        if (!queryStatus.empty) {
+          setIsFollowing(true);
+        } else {
+          setIsFollowing(false);
+        }
       }
     };
 
     const fetchFavStatus = async () => {
-      const queryFav = await firestore()
-        .collection("star")
-        .doc(auth.currentUser.uid)
-        .get();
-      const favData = queryFav.get(uid);
-      if (favData === undefined || !queryFav.exists) {
+      if (auth.currentUser == null) {
         setIsFav(false);
       } else {
-        setIsFav(true);
+        const queryFav = await firestore()
+          .collection("star")
+          .doc(auth.currentUser.uid)
+          .get();
+        const favData = queryFav.get(uid);
+        if (favData === undefined || !queryFav.exists) {
+          setIsFav(false);
+        } else {
+          setIsFav(true);
+        }
       }
     };
 
@@ -140,15 +148,47 @@ export default function profile() {
   }, []);
 
   const handleFollow = async () => {
-    if (isFollowing) {
-      const queryStatus = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", uid)
-        .where("followerId", "==", auth.currentUser.uid)
-        .get();
-      const docId = queryStatus.docs[0].id;
-      firestore().collection("follow").doc(docId).delete();
-      setIsFollowing(false);
+    if (auth.currentUser == null) {
+      router.push("/loginForm");
+    } else {
+      if (isFollowing) {
+        const queryStatus = await firestore()
+          .collection("follow")
+          .where("followeeId", "==", uid)
+          .where("followerId", "==", auth.currentUser.uid)
+          .get();
+        const docId = queryStatus.docs[0].id;
+        firestore().collection("follow").doc(docId).delete();
+        setIsFollowing(false);
+        if (isFav) {
+          firestore()
+            .collection("star")
+            .doc(auth.currentUser.uid)
+            .update({
+              [uid]: FieldValue.delete(),
+            });
+          setIsFav(false);
+        }
+      } else {
+        const queryFollow = await firestore()
+          .collection("follow")
+          .orderBy("id", "desc")
+          .get();
+        const maxId = queryFollow.docs[0].data().id + 1;
+        firestore().collection("follow").add({
+          id: maxId,
+          followerId: auth.currentUser.uid,
+          followeeId: uid,
+        });
+        setIsFollowing(true);
+      }
+    }
+  };
+
+  const handleFav = async () => {
+    if (auth.currentUser == null) {
+      router.push("/loginForm");
+    } else {
       if (isFav) {
         firestore()
           .collection("star")
@@ -157,47 +197,27 @@ export default function profile() {
             [uid]: FieldValue.delete(),
           });
         setIsFav(false);
+      } else {
+        firestore()
+          .collection("star")
+          .doc(auth.currentUser.uid)
+          .update({
+            [uid]: uid,
+          });
+        setIsFav(true);
       }
-    } else {
-      const queryFollow = await firestore()
-        .collection("follow")
-        .orderBy("id", "desc")
-        .get();
-      const maxId = queryFollow.docs[0].data().id + 1;
-      firestore().collection("follow").add({
-        id: maxId,
-        followerId: auth.currentUser.uid,
-        followeeId: uid,
-      });
-      setIsFollowing(true);
-    }
-  };
-
-  const handleFav = async () => {
-    if (isFav) {
-      firestore()
-        .collection("star")
-        .doc(auth.currentUser.uid)
-        .update({
-          [uid]: FieldValue.delete(),
-        });
-      setIsFav(false);
-    } else {
-      firestore()
-        .collection("star")
-        .doc(auth.currentUser.uid)
-        .update({
-          [uid]: uid,
-        });
-      setIsFav(true);
     }
   };
 
   const handleProfile = (uid) => {
-    if (uid == auth.currentUser.uid) {
-      router.push({ pathname: "/myPage" });
-    } else {
+    if (auth.currentUser == null) {
       router.push({ pathname: "/profile", params: { uid: uid } });
+    } else {
+      if (uid == auth.currentUser.uid) {
+        router.push({ pathname: "/myPage" });
+      } else {
+        router.push({ pathname: "/profile", params: { uid: uid } });
+      }
     }
   };
 

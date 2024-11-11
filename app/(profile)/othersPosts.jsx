@@ -20,7 +20,6 @@ export default function UserPosts(uid) {
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
   const [modalVisible, setModalVisible] = useState(false); // モーダル表示の制御用
-  const userId = auth.currentUser?.uid;
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -28,18 +27,20 @@ export default function UserPosts(uid) {
       try {
         let vivstedSpot = {};
 
-        const querySnapshot = await firestore()
-          .collection("users")
-          .doc(auth.currentUser.uid)
-          .collection("spot")
-          .orderBy("spotId", "asc")
-          .get();
+        if (auth.currentUser != null) {
+          const querySnapshot = await firestore()
+            .collection("users")
+            .doc(auth.currentUser.uid)
+            .collection("spot")
+            .orderBy("spotId", "asc")
+            .get();
 
-        if (!querySnapshot.empty) {
-          querySnapshot.forEach((docs) => {
-            const item = docs.data();
-            vivstedSpot[item.spotId] = item.timeStamp;
-          });
+          if (!querySnapshot.empty) {
+            querySnapshot.forEach((docs) => {
+              const item = docs.data();
+              vivstedSpot[item.spotId] = item.timeStamp;
+            });
+          }
         }
 
         // photo コレクションからデータを取得
