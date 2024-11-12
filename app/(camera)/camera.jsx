@@ -225,7 +225,7 @@ export default function CameraScreen() {
           style={styles.switchCameraButton}
           onPress={toggleCamera}
         >
-          <FontAwesome5 name="sync" size={24} color="#FFF" />
+          <FontAwesome5 name="sync" size={35} color="#FFF" />
         </TouchableOpacity>
 
         <Pressable
@@ -352,22 +352,20 @@ const styles = StyleSheet.create({
   },
   switchButton: {
     position: "absolute",
-    bottom: 45,
+    bottom: 25,
     left: 60,
-    width: 50,
-    height: 50,
+    width: 70,
+    height: 70,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 25,
+    borderRadius: 35,
   },
   switchCameraButton: {
     position: "absolute",
-    bottom: 20,
-    right: 20,
-    width: 50,
-    height: 50,
+    bottom: 25,
+    right: 25,
+    width: 70,
+    height: 70,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 35,
   },
 });
