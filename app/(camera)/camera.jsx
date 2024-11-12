@@ -22,7 +22,9 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import Icon from "react-native-vector-icons/Entypo";
+import { TouchableOpacity } from "react-native";
 
 const width = Dimensions.get("window").width;
 const height = (width / 3) * 4;
@@ -30,8 +32,12 @@ const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
   const cameraRef = useRef(null);
-  const device = useCameraDevice("back");
+  // const device = useCameraDevice("back");
+  const [cameraPosition, setCameraPosition] = useState("back");
+  const device = useCameraDevice(cameraPosition);
+
   const { hasPermission, requestPermission } = useCameraPermission();
+  const [isCrosshair, setIsCrosshair] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [showSlider, setShowSlider] = useState(false); // スライダーの表示状態を管理するステート
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
@@ -145,6 +151,14 @@ export default function CameraScreen() {
     );
   }, [exposureSlider, device]);
 
+  const toggleGrid = () => {
+    setIsCrosshair(!isCrosshair); // 十字線とグリッドを切り替え
+  };
+
+  const toggleCamera = () => {
+    setCameraPosition((prev) => (prev === "back" ? "front" : "back")); //カメラ切り替え
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -160,12 +174,33 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
+          {/* 十字線または3x3グリッド */}
+          <View style={styles.crosshairContainer}>
+            {isCrosshair ? (
+              // 十字線
+              <>
+                <View style={styles.verticalLine} />
+                <View style={styles.horizontalLine} />
+              </>
+            ) : (
+              // 3x3グリッド
+              <>
+                <View style={styles.verticalLine2} />
+                <View style={styles.verticalLine3} />
+                <View style={styles.horizontalLine2} />
+                <View style={styles.horizontalLine3} />
+              </>
+            )}
+          </View>
           {showSlider && (
             <View style={styles.sliderContainer}>
               <Slider
                 style={styles.slider}
                 minimumValue={-10}
                 maximumValue={10}
+                minimumTrackTintColor="white"
+                maximumTrackTintColor="#ababab"
+                thumbTintColor="white"
                 value={exposureSlider.value}
                 onValueChange={(value) => (exposureSlider.value = value)}
               />
@@ -177,7 +212,26 @@ export default function CameraScreen() {
           onPress={onTakePicturePressed}
           style={styles.captureButton}
         />
-        <Pressable onPress={pickImage} style={styles.pickImageButton} />
+        {/* 十字線切り替えボタン */}
+        <TouchableOpacity style={styles.switchButton} onPress={toggleGrid}>
+          <FontAwesome5
+            name={isCrosshair ? "th-large" : "th"}
+            size={35}
+            color="#FFF"
+          />
+        </TouchableOpacity>
+        {/* カメラ切り替えボタン */}
+        <TouchableOpacity
+          style={styles.switchCameraButton}
+          onPress={toggleCamera}
+        >
+          <FontAwesome5 name="sync" size={24} color="#FFF" />
+        </TouchableOpacity>
+
+        <Pressable
+          onPress={onTakePicturePressed}
+          style={styles.captureButton}
+        />
         <Pressable
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
@@ -210,35 +264,27 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     position: "absolute",
-    bottom: 80,
+    bottom: 10,
     left: 20,
     right: 20,
     alignItems: "stretch",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    padding: 5,
+    borderRadius: 15,
   },
   slider: {
     width: "100%",
     height: 20,
+    color: "white",
   },
   captureButton: {
     position: "absolute",
     alignSelf: "center",
-    bottom: 50,
+    bottom: 40,
     width: 75,
     height: 75,
     backgroundColor: "white",
     borderRadius: 75,
-  },
-  pickImageButton: {
-    position: "absolute",
-    alignSelf: "center",
-    bottom: 50,
-    left: 40,
-    width: 45,
-    height: 45,
-    backgroundColor: "blue",
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
   },
   exposureButton: {
     position: "absolute",
@@ -254,5 +300,74 @@ const styles = StyleSheet.create({
   exposureButtonText: {
     color: "white",
     fontSize: 16,
+  },
+  crosshairContainer: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  verticalLine: {
+    position: "absolute",
+    left: "50%",
+    width: 0.5,
+    height: "100%",
+    backgroundColor: "white",
+  },
+  verticalLine2: {
+    position: "absolute",
+    left: "66.66%",
+    width: 0.5,
+    height: "100%",
+    backgroundColor: "white",
+  },
+  verticalLine3: {
+    position: "absolute",
+    left: "33.33 %",
+    width: 0.5,
+    height: "100%",
+    backgroundColor: "white",
+  },
+  horizontalLine: {
+    position: "absolute",
+    top: "50%",
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "white",
+  },
+  horizontalLine2: {
+    position: "absolute",
+    top: "66.66%",
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "white",
+  },
+  horizontalLine3: {
+    position: "absolute",
+    top: "33.33%",
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "white",
+  },
+  switchButton: {
+    position: "absolute",
+    bottom: 45,
+    left: 60,
+    width: 50,
+    height: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 25,
+  },
+  switchCameraButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 50,
+    height: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

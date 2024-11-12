@@ -29,7 +29,8 @@ import {
 import Slider from "@react-native-community/slider";
 import FirebaseAuth from "@react-native-firebase/auth";
 import { TouchableOpacity } from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome5";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import Icon from "react-native-vector-icons/Entypo";
 
 const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
@@ -38,9 +39,11 @@ const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
   const cameraRef = useRef(null);
-  const device = useCameraDevice("back");
+  // const device = useCameraDevice("back");
+  const [cameraPosition, setCameraPosition] = useState("back");
+  const device = useCameraDevice(cameraPosition);
+
   const { hasPermission, requestPermission } = useCameraPermission();
-  // スタイルの状態を保持するuseState
   const [currentStyle, setCurrentStyle] = useState("left");
   const [isCrosshair, setIsCrosshair] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -179,6 +182,10 @@ export default function CameraScreen() {
     setIsCrosshair(!isCrosshair); // 十字線とグリッドを切り替え
   };
 
+  const toggleCamera = () => {
+    setCameraPosition((prev) => (prev === "back" ? "front" : "back"));
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -259,45 +266,54 @@ export default function CameraScreen() {
             onPress={handleTopPress}
             style={styles.chooseTopHarfDisplay}
           >
-            <Icon name="angle-double-up" size={30} color="#FFF" />
+            <FontAwesome5 name="angle-double-up" size={30} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleBottomPress}
             style={styles.chooseBottomHarfDisplay}
           >
-            <Icon name="angle-double-down" size={30} color="#FFF" />
+            <FontAwesome5 name="angle-double-down" size={30} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleLeftPress}
             style={styles.chooseLeftHarfDisplay}
           >
-            <Icon name="angle-double-left" size={30} color="#FFF" />
+            <FontAwesome5 name="angle-double-left" size={30} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleRightPress}
             style={styles.chooseRightHarfDisplay}
           >
-            <Icon name="angle-double-right" size={30} color="#FFF" />
+            <FontAwesome5 name="angle-double-right" size={30} color="#FFF" />
           </TouchableOpacity>
         </View>
 
-        {/* 切り替えボタン */}
+        {/* 十字線切り替えボタン */}
         <TouchableOpacity style={styles.switchButton} onPress={toggleGrid}>
-          <Icon name={isCrosshair ? "th-large" : "th"} size={35} color="#FFF" />
+          <FontAwesome5
+            name={isCrosshair ? "th-large" : "th"}
+            size={35}
+            color="#FFF"
+          />
         </TouchableOpacity>
+        {/* カメラ切り替えボタン */}
+        <TouchableOpacity
+          style={styles.switchCameraButton}
+          onPress={toggleCamera}
+        >
+          <FontAwesome5 name="sync" size={24} color="#FFF" />
+        </TouchableOpacity>
+
         <Pressable
           onPress={onTakePicturePressed}
           style={styles.captureButton}
         />
-        {/* <Pressable onPress={pickImage} style={styles.pickImageButton} /> */}
         <Pressable
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
         >
-          <Reanimated.Text style={styles.exposureButtonText}>
-            {exposureSlider.value.toFixed(1)} {/* スライダーの値を表示 */}
-          </Reanimated.Text>
+          <Icon name="light-up" size={24} color="#FFF" />
         </Pressable>
       </View>
     </GestureHandlerRootView>
@@ -346,18 +362,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 75,
   },
-  pickImageButton: {
-    position: "absolute",
-    alignSelf: "center",
-    bottom: 50,
-    left: 40,
-    width: 45,
-    height: 45,
-    backgroundColor: "blue",
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   exposureButton: {
     position: "absolute",
     top: 20,
@@ -372,22 +376,6 @@ const styles = StyleSheet.create({
   exposureButtonText: {
     color: "white",
     fontSize: 16,
-  },
-  cameraDisplay: {
-    width: width,
-    height: "100%",
-    // objectFit: "cover",
-    // objectPosition: "left top",
-    // left: 0,
-    // top: 0,
-  },
-  cameraDisplayContainer: {
-    position: "absolute",
-    // left: "50%",
-    backgroundColor: "black",
-    width: "50%", // 左半分
-    height: height,
-    overflow: "hidden",
   },
   chooseHarfDisplayContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.3)",
@@ -533,5 +521,16 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 25,
+  },
+  switchCameraButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 50,
+    height: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
