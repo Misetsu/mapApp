@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome";
 import FirebaseAuth from "@react-native-firebase/auth";
+import messaging from "@react-native-firebase/messaging";
 
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
@@ -65,7 +66,6 @@ export default function SearchScreen() {
   // おすすめユーザーを取得
   const fetchRecommendedUsers = async () => {
     try {
-      // 現在フォロー中のユーザーを取得
       const followSnapshot = await firestore()
         .collection("follow")
         .where("followerId", "==", auth.currentUser.uid)
@@ -77,19 +77,16 @@ export default function SearchScreen() {
 
       if (followingList.length > 0) {
         let potentialRecommendedUsersSet = new Set();
-        let maxRetries = 5; // 最大5回のリトライ
+        let maxRetries = 5;
         let retryCount = 0;
 
-        // おすすめユーザーが見つかるまで繰り返す
         while (
           potentialRecommendedUsersSet.size === 0 &&
           retryCount < maxRetries
         ) {
-          // ランダムに1人のフォロー中ユーザーを選択
           const randomFolloweeId =
             followingList[Math.floor(Math.random() * followingList.length)];
 
-          // 選択されたフォロー中ユーザーのフォローユーザーを取得
           const followeeFollowSnapshot = await firestore()
             .collection("follow")
             .where("followerId", "==", randomFolloweeId)
@@ -98,57 +95,50 @@ export default function SearchScreen() {
           for (const followeeDoc of followeeFollowSnapshot.docs) {
             const recommendedUserId = followeeDoc.data().followeeId;
 
-            // フォロワーがいるかを確認
             const followeeFollowersSnapshot = await firestore()
               .collection("follow")
               .where("followerId", "==", recommendedUserId)
               .get();
 
-            // フォロー中のユーザーを取得
             const followeeFollowingSnapshot = await firestore()
               .collection("follow")
               .where("followerId", "==", recommendedUserId)
               .get();
 
-            // フォロワーがいるかつ、現在のユーザーがフォローしていないことを確認
             if (
-              followeeFollowersSnapshot.docs.length > 0 && // フォロワーがいる
-              recommendedUserId !== auth.currentUser.uid && // 自分自身を除外
-              !followingList.includes(recommendedUserId) // フォローしていないユーザー
+              followeeFollowersSnapshot.docs.length > 0 &&
+              recommendedUserId !== auth.currentUser.uid &&
+              !followingList.includes(recommendedUserId)
             ) {
-              // フォロー中のユーザーがフォロワーだけでなく、他のユーザーもフォローしているかを確認
               const isOnlyFollowingFollowers =
                 followeeFollowingSnapshot.docs.every((followeeDoc) =>
                   followingList.includes(followeeDoc.data().followeeId)
                 );
 
-              // もしフォロワーだけをフォローしている場合は除外
               if (!isOnlyFollowingFollowers) {
                 potentialRecommendedUsersSet.add(recommendedUserId);
               }
             }
           }
 
-          retryCount++; // リトライカウントを増やす
+          retryCount++;
         }
 
-        // 有効なユーザーをリストに変換してランダムに5人選択
         const validRecommendedUsers = Array.from(potentialRecommendedUsersSet);
         const randomRecommendedUsers = validRecommendedUsers
           .sort(() => 0.5 - Math.random())
           .slice(0, 5);
 
-        // おすすめユーザーを設定
         if (randomRecommendedUsers.length > 0) {
           const recommendedUserData = await fetchUserDetails(
             randomRecommendedUsers
           );
           setRecommendedUsers(recommendedUserData);
         } else {
-          setRecommendedUsers([]); // それでも表示するユーザーがいない場合は空の配列を設定
+          setRecommendedUsers([]);
         }
       } else {
-        setRecommendedUsers([]); // フォロー中のユーザーがいない場合も空の配列を設定()
+        setRecommendedUsers([]);
       }
     } catch (error) {
       console.error("Error fetching recommended users:", error);
@@ -164,10 +154,10 @@ export default function SearchScreen() {
             .collection("users")
             .where("uid", "==", uid)
             .get();
-          return userSnapshot.docs[0]?.data(); // ユーザーのデータを取得
+          return userSnapshot.docs[0]?.data();
         })
       );
-      return userDetails.filter((user) => user); // 未定義のユーザーをフィルタリング
+      return userDetails.filter((user) => user);
     } catch (error) {
       console.error("Error fetching user details:", error);
       return [];
@@ -176,19 +166,19 @@ export default function SearchScreen() {
 
   // ユーザーの検索を処理
   const handleSearch = (text) => {
-    setSearchText(text); // 検索テキストを更新
+    setSearchText(text);
     if (text !== "") {
       firestore()
         .collection("users")
         .where("displayName", ">=", text)
-        .where("displayName", "<=", text + "\uf8ff") // 検索条件を設定
+        .where("displayName", "<=", text + "\uf8ff")
         .get()
         .then((result) => {
-          setSearchResult(result.docs); // 検索結果をステートに設定
+          setSearchResult(result.docs);
         })
         .catch((error) => console.error("Error searching users:", error));
     } else {
-      setSearchResult([]); // テキストが空の場合、検索結果をクリア
+      setSearchResult([]);
     }
   };
 
@@ -196,7 +186,6 @@ export default function SearchScreen() {
   const handleFollowToggle = async (uid) => {
     try {
       if (following[uid]) {
-        // フォロー中の場合
         const followDoc = await firestore()
           .collection("follow")
           .where("followerId", "==", auth.currentUser.uid)
@@ -204,19 +193,32 @@ export default function SearchScreen() {
           .get();
 
         if (!followDoc.empty) {
-          await followDoc.docs[0].ref.delete(); // フォローデータを削除
-          setFollowing((prevState) => ({ ...prevState, [uid]: false })); // ステートを更新
+          await followDoc.docs[0].ref.delete();
+          setFollowing((prevState) => ({ ...prevState, [uid]: false }));
         }
       } else {
-        // フォローしていない場合
         await firestore().collection("follow").add({
           followerId: auth.currentUser.uid,
           followeeId: uid,
         });
-        setFollowing((prevState) => ({ ...prevState, [uid]: true })); // ステートを更新
+        setFollowing((prevState) => ({ ...prevState, [uid]: true }));
+
+        // フォローされたユーザーに通知を送信
+        const userSnapshot = await firestore().collection("users").doc(uid).get();
+        const userData = userSnapshot.data();
+        if (userData && userData.notificationToken) {
+          const message = {
+            notification: {
+              title: "フォローされました",
+              body: `${auth.currentUser.displayName} さんがあなたをフォローしました！`,
+            },
+            token: userData.notificationToken,
+          };
+          await messaging().sendMessage(message);
+        }
       }
     } catch (error) {
-      console.error("Error toggling follow state:", error);
+      console.error("Error toggling follow state or sending notification:", error);
     }
   };
 
@@ -230,7 +232,6 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 検索バーのUI */}
       <View style={styles.searchBar}>
         <Icon name="search" size={20} color="#000" style={styles.icon} />
         <TextInput
@@ -241,7 +242,6 @@ export default function SearchScreen() {
         />
       </View>
 
-      {/* おすすめ公式ユーザーの表示 */}
       {officialUser && (
         <View style={styles.recommendedContainer}>
           <Text style={styles.sectionTitle}>おすすめ公式ユーザー</Text>
@@ -255,7 +255,6 @@ export default function SearchScreen() {
         </View>
       )}
 
-      {/* おすすめユーザーの表示 */}
       {searchText === "" && recommendedUsers.length > 0 && (
         <View style={styles.recommendedContainer}>
           <Text style={styles.sectionTitle}>おすすめユーザー</Text>
@@ -271,7 +270,6 @@ export default function SearchScreen() {
         </View>
       )}
 
-      {/* 検索結果の表示 */}
       {searchResult.length > 0 && searchText !== "" && (
         <View style={styles.resultsContainer}>
           {searchResult.map((result) => {
@@ -313,8 +311,8 @@ const UserItem = ({ user, isFollowing, onProfilePress, onFollowToggle }) => (
   </View>
 );
 
-// スタイルの定義
 const styles = StyleSheet.create({
+  // スタイル設定
   container: {
     flex: 1,
     padding: 20,
@@ -371,5 +369,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
+  },
+  followedButton: {
+    backgroundColor: "#4CAF50",
+  },
+  unfollowedButton: {
+    backgroundColor: "#007bff",
   },
 });

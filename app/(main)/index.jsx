@@ -10,6 +10,7 @@ import {
   Dimensions,
   StyleSheet,
   Animated,
+
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -22,6 +23,8 @@ import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import * as Notifications from 'expo-notifications';
 import BackgroundFetch from "react-native-background-fetch";
+import messaging from "@react-native-firebase/messaging";
+import { Alert } from "react-native";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -29,6 +32,26 @@ const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const auth = FirebaseAuth();
+
+const App = () => {
+
+  // アプリ起動時にFCMトークンを取得してFirestoreに保存
+  useEffect(() => {
+    const getAndSaveToken = async () => {
+      const fcmToken = await messaging().getToken();
+      if (fcmToken) {
+        // Firestoreのユーザー情報にFCMトークンを保存
+        await firestore().collection('users').doc(userId).update({
+          fcmToken: fcmToken,
+        });
+      }
+    };
+
+    getAndSaveToken();
+  }, []);
+
+  return 
+}
 
 export default function TrackUserMapView() {
   const router = useRouter();
@@ -42,6 +65,23 @@ export default function TrackUserMapView() {
     heading: 0,
     speed: 0,
   });
+
+  useEffect(() => {
+    const onUserSignIn = async () => {
+      const user = auth().currentUser;
+      if (user) {
+        const fcmToken = await messaging().getToken();
+        if (fcmToken) {
+          // Firestoreのユーザー情報にFCMトークンを保存
+          await firestore().collection('users').doc(user.uid).update({
+            fcmToken: fcmToken,
+          });
+        }
+      }
+    };
+
+    onUserSignIn();
+  }, []);
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
@@ -64,11 +104,20 @@ export default function TrackUserMapView() {
 
   const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
+  useEffect(() => {
+    // フォアグラウンドの通知を処理
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {  // 通知のタイトルと本文をアラートとして表示
+      Alert.alert(remoteMessage.notification.title, remoteMessage.notification.body);
+    });
   
+    return unsubscribe; // クリーンアップ
+  }, []);
+  
+  // 通知設定のカスタマイズのためのuseEffect
   useEffect(() => {
     try{
     // 通知の設定
-    Notifications.setNotificationHandler({
+    Notifications.setNotificationHandler({  // 通知を処理するためのハンドラを設定
       handleNotification: async () => ({
         shouldShowAlert: true,
         shouldPlaySound: false,
