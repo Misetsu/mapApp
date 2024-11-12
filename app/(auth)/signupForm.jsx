@@ -7,11 +7,11 @@ import {
   TextInput,
   StyleSheet,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import CheckBox from '@react-native-community/checkbox';
+import CheckBox from "@react-native-community/checkbox";
 
 const auth = FirebaseAuth();
 
@@ -30,7 +30,6 @@ export default function SignupScreen() {
   const navigateLogin = () => {
     router.push("/loginForm");
   };
-
 
   const signUpWithEmail = async () => {
     try {
@@ -86,7 +85,9 @@ export default function SignupScreen() {
           autoCapitalize="none"
           placeholder="メールアドレス"
         />
-        <Text style={styles.noamllabel}>有効なメールアドレスを入力してください</Text>
+        <Text style={styles.noamllabel}>
+          有効なメールアドレスを入力してください
+        </Text>
         <Text style={styles.displayName}>ユーザー名</Text>
         <TextInput
           style={styles.textInput}
@@ -94,7 +95,9 @@ export default function SignupScreen() {
           onChangeText={setUserName}
           placeholder="ユーザー名"
         />
-        <Text style={styles.noamllabel}>ユーザー名{"(名前)"}を入力してください</Text>
+        <Text style={styles.noamllabel}>
+          ユーザー名{"(名前)"}を入力してください
+        </Text>
         <Text style={styles.displayName}>パスワード</Text>
         <TextInput
           style={styles.textInput}
@@ -103,7 +106,9 @@ export default function SignupScreen() {
           secureTextEntry
           placeholder="パスワード"
         />
-        <Text style={styles.noamllabel}>半角英数8文字以上で入力してください</Text>
+        <Text style={styles.noamllabel}>
+          半角英数8文字以上で入力してください
+        </Text>
         <Text style={styles.displayName}>確認用パスワード</Text>
         <TextInput
           style={styles.textInput}
@@ -112,25 +117,32 @@ export default function SignupScreen() {
           secureTextEntry
           placeholder="確認用パスワード"
         />
-        <Text style={styles.noamllabel}>もう一度同じパスワードを入力してください</Text>
+        <Text style={styles.noamllabel}>
+          もう一度同じパスワードを入力してください
+        </Text>
 
         <View style={styles.checkboxContainer}>
           <CheckBox
             value={isChecked}
             onValueChange={setIsChecked}
-            tintColors={{ true: '#239D60', false: '#239D60' }} // チェックボックスの色
+            tintColors={{ true: "#239D60", false: "#239D60" }} // チェックボックスの色
             style={styles.checkbox} // サイズ変更用のスタイル
-          /><Text style={styles.noamllabel}>利用規約、プライバシーポリシー{"\n"}をすべて読み、同意します
+          />
+          <Text style={styles.noamllabel}>
+            利用規約、プライバシーポリシー{"\n"}をすべて読み、同意します
           </Text>
         </View>
         <TouchableOpacity
           style={[styles.submit, !isChecked && styles.disabledButton]}
           onPress={signUpWithEmail}
-          disabled={!isChecked}>
+          disabled={!isChecked}
+        >
           <Text style={styles.submitText}>アカウント作成</Text>
         </TouchableOpacity>
 
-        <Text style={styles.noamllabel}>━  アカウントをお持ちの方はこちら  ━</Text>
+        <Text style={styles.noamllabel}>
+          ━ アカウントをお持ちの方はこちら ━
+        </Text>
 
         <TouchableOpacity style={styles.button} onPress={navigateLogin}>
           <Text style={styles.buttonText}>ログイン</Text>
@@ -151,7 +163,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   scrview: {
-    flex:1,
+    flex: 1,
     backgroundColor: "#F2F5C8",
   },
   pagetitle: {
@@ -252,9 +264,9 @@ const styles = StyleSheet.create({
     left: 0,
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center', // 中央揃え
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // 中央揃え
     margin: 10,
   },
   checkbox: {
@@ -264,6 +276,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   disabledButton: {
-    backgroundColor: 'gray',
+    backgroundColor: "gray",
   },
 });

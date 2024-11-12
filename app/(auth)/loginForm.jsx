@@ -54,26 +54,15 @@ export default function LoginScreen() {
       .get();
 
     if (querySnapshot.empty) {
-      firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .set({
+      router.push({
+        pathname: "/signupFormGoogle",
+        params: {
           uid: auth.currentUser.uid,
           displayName: auth.currentUser.displayName,
-          email: auth.currentUser.email,
-          lastPostAt: "0", // TODO
-          publicStatus: 0, // TODO
-          spotCreate: 0,
-          spotPoint: 0,
           photoURL: auth.currentUser.photoURL,
-        })
-        .then()
-        .catch((error) => console.log(error));
-
-      firestore().collection("star").doc(auth.currentUser.uid).set({});
+        },
+      });
     }
-
-    router.replace({ pathname: "/" });
   };
 
   const signInWithEmail = async () => {
@@ -138,12 +127,14 @@ export default function LoginScreen() {
             style={styles.imageButton}
           />
         </TouchableOpacity>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <TouchableOpacity onPress={handleChangePassword}>
             <Text style={styles.linklabel}>パスワードを忘れた場合</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.noamllabel}>━━━  はじめての方はこちら  ━━━</Text>
+        <Text style={styles.noamllabel}>━━━ はじめての方はこちら ━━━</Text>
 
         <TouchableOpacity style={styles.button} onPress={navigateSignup}>
           <Text style={styles.buttonText}>新規アカウント作成</Text>
