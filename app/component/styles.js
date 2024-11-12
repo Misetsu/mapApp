@@ -96,33 +96,34 @@ export const styles = StyleSheet.create({
   },
   loignBtnContainer: {
     position: "absolute",
-    top: 90,
+    top: 85,
     right: 0,
   },
   mapfixed: {
     position: "absolute",
-    top: 160,
+    top: 155,
     right: 0,
   },
   defaultlocation: {
     position: "absolute",
-    top: 230,
+    top: 225,
     right: 0,
   },
   settingButton: {
     position: "absolute",
-    top: 300,
+    top: 295,
     right: 0,
   },
   indexContainer: {
     position: "absolute",
     top: 0,
     width: "100%",
-    height: 90,
+    height: 85,
     backgroundColor: "#f2f5c8",
     borderBottomWidth: 3,
     borderBottomColor: "#404040",
-    padding: 10,
+    paddingTop: 5,
+    paddingBottom: 5,
     justifyContent: "center",
     display: "flex",
     flexDirection: "row",
@@ -137,6 +138,7 @@ export const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     alignSelf: "center",
+    marginTop: 5,
   },
   //インデックスバーアイコンの幅
   listProfileNameText: {
@@ -144,14 +146,14 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   listProfileSize: {
-    margin: 5,
+    margin: 5
   },
   listProfileIndexButton: {
-    width: 40,
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center",
-    // marginLeft: 20,
+    width: 70,    
+    height: 70,
   },
   newButtonContainer: {
     alignItems: "center", // 新しいボタンを中央に配置

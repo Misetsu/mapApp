@@ -16,6 +16,7 @@ import UserPosts from "./UserPosts";
 import LikedPosts from "./LikedPosts";
 import SwitchWithIcons from "react-native-switch-with-icons";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
 
@@ -176,7 +177,9 @@ export default function myPage() {
   };
 
   const signout = async () => {
-    await auth.signOut();
+    await auth.signOut().then(() => {
+      GoogleSignin.revokeAccess();
+    });
     router.replace({ pathname: "/" });
   };
 
