@@ -6,15 +6,19 @@ import {
   Text,
   TextInput,
   StyleSheet,
+  Image,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
+import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import CheckBox from "@react-native-community/checkbox";
 import * as ImagePicker from "expo-image-picker";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
+const reference = storage();
 
 export default function SignupScreenGoogle() {
   const router = useRouter();
@@ -24,12 +28,20 @@ export default function SignupScreenGoogle() {
   const [photouri, setPhotouri] = useState(photoURL);
   const [isChecked, setIsChecked] = useState(false);
 
-  const handleBackPress = () => {
-    auth.currentUser.delete;
-    router.back();
+  const handleBackPress = async () => {
+    auth.currentUser.delete().then(() => {
+      GoogleSignin.revokeAccess();
+      router.back();
+    });
   };
 
   const handleSignUp = async () => {
+    const update = {
+      displayName: userName,
+      photoURL: photouri,
+    };
+    await auth.currentUser.updateProfile(update);
+
     await firestore()
       .collection("users")
       .doc(auth.currentUser.uid)
@@ -76,16 +88,6 @@ export default function SignupScreenGoogle() {
     await reference.ref(imagePath).putFile(uploadUri);
 
     const url = await reference.ref(imagePath).getDownloadURL();
-
-    await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .update({ photoURL: url });
-
-    const update = {
-      photoURL: url,
-    };
-    await auth.currentUser.updateProfile(update);
 
     return url;
   };
