@@ -43,7 +43,7 @@ export default function MyModal({
 
   postData.map((post) => {
     if (post) {
-      tempObj1[post.postId] = post.likeflag; // postIdをidに修正
+      tempObj1[post.postId] = post.likeFlag; // postIdをidに修正
       tempObj2[post.postId] = post.likeCount;
     }
   });
@@ -190,7 +190,13 @@ export default function MyModal({
                           {flag ? (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleUnlike(post.postId)}
+                              onPress={
+                                auth.currentUser
+                                  ? () => handleUnlike(post.postId)
+                                  : () => {
+                                      router.push("/loginForm");
+                                    }
+                              }
                             >
                               <Icon
                                 name="heart"
@@ -209,7 +215,13 @@ export default function MyModal({
                           ) : (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleLike(post.postId)}
+                              onPress={
+                                auth.currentUser
+                                  ? () => handleLike(post.postId)
+                                  : () => {
+                                      router.push("/loginForm");
+                                    }
+                              }
                             >
                               <Icon
                                 name="heart"
