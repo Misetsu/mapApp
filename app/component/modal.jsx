@@ -43,9 +43,8 @@ export default function MyModal({
 
   postData.map((post) => {
     if (post) {
-      // postが未定義でないことを確認
-      tempObj1[post.id] = post.likeFlag; // postIdをidに修正
-      tempObj2[post.id] = post.likeCount;
+      tempObj1[post.postId] = post.likeflag; // postIdをidに修正
+      tempObj2[post.postId] = post.likeCount;
     }
   });
 
@@ -59,6 +58,7 @@ export default function MyModal({
         .collection("like")
         .where("postId", "==", postId)
         .get();
+      console.log(tempObj2[postId]);
       const queryId = querylike.docs[0].ref._documentPath._parts[1];
       await firestore()
         .collection("like")
@@ -152,9 +152,9 @@ export default function MyModal({
           >
             {postData.map((post) => {
               if (!post) return null; // postが未定義の場合はスキップ
-              const isLiked = likes[post.id]; // idを使用する
-              const flag = tempObj1[post.id];
-              const count = tempObj2[post.id];
+              const isLiked = likes[post.postId]; // idを使用する
+              const flag = tempObj1[post.postId];
+              const count = tempObj2[post.postId];
               return (
                 <View key={post.postId} style={styles.postView}>
                   <TouchableOpacity
@@ -190,7 +190,7 @@ export default function MyModal({
                           {flag ? (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleUnlike(post.postId, index)}
+                              onPress={() => handleUnlike(post.postId)}
                             >
                               <Icon
                                 name="heart"
@@ -209,7 +209,7 @@ export default function MyModal({
                           ) : (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleLike(post.postId, index)}
+                              onPress={() => handleLike(post.postId)}
                             >
                               <Icon
                                 name="heart"
@@ -267,11 +267,7 @@ export default function MyModal({
                           });
                         }}
                       >
-                        <Icon
-                          name="comment"
-                          size={25}
-                          color={isLiked ? "#f00" : "#000"}
-                        />
+                        <Icon name="comment" size={25} color={"#000"} />
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -288,11 +284,7 @@ export default function MyModal({
                           });
                         }}
                       >
-                        <Icon
-                          name="images"
-                          size={25}
-                          color={isLiked ? "#f00" : "#000"}
-                        />
+                        <Icon name="images" size={25} color={"#000"} />
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -310,11 +302,7 @@ export default function MyModal({
                           });
                         }}
                       >
-                        <Icon
-                          name="map-marked-alt"
-                          size={25}
-                          color={isLiked ? "#f00" : "#000"}
-                        />
+                        <Icon name="map-marked-alt" size={25} color={"#000"} />
                       </TouchableOpacity>
                     </View>
                     <View style={styles.postText}>
