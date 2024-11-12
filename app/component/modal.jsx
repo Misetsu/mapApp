@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,8 @@ import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import Share from 'react-native-share';
+import * as Linking from 'expo-linking';
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
@@ -27,9 +29,11 @@ export default function MyModal({
   spotId,
   loading,
   onClose,
+  spotName
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
+  const [modalurl,setmodalurl] = useState(null)
 
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
@@ -48,6 +52,18 @@ export default function MyModal({
       tempObj2[post.id] = post.likeCount;
     }
   });
+
+
+  const onShare = ()=>{
+    try {
+      const result = Share.open({
+        message: `${spotName}の投稿をチェック！！`,
+        });
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleUnlike = async (postId) => {
     if (likes[postId] == true) {
@@ -316,6 +332,7 @@ export default function MyModal({
                           color={isLiked ? "#f00" : "#000"}
                         />
                       </TouchableOpacity>
+                      
                     </View>
                     <View style={styles.postText}>
                       <Text>{post.postText}</Text>
@@ -326,6 +343,15 @@ export default function MyModal({
                           "yyyy年MM月dd日 HH:mm"
                         )}
                       </Text>
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={()=>onShare()}
+                      ><Icon
+                      name="share"
+                      size={25}
+                      color={isLiked ? "#f00" : "#000"}
+                    />
+                    </TouchableOpacity>
                     </View>
                   </View>
                   <View style={styles.closeButton}>

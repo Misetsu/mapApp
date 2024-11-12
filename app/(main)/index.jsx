@@ -45,6 +45,7 @@ export default function TrackUserMapView() {
   const [Region, setRegion] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
+  const [spotName,setspotName] = useState(null)
   const [postImage, setPostImage] = useState(false);
   const [user, setUser] = useState(null);
   const [mapfixed, setmapfixed] = useState(false);
@@ -68,12 +69,14 @@ export default function TrackUserMapView() {
       );
       if (distance < marker.areaRadius) {
         setSpotId(marker.id);
+        setspotName(marker.name)
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
         fetchPostData(marker.id);
       } else {
         setSpotId(marker.id);
+        setspotName(marker.name)
         setModalVisible(true);
         setPostImage(false);
         fetchPostData(marker.id);
@@ -879,6 +882,7 @@ export default function TrackUserMapView() {
         spotId={spotId}
         loading={loading}
         onClose={() => setModalVisible(false)}
+        spotName={spotName}
       />
 
       {user ? (
