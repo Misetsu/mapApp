@@ -280,6 +280,7 @@ export default function MyModal({
                         }}
                       >
                         <Icon name="comment" size={25} color={"#000"} />
+                        <Text> {post.replyCount}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity

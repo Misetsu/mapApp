@@ -3,7 +3,7 @@ import {
   View,
   TextInput,
   ScrollView,
-  Button,
+  Dimensions,
   StyleSheet,
   Text,
   Alert,
@@ -20,6 +20,7 @@ import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
+const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 
 const ReplyScreen = () => {
   const router = useRouter();
@@ -72,6 +73,16 @@ const ReplyScreen = () => {
             postDetails = postSnapshot.docs[0].data();
           }
 
+          const userSnapshot = await firestore()
+            .collection("users")
+            .where("uid", "==", postDetails.userId)
+            .get();
+
+          let userDetails = null;
+          if (!userSnapshot.empty) {
+            userDetails = userSnapshot.docs[0].data();
+          }
+
           const spotSnapshot = await firestore()
             .collection("spot")
             .where("id", "==", photoDoc.spotId)
@@ -82,7 +93,7 @@ const ReplyScreen = () => {
             spotName = spotSnapshot.docs[0].data().name;
           }
 
-          setSelectedPost({ ...photoDoc, postDetails, spotName });
+          setSelectedPost({ ...photoDoc, postDetails, spotName, userDetails });
         }
       } else {
         setPhotoUri(null);
@@ -91,7 +102,7 @@ const ReplyScreen = () => {
       const repliesSnapshot = await firestore()
         .collection("replies")
         .where("postId", "==", parseInt(postId))
-        .orderBy("timestamp", "asc")
+        .orderBy("timestamp", "desc")
         .get();
 
       const repliesData = await Promise.all(
@@ -195,7 +206,7 @@ const ReplyScreen = () => {
 
   return (
     <View>
-      <ScrollView>
+      {/* <ScrollView style={styles.container}> */}
       <View style={styles.container}>
         {loading ? (
           <View style={styles.centerContainer}>
@@ -213,9 +224,31 @@ const ReplyScreen = () => {
                     <Icon name="angle-left" size={24} color="#000" />
                   </TouchableOpacity>
                   <Text style={styles.spotName}>{selectedPost.spotName}</Text>
-                  <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                  ></TouchableOpacity>
                 </View>
                 <View style={styles.contentContainer}>
+                  <View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigateProfile(selectedPost.userDetails.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: selectedPost.userDetails.photoURL }}
+                        style={styles.iconImage}
+                      />
+                      <Text>{selectedPost.userDetails.displayName}</Text>
+                    </TouchableOpacity>
+                    <Text>
+                      {formatInTimeZone(
+                        new Date(selectedPost.postDetails.timeStamp),
+                        "Asia/Tokyo",
+                        "yyyy年MM月dd日 HH:mm"
+                      )}
+                    </Text>
+                  </View>
                   {photoUri && (
                     <View style={styles.imageContainer}>
                       <Image
@@ -228,7 +261,7 @@ const ReplyScreen = () => {
                   <View style={styles.postDetails}>
                     <Text style={styles.spotText}>
                       {" "}
-                      {selectedPost.postDetails
+                      {selectedPost.postDetails.postTxt != ""
                         ? selectedPost.postDetails.postTxt
                         : "詳細がありません"}
                     </Text>
@@ -251,29 +284,28 @@ const ReplyScreen = () => {
           </>
         )}
       </View>
-      </ScrollView>
-      
+      {/* </ScrollView> */}
+
       <View style={styles.sendReply}>
-      <TextInput
-        style={styles.input}
-        placeholder="返信を入力..."
-        value={replyText}
-        onChangeText={setReplyText}
-         multiline
-      />
-      <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
-        <Text style={styles.replyBtnText}>送信</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="返信を入力..."
+          value={replyText}
+          onChangeText={setReplyText}
+          multiline
+        />
+        <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
+          <Text style={styles.replyBtnText}>送信</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingBottom: 50,
+    height: height - 50,
+    // paddingBottom: 50,
     backgroundColor: "#F2F5C8",
   },
   centerContainer: {
@@ -284,8 +316,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
   },
   contentContainer: {
-    padding: 20,
-    paddingBottom: 0,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
   header: {
     flexDirection: "row", // 横並びにする
@@ -338,20 +370,21 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
+    backgroundColor: "#FAFAFA",
     borderColor: "gray",
     borderWidth: 1,
-    marginBottom: 20,
     padding: 10,
     borderRadius: 5,
-    width: '100%',
-    flex: 1
+    width: "100%",
+    flex: 1,
   },
-  replyBtn:{
+  replyBtn: {
     height: 50,
-    marginBottom: 20,
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
-    backgroundColor:'#A3DE83',
+    justifyContent: "center",
+    backgroundColor: "#A3DE83",
   },
   repliesList: {
     marginTop: 20,
@@ -375,11 +408,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sendReply: {
-    bottom: 50,
-    width: '100%',
-    height:110,
-    backgroundColor: '#fafafa',
-    flexDirection: 'row'
+    width: "100%",
+    backgroundColor: "#F2F5C8",
+    flexDirection: "row",
+    paddingHorizontal: 10,
+    gap: 10,
   },
 });
 

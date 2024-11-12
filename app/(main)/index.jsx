@@ -158,6 +158,7 @@ export default function TrackUserMapView() {
           const seventhKey = "timestamp";
           const eighthKey = "likeCount";
           const ninthKey = "likeFlag";
+          const tenthKey = "replyCount";
 
           while (cnt < size) {
             const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
@@ -207,6 +208,13 @@ export default function TrackUserMapView() {
                 }
               }
 
+              const queryReply = await firestore()
+                .collection("replies")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const replyCount = queryReply.empty ? 0 : queryReply.size;
+
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
               tempObj[thirdKey] = userData.photoURL;
@@ -216,6 +224,7 @@ export default function TrackUserMapView() {
               tempObj[seventhKey] = postData.timeStamp;
               tempObj[eighthKey] = likeData.count;
               tempObj[ninthKey] = likeFlag;
+              tempObj[tenthKey] = replyCount;
 
               postArray.push(tempObj);
               setEmptyPost(false);
@@ -251,6 +260,13 @@ export default function TrackUserMapView() {
                 likeFlag = false;
               }
 
+              const queryReply = await firestore()
+                .collection("replies")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const replyCount = queryReply.empty ? 0 : queryReply.size;
+
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
               tempObj[thirdKey] = userData.photoURL;
@@ -260,6 +276,7 @@ export default function TrackUserMapView() {
               tempObj[seventhKey] = postData.timeStamp;
               tempObj[eighthKey] = likeData.count;
               tempObj[ninthKey] = likeFlag;
+              tempObj[tenthKey] = replyCount;
 
               postArray.push(tempObj);
               setEmptyPost(false);
@@ -308,6 +325,7 @@ export default function TrackUserMapView() {
           const seventhKey = "timestamp";
           const eighthKey = "likeCount";
           const ninthKey = "likeFlag";
+          const tenthKey = "replyCount";
 
           while (cnt < size) {
             const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
@@ -347,6 +365,13 @@ export default function TrackUserMapView() {
               likeFlag = false;
             }
 
+            const queryReply = await firestore()
+              .collection("replies")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const replyCount = queryReply.empty ? 0 : queryReply.size;
+
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
             tempObj[thirdKey] = userData.photoURL;
@@ -356,6 +381,7 @@ export default function TrackUserMapView() {
             tempObj[seventhKey] = postData.timeStamp;
             tempObj[eighthKey] = likeData.count;
             tempObj[ninthKey] = likeFlag;
+            tempObj[tenthKey] = replyCount;
 
             postArray.push(tempObj);
             setEmptyPost(false);
