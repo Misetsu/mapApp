@@ -252,6 +252,7 @@ const ReplyScreen = () => {
         )}
       </View>
       </ScrollView>
+      
       <View style={styles.sendReply}>
       <TextInput
         style={styles.input}
@@ -260,8 +261,9 @@ const ReplyScreen = () => {
         onChangeText={setReplyText}
          multiline
       />
-
-      <Button title="送信" onPress={handleReplySubmit} />
+      <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
+        <Text style={styles.replyBtnText}>送信</Text>
+      </TouchableOpacity>
       </View>
     </View>
   );
@@ -271,13 +273,15 @@ const ReplyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 110,
+    paddingBottom: 50,
+    backgroundColor: "#F2F5C8",
   },
   centerContainer: {
     width: "100%",
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F2F5C8",
   },
   contentContainer: {
     padding: 20,
@@ -293,7 +297,6 @@ const styles = StyleSheet.create({
     height: 50, // 高さを設定
     justifyContent: "center", // 縦中央揃え
     alignItems: "center", // 横中央揃え
-    
   },
   userBar: {
     flexDirection: "row",
@@ -341,6 +344,14 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     width: '100%',
+    flex: 1
+  },
+  replyBtn:{
+    height: 50,
+    marginBottom: 20,
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor:'#A3DE83',
   },
   repliesList: {
     marginTop: 20,
@@ -364,12 +375,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sendReply: {
-    bottom: 110,
+    bottom: 50,
     width: '100%',
     height:110,
     backgroundColor: '#fafafa',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: 'row'
   },
 });
 
