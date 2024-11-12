@@ -43,7 +43,7 @@ export default function MyModal({
 
   postData.map((post) => {
     if (post) {
-      tempObj1[post.postId] = post.likeflag; // postIdをidに修正
+      tempObj1[post.postId] = post.likeFlag; // postIdをidに修正
       tempObj2[post.postId] = post.likeCount;
     }
   });
@@ -155,6 +155,7 @@ export default function MyModal({
               const isLiked = likes[post.postId]; // idを使用する
               const flag = tempObj1[post.postId];
               const count = tempObj2[post.postId];
+              console.log(post.likeFlag);
               return (
                 <View key={post.postId} style={styles.postView}>
                   <TouchableOpacity
