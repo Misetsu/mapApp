@@ -190,7 +190,7 @@ export default function MyModal({
                           {flag ? (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleUnlike(post.postId, index)}
+                              onPress={() => handleUnlike(post.postId)}
                             >
                               <Icon
                                 name="heart"
@@ -209,7 +209,7 @@ export default function MyModal({
                           ) : (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleLike(post.postId, index)}
+                              onPress={() => handleLike(post.postId)}
                             >
                               <Icon
                                 name="heart"
