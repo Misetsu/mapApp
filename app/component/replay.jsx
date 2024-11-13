@@ -2,15 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
-  ScrollView,
   Dimensions,
   StyleSheet,
   Text,
   Alert,
   Image,
   ActivityIndicator,
-  FlatList,
   TouchableOpacity,
+  FlatList, // ScrollViewからFlatListに変更
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -18,6 +17,7 @@ import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -33,7 +33,7 @@ const ReplyScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const handleBackPress = () => {
-    router.back(); // 前の画面に戻る
+    router.back();
   };
 
   const navigateProfile = (uid) => {
@@ -102,7 +102,8 @@ const ReplyScreen = () => {
       const repliesSnapshot = await firestore()
         .collection("replies")
         .where("postId", "==", parseInt(postId))
-        .orderBy("timestamp", "desc")
+        .orderBy("parentReplyId", "asc") // parentReplyIdでソート
+        .orderBy("timestamp", "asc")
         .get();
 
       const repliesData = await Promise.all(
@@ -159,6 +160,7 @@ const ReplyScreen = () => {
             userId: userId,
             text: replyText,
             timestamp: currentTime,
+            hantei: 0,
           });
 
         setReplyText("");
@@ -271,7 +273,13 @@ const ReplyScreen = () => {
 
                   <FlatList
                     data={replies}
-                    renderItem={renderReply}
+                    renderItem={({ item }) => (
+                      <RepliesList
+                        replies={[item]}
+                        navigateProfile={navigateProfile}
+                        postId={postId}
+                      />
+                    )}
                     keyExtractor={(item) => item.id}
                     style={styles.repliesList}
                     ListEmptyComponent={
@@ -321,40 +329,30 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   header: {
-    flexDirection: "row", // 横並びにする
-    alignItems: "center", // 縦方向の中央揃え
-    justifyContent: "space-between", // アイコンを左端に配置
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   iconButton: {
-    width: 50, // 横幅を設定
-    height: 50, // 高さを設定
-    justifyContent: "center", // 縦中央揃え
-    alignItems: "center", // 横中央揃え
-  },
-  userBar: {
-    flexDirection: "row",
-    gap: 8,
+    width: 50,
+    height: 50,
     justifyContent: "center",
-  },
-  iconImage: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    alignItems: "center",
   },
   spotName: {
     fontSize: 20,
     fontWeight: "bold",
   },
   imageContainer: {
-    width: 225,
-    height: 300,
+    width: ((height * 0.3) / 4) * 3,
+    height: height * 0.3,
     marginBottom: 10,
     overflow: "hidden",
     alignSelf: "center",
   },
   image: {
-    width: 225,
-    height: 300,
+    width: "100%",
+    height: "100%",
     aspectRatio: 3 / 4, // 高さを3:4の比率に保つ
     resizeMode: "cover",
     justifyContent: "center",
@@ -386,9 +384,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#A3DE83",
   },
-  repliesList: {
-    marginTop: 10,
-  },
+  repliesList: {},
   replyContainer: {
     padding: 10,
     borderBottomWidth: 1,
