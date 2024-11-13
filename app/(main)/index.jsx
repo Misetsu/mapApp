@@ -891,7 +891,7 @@ export default function TrackUserMapView() {
             bottom: 30,
             width: 70,
             height: 70,
-            backgroundColor: "blue",
+            backgroundColor: "rgba(255, 255, 255, 0.75)",
             borderRadius: 35,
             display: postButtonVisible ? "flex" : "none",
           }}
@@ -909,7 +909,7 @@ export default function TrackUserMapView() {
             bottom: 30,
             width: 70,
             height: 70,
-            backgroundColor: "blue",
+            backgroundColor: "rgba(255, 255, 255, 0.75)",
             borderRadius: 35,
             display: postButtonVisible ? "flex" : "none",
           }}
