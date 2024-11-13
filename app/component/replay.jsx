@@ -25,12 +25,14 @@ const { width, height } = Dimensions.get("window"); //デバイスの幅と高�
 const ReplyScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { postId } = params;
+  const { postId, showImage } = params;
   const [replyText, setReplyText] = useState("");
   const [photoUri, setPhotoUri] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  console.log(showImage);
 
   const handleBackPress = () => {
     router.back();
@@ -179,33 +181,6 @@ const ReplyScreen = () => {
     }
   };
 
-  const renderReply = ({ item }) => (
-    <View style={styles.replyContainer}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.userBar}
-          onPress={() => {
-            navigateProfile(item.userId);
-          }}
-        >
-          <Image
-            source={{ uri: item.userData.photoURL }}
-            style={styles.iconImage}
-          />
-          <Text>{item.userData.displayName}</Text>
-        </TouchableOpacity>
-        <Text style={styles.replyTimestamp}>
-          {formatInTimeZone(
-            new Date(item.timestamp),
-            "Asia/Tokyo",
-            "yyyy年MM月dd日 HH:mm"
-          )}
-        </Text>
-      </View>
-      <Text style={styles.replyText}>{item.text}</Text>
-    </View>
-  );
-
   return (
     <View>
       {/* <ScrollView style={styles.container}> */}
@@ -254,12 +229,16 @@ const ReplyScreen = () => {
                       )}
                     </Text>
                   </View>
-                  {photoUri && (
+                  {showImage == "true" ? (
+                    <View style={styles.imageContainer}>
+                      <Image source={{ uri: photoUri }} style={styles.image} />
+                    </View>
+                  ) : (
                     <View style={styles.imageContainer}>
                       <Image
                         source={{ uri: photoUri }}
                         style={styles.image}
-                        resizeMode="cover"
+                        blurRadius={50}
                       />
                     </View>
                   )}

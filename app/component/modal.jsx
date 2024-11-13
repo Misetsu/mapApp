@@ -275,7 +275,10 @@ export default function MyModal({
                         onPress={() => {
                           router.push({
                             pathname: "/component/replay",
-                            params: { postId: post.postId }, // idを使用
+                            params: {
+                              postId: post.postId,
+                              showImage: postImage,
+                            }, // idを使用
                           });
                         }}
                       >
