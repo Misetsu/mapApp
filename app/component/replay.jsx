@@ -8,15 +8,15 @@ import {
   Alert,
   Image,
   ActivityIndicator,
-  FlatList,
   TouchableOpacity,
+  FlatList, // ScrollViewからFlatListに変更
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { formatInTimeZone } from "date-fns-tz";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import RepliesList from "./RepliesList";  // RepliesList コンポーネントをインポート
 
 const auth = FirebaseAuth();
 
@@ -31,7 +31,7 @@ const ReplyScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const handleBackPress = () => {
-    router.back(); // 前の画面に戻る
+    router.back();
   };
 
   const navigateProfile = (uid) => {
@@ -90,6 +90,7 @@ const ReplyScreen = () => {
       const repliesSnapshot = await firestore()
         .collection("replies")
         .where("postId", "==", parseInt(postId))
+        .orderBy("parentReplyId", "asc") // parentReplyIdでソート
         .orderBy("timestamp", "asc")
         .get();
 
@@ -137,7 +138,7 @@ const ReplyScreen = () => {
       const maxId = querySnapshot.empty
         ? 1
         : querySnapshot.docs[0].data().parentReplyId + 1;
-
+      
       try {
         await firestore()
           .collection("replies")
@@ -147,6 +148,7 @@ const ReplyScreen = () => {
             userId: userId,
             text: replyText,
             timestamp: currentTime,
+            hantei: 0,
           });
 
         setReplyText("");
@@ -165,32 +167,37 @@ const ReplyScreen = () => {
     }
   };
 
-  const renderReply = ({ item }) => (
-    <View style={styles.replyContainer}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.userBar}
-          onPress={() => {
-            navigateProfile(item.userId);
-          }}
-        >
-          <Image
-            source={{ uri: item.userData.photoURL }}
-            style={styles.iconImage}
-          />
-          <Text>{item.userData.displayName}</Text>
-        </TouchableOpacity>
-        <Text style={styles.replyTimestamp}>
-          {formatInTimeZone(
-            new Date(item.timestamp),
-            "Asia/Tokyo",
-            "yyyy年MM月dd日 HH:mm"
-          )}
-        </Text>
+  const renderPostDetails = () => {
+    return (
+      <View style={styles.contentContainer}>
+        {photoUri && (
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: photoUri }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          </View>
+        )}
+        <View style={styles.postDetails}>
+          <Text style={styles.spotText}>
+            投稿詳細：{" "}
+            {selectedPost.postDetails
+              ? selectedPost.postDetails.postTxt
+              : "詳細がありません"}
+          </Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="返信を入力..."
+          value={replyText}
+          onChangeText={setReplyText}
+          multiline
+        />
+        <Button title="送信" onPress={handleReplySubmit} />
       </View>
-      <Text style={styles.replyText}>{item.text}</Text>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -212,46 +219,15 @@ const ReplyScreen = () => {
                 <Text style={styles.spotName}>{selectedPost.spotName}</Text>
                 <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
               </View>
-              <View style={styles.contentContainer}>
-                {photoUri && (
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: photoUri }}
-                      style={styles.image}
-                      resizeMode="cover"
-                    />
-                  </View>
+              <FlatList
+                data={replies}
+                keyExtractor={(item) => item.id.toString()}
+                ListHeaderComponent={renderPostDetails}
+                renderItem={({ item }) => (
+                  <RepliesList replies={[item]} navigateProfile={navigateProfile} postId={postId}/>
                 )}
-                <View style={styles.postDetails}>
-                  <Text style={styles.spotText}>
-                    投稿詳細：{" "}
-                    {selectedPost.postDetails
-                      ? selectedPost.postDetails.postTxt
-                      : "詳細がありません"}
-                  </Text>
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="返信を入力..."
-                  value={replyText}
-                  onChangeText={setReplyText}
-                  multiline
-                />
-
-                <Button title="送信" onPress={handleReplySubmit} />
-
-                <FlatList
-                  data={replies}
-                  renderItem={renderReply}
-                  keyExtractor={(item) => item.id}
-                  style={styles.repliesList}
-                  ListEmptyComponent={
-                    <Text style={styles.noRepliesText}>
-                      まだ返信がありません。
-                    </Text>
-                  }
-                />
-              </View>
+                contentContainerStyle={styles.scrollViewContainer}
+              />
             </>
           )}
         </>
@@ -264,6 +240,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollViewContainer: {
+    padding: 20,
+    paddingBottom: 20,
+  },
   centerContainer: {
     width: "100%",
     height: "100%",
@@ -271,29 +251,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   contentContainer: {
-    padding: 20,
-    paddingBottom: 0,
+    paddingBottom: 20,
   },
   header: {
-    flexDirection: "row", // 横並びにする
-    alignItems: "center", // 縦方向の中央揃え
-    justifyContent: "space-between", // アイコンを左端に配置
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   iconButton: {
-    width: 50, // 横幅を設定
-    height: 50, // 高さを設定
-    justifyContent: "center", // 縦中央揃え
-    alignItems: "center", // 横中央揃え
-  },
-  userBar: {
-    flexDirection: "row",
-    gap: 8,
+    width: 50,
+    height: 50,
     justifyContent: "center",
-  },
-  iconImage: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    alignItems: "center",
   },
   spotName: {
     fontSize: 20,
@@ -330,27 +299,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     padding: 10,
     borderRadius: 5,
-  },
-  repliesList: {
-    marginTop: 20,
-  },
-  replyContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "lightgray",
-  },
-  replyText: {
-    fontSize: 14,
-    paddingHorizontal: 10,
-  },
-  replyTimestamp: {
-    fontSize: 12,
-    color: "gray",
-  },
-  noRepliesText: {
-    textAlign: "center",
-    color: "gray",
-    marginTop: 10,
   },
 });
 

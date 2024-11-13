@@ -400,6 +400,7 @@ export default function TrackUserMapView() {
       const forthKey = "postId";
       const fifthKey = "replyId";
       const sixthKey = "replyText";
+      const sevenkey = "hantei";
 
       while (cnt < size) {
         const replaySnapshot = queryReplay.docs[cnt];
@@ -420,6 +421,7 @@ export default function TrackUserMapView() {
         tempObj[forthKey] = postId;
         tempObj[fifthKey] = replayData.parentReplyId;
         tempObj[sixthKey] = replayData.text;
+        tempObj[sevenkey] = replayData.hantei;
 
         tempArray.push(tempObj);
         cnt = cnt + 1;
@@ -839,7 +841,7 @@ export default function TrackUserMapView() {
         setError(err.message);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: true,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
