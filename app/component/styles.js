@@ -146,13 +146,13 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   listProfileSize: {
-    margin: 5
+    margin: 5,
   },
   listProfileIndexButton: {
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center",
-    width: 70,    
+    width: 70,
     height: 70,
   },
   newButtonContainer: {
@@ -160,7 +160,7 @@ export const styles = StyleSheet.create({
     bottom: 100,
   },
   roundButton: {
-    backgroundColor: "#007AFF", // ボタンの背景色
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
     borderRadius: 25, // ボタンを丸くするために大きめの値を指定
     width: 50, // ボタンの幅
     height: 50, // ボタンの高さ

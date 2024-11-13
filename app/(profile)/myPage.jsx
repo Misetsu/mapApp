@@ -30,6 +30,7 @@ export default function myPage() {
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
   const [viewMode, setViewMode] = useState("posts"); // 投稿といいねの切り替え
   const [userStatus, setUserStatus] = useState(0);
+  const [visible, setVisible] = useState(false);
 
   const router = useRouter();
 
@@ -183,6 +184,18 @@ export default function myPage() {
     router.replace({ pathname: "/" });
   };
 
+  const toggleDeleteModal = () => {
+    setVisible(visible ? false : true);
+  };
+
+  const handleDelete = async () => {
+    await firestore().collection("users").doc(auth.currentUser.uid).delete();
+    await auth.currentUser.delete().then(() => {
+      GoogleSignin.revokeAccess();
+      router.replace("/");
+    });
+  };
+
   return (
     <ScrollView style={styles.scrview}>
       {/* 右側のアイコンやテキストをここに追加 */}
@@ -311,23 +324,28 @@ export default function myPage() {
 
         <View style={styles.ChangeStatus}>
           <Text>投稿を非公開にする：{userStatus ? "非公開" : "公開"}</Text>
-          <View style={(style = styles.SwitchBtn)}>
+          <View style={styles.SwitchBtn}>
             <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
           </View>
         </View>
-        <Text style={styles.subtitle}>
-          {viewMode === "posts" ? "自分の投稿" : "いいねした投稿"}
-        </Text>
 
-        {/* 表示内容を切り替え */}
+        {viewMode === "posts" ? (
+          <View style={styles.tabContainer}>
+            <Text style={styles.selectedTab}>自分の投稿</Text>
+            <TouchableOpacity style={styles.unselectedTab} onPress={toggleView}>
+              <Text>いいねした投稿</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.tabContainer}>
+            <TouchableOpacity style={styles.unselectedTab} onPress={toggleView}>
+              <Text>自分の投稿</Text>
+            </TouchableOpacity>
+            <Text style={styles.selectedTab}>いいねした投稿</Text>
+          </View>
+        )}
+
         {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
-
-        {/* 投稿といいねの表示切り替えボタン */}
-        <TouchableOpacity style={styles.button} onPress={toggleView}>
-          <Text style={styles.buttonText}>
-            {viewMode === "posts" ? "いいねした投稿を見る" : "自分の投稿を見る"}
-          </Text>
-        </TouchableOpacity>
 
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
@@ -343,7 +361,48 @@ export default function myPage() {
               ログアウト
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: "none", width: "50%", marginBottom: 0 },
+            ]}
+            onPress={toggleDeleteModal}
+          >
+            <Text style={[styles.buttonText, { color: "#FF6666" }]}>
+              アカウント削除
+            </Text>
+          </TouchableOpacity>
         </View>
+
+        <Modal animationType="fade" transparent={true} visible={visible}>
+          <View style={styles.centerdView}>
+            <View style={styles.deleteModal}>
+              <Text style={styles.deleteModalText}>
+                本当にアカウント削除しますか？{"\n"}この操作は後戻りできません。
+              </Text>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.deleteModalButton,
+                    { borderRightWidth: 1, borderRightColor: "grey" },
+                  ]}
+                  onPress={toggleDeleteModal}
+                >
+                  <Text>キャンセル</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.deleteModalButton,
+                    { borderLeftWidth: 1, borderLeftColor: "grey" },
+                  ]}
+                  onPress={handleDelete}
+                >
+                  <Text style={{ color: "red" }}>削除</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
@@ -494,5 +553,61 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
+  },
+  tabContainer: {
+    width: "100%",
+    marginTop: 20,
+    flexDirection: "row",
+    borderBottomColor: "#A3DE83",
+    borderBottomWidth: 5,
+  },
+  selectedTab: {
+    width: "50%",
+    paddingTop: 20,
+    paddingBottom: 5,
+    backgroundColor: "#A3DE83",
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+    alignItems: "center",
+    textAlign: "center",
+  },
+  unselectedTab: {
+    width: "50%",
+    paddingTop: 20,
+    paddingBottom: 5,
+    backgroundColor: "#BABABA",
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+    alignItems: "center",
+    textAlign: "center",
+  },
+  centerdView: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteModal: {
+    width: "80%",
+    height: "20%",
+    backgroundColor: "white",
+    borderRadius: 20,
+  },
+  deleteModalText: {
+    padding: 20,
+  },
+  buttonRow: {
+    width: "100%",
+    position: "absolute",
+    bottom: 0,
+    flexDirection: "row",
+  },
+  deleteModalButton: {
+    borderTopWidth: 2,
+    borderTopColor: "grey",
+    padding: 20,
+    width: "50%",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

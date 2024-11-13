@@ -29,6 +29,7 @@ export default function profile() {
   const [isFav, setIsFav] = useState(false);
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
+  const [publicStatus, setPublicStatus] = useState(false);
 
   useEffect(() => {
     const { uid } = params;
@@ -42,6 +43,10 @@ export default function profile() {
       const profileData = queryProfile.docs[0].data();
       setDisplayName(profileData.displayName);
       setPhotoUri(profileData.photoURL);
+
+      if (profileData.publicStatus == 0) {
+        setPublicStatus(true);
+      }
 
       // フォロー中取得
       const queryFollow = await firestore()
@@ -95,6 +100,10 @@ export default function profile() {
             .where("uid", "==", followerData.followerId)
             .get();
           const userData = queryUser.docs[0].data();
+
+          if (userData.uid == auth.currentUser.uid) {
+            setPublicStatus(true);
+          }
 
           tempObj[firstKey] = userData.uid;
           tempObj[secondKey] = userData.displayName;
@@ -374,7 +383,11 @@ export default function profile() {
           style={styles.textInput}
           editable={false}
         />
-        <UserPosts uid={uid} />
+        {publicStatus ? (
+          <UserPosts uid={uid} />
+        ) : (
+          <Text>このアカウントは非公開です。</Text>
+        )}
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
