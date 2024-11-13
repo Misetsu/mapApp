@@ -229,19 +229,22 @@ const ReplyScreen = () => {
                   ></TouchableOpacity>
                 </View>
                 <View style={styles.contentContainer}>
-                  <View>
+                  <View style={styles.postUserBar}>
                     <TouchableOpacity
+                      style={styles.postUser}
                       onPress={() => {
                         navigateProfile(selectedPost.userDetails.uid);
                       }}
                     >
                       <Image
                         source={{ uri: selectedPost.userDetails.photoURL }}
-                        style={styles.iconImage}
+                        style={styles.postIconImage}
                       />
-                      <Text>{selectedPost.userDetails.displayName}</Text>
+                      <Text style={{ fontSize: 16 }}>
+                        {selectedPost.userDetails.displayName}
+                      </Text>
                     </TouchableOpacity>
-                    <Text>
+                    <Text style={styles.postDate}>
                       {formatInTimeZone(
                         new Date(selectedPost.postDetails.timeStamp),
                         "Asia/Tokyo",
@@ -260,7 +263,6 @@ const ReplyScreen = () => {
                   )}
                   <View style={styles.postDetails}>
                     <Text style={styles.spotText}>
-                      {" "}
                       {selectedPost.postDetails.postTxt != ""
                         ? selectedPost.postDetails.postTxt
                         : "詳細がありません"}
@@ -304,8 +306,7 @@ const ReplyScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: height - 50,
-    // paddingBottom: 50,
+    height: height - 60,
     backgroundColor: "#F2F5C8",
   },
   centerContainer: {
@@ -348,21 +349,20 @@ const styles = StyleSheet.create({
     width: 225,
     height: 300,
     marginBottom: 10,
-    borderColor: "gray",
-    borderWidth: 1,
-    borderRadius: 5,
     overflow: "hidden",
     alignSelf: "center",
   },
   image: {
     width: 225,
     height: 300,
+    aspectRatio: 3 / 4, // 高さを3:4の比率に保つ
+    resizeMode: "cover",
+    justifyContent: "center",
+    borderWidth: 4,
+    borderColor: "#ffffff",
   },
   postDetails: {
     padding: 10,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 5,
-    marginBottom: 10,
   },
   spotText: {
     fontSize: 16,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#A3DE83",
   },
   repliesList: {
-    marginTop: 20,
+    marginTop: 10,
   },
   replyContainer: {
     padding: 10,
@@ -412,7 +412,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     flexDirection: "row",
     paddingHorizontal: 10,
+    paddingBottom: 10,
     gap: 10,
+  },
+  postUserBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 5,
+  },
+  postUser: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 10,
+    height: "100%",
+  },
+  postIconImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  postDate: {
+    fontSize: 12,
+    color: "gray",
   },
 });
 
