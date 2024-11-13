@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
-  Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -56,11 +55,8 @@ export default function TrackUserMapView() {
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
-  const [showButtons, setShowButtons] = useState(false); // ボタン表示状態
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
-
-  const fadeAnim = useRef(new Animated.Value(0)).current; // フェードアニメーションの初期値
 
   const setmodal = (marker) => {
     try {
@@ -121,22 +117,25 @@ export default function TrackUserMapView() {
       try {
         const postArray = [];
         const friendList = [];
-        friendList.push(auth.currentUser.uid);
 
         setEmptyPost(true);
 
-        const queryFollow = await firestore()
-          .collection("follow")
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
+        if (auth.currentUser != null) {
+          friendList.push(auth.currentUser.uid);
 
-        if (!queryFollow.empty) {
-          let cnt = 0;
-          while (cnt < queryFollow.size) {
-            const followSnapshot = queryFollow.docs[cnt];
-            const followData = followSnapshot.data();
-            friendList.push(followData.followeeId);
-            cnt = cnt + 1;
+          const queryFollow = await firestore()
+            .collection("follow")
+            .where("followerId", "==", auth.currentUser.uid)
+            .get();
+
+          if (!queryFollow.empty) {
+            let cnt = 0;
+            while (cnt < queryFollow.size) {
+              const followSnapshot = queryFollow.docs[cnt];
+              const followData = followSnapshot.data();
+              friendList.push(followData.followeeId);
+              cnt = cnt + 1;
+            }
           }
         }
 
@@ -159,7 +158,7 @@ export default function TrackUserMapView() {
           const seventhKey = "timestamp";
           const eighthKey = "likeCount";
           const ninthKey = "likeFlag";
-          const tenthKey = "reply";
+          const tenthKey = "replyCount";
 
           while (cnt < size) {
             const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
@@ -201,13 +200,20 @@ export default function TrackUserMapView() {
               const likeSnapshot = queryLike.docs[0];
               const likeData = likeSnapshot.data();
               let likeFlag;
-              if (likeData[auth.currentUser.uid] !== undefined) {
-                likeFlag = true;
-              } else {
-                likeFlag = false;
+              if (auth.currentUser != null) {
+                if (likeData[auth.currentUser.uid] !== undefined) {
+                  likeFlag = true;
+                } else {
+                  likeFlag = false;
+                }
               }
 
-              const reply = await fetchReply(postData.id);
+              const queryReply = await firestore()
+                .collection("replies")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const replyCount = queryReply.empty ? 0 : queryReply.size;
 
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
@@ -218,7 +224,7 @@ export default function TrackUserMapView() {
               tempObj[seventhKey] = postData.timeStamp;
               tempObj[eighthKey] = likeData.count;
               tempObj[ninthKey] = likeFlag;
-              tempObj[tenthKey] = reply;
+              tempObj[tenthKey] = replyCount;
 
               postArray.push(tempObj);
               setEmptyPost(false);
@@ -254,7 +260,12 @@ export default function TrackUserMapView() {
                 likeFlag = false;
               }
 
-              const reply = await fetchReply(postData.id);
+              const queryReply = await firestore()
+                .collection("replies")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const replyCount = queryReply.empty ? 0 : queryReply.size;
 
               tempObj[firstKey] = postData.userId;
               tempObj[secondKey] = userData.displayName;
@@ -265,7 +276,7 @@ export default function TrackUserMapView() {
               tempObj[seventhKey] = postData.timeStamp;
               tempObj[eighthKey] = likeData.count;
               tempObj[ninthKey] = likeFlag;
-              tempObj[tenthKey] = reply;
+              tempObj[tenthKey] = replyCount;
 
               postArray.push(tempObj);
               setEmptyPost(false);
@@ -314,7 +325,7 @@ export default function TrackUserMapView() {
           const seventhKey = "timestamp";
           const eighthKey = "likeCount";
           const ninthKey = "likeFlag";
-          const tenthKey = "reply";
+          const tenthKey = "replyCount";
 
           while (cnt < size) {
             const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
@@ -354,7 +365,12 @@ export default function TrackUserMapView() {
               likeFlag = false;
             }
 
-            const reply = await fetchReply(postData.id);
+            const queryReply = await firestore()
+              .collection("replies")
+              .where("postId", "==", postData.id)
+              .get();
+
+            const replyCount = queryReply.empty ? 0 : queryReply.size;
 
             tempObj[firstKey] = postData.userId;
             tempObj[secondKey] = userData.displayName;
@@ -365,7 +381,7 @@ export default function TrackUserMapView() {
             tempObj[seventhKey] = postData.timeStamp;
             tempObj[eighthKey] = likeData.count;
             tempObj[ninthKey] = likeFlag;
-            tempObj[tenthKey] = reply;
+            tempObj[tenthKey] = replyCount;
 
             postArray.push(tempObj);
             setEmptyPost(false);
@@ -381,53 +397,6 @@ export default function TrackUserMapView() {
         console.error("Error fetching documents: ", error);
       }
     }
-  };
-
-  const fetchReply = async (postId) => {
-    const tempArray = [];
-    const queryReplay = await firestore()
-      .collection("replies")
-      .where("postId", "==", postId)
-      .limit(2)
-      .get();
-
-    if (!queryReplay.empty) {
-      const size = queryReplay.size;
-      let cnt = 0;
-      const firstKey = "userId";
-      const secondKey = "username";
-      const thirdKey = "userIcon";
-      const forthKey = "postId";
-      const fifthKey = "replyId";
-      const sixthKey = "replyText";
-      const sevenkey = "hantei";
-
-      while (cnt < size) {
-        const replaySnapshot = queryReplay.docs[cnt];
-        const replayData = replaySnapshot.data();
-
-        let tempObj = {};
-
-        const queryUser = await firestore()
-          .collection("users")
-          .where("uid", "==", replayData.userId)
-          .get();
-        const userSnapshot = queryUser.docs[0];
-        const userData = userSnapshot.data();
-
-        tempObj[firstKey] = userData.uid;
-        tempObj[secondKey] = userData.displayName;
-        tempObj[thirdKey] = userData.photoURL;
-        tempObj[forthKey] = postId;
-        tempObj[fifthKey] = replayData.parentReplyId;
-        tempObj[sixthKey] = replayData.text;
-        tempObj[sevenkey] = replayData.hantei;
-
-        tempArray.push(tempObj);
-        cnt = cnt + 1;
-      }
-    }
-    return tempArray;
   };
 
   const getPinColor = (marker) => {
@@ -499,18 +468,20 @@ export default function TrackUserMapView() {
   const fetchAllMarkerCord = async () => {
     let vivstedSpot = {};
 
-    const querySnapshot = await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .collection("spot")
-      .orderBy("spotId", "asc")
-      .get();
+    if (auth.currentUser != null) {
+      const querySnapshot = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .collection("spot")
+        .orderBy("spotId", "asc")
+        .get();
 
-    if (!querySnapshot.empty) {
-      querySnapshot.forEach((docs) => {
-        const item = docs.data();
-        vivstedSpot[item.spotId] = item.timeStamp;
-      });
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach((docs) => {
+          const item = docs.data();
+          vivstedSpot[item.spotId] = item.timeStamp;
+        });
+      }
     }
 
     const fetchResult = [];
@@ -543,85 +514,87 @@ export default function TrackUserMapView() {
 
   const fetchIndexBar = async (status) => {
     const tempList = [];
-    const firstKey = "userId";
-    const secondKey = "username";
-    const thirdKey = "userIcon";
-    const forthKey = "lastPostAt";
-    if (status == "follow") {
-      try {
-        const queryFollow = await firestore()
-          .collection("follow")
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
+    if (auth.currentUser != null) {
+      const firstKey = "userId";
+      const secondKey = "username";
+      const thirdKey = "userIcon";
+      const forthKey = "lastPostAt";
+      if (status == "follow") {
+        try {
+          const queryFollow = await firestore()
+            .collection("follow")
+            .where("followerId", "==", auth.currentUser.uid)
+            .get();
 
-        if (!queryFollow.empty) {
-          let cnt = 0;
-          while (cnt < queryFollow.size) {
-            let tempObj = {};
-            const followSnapshot = queryFollow.docs[cnt];
-            const followData = followSnapshot.data();
+          if (!queryFollow.empty) {
+            let cnt = 0;
+            while (cnt < queryFollow.size) {
+              let tempObj = {};
+              const followSnapshot = queryFollow.docs[cnt];
+              const followData = followSnapshot.data();
 
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", followData.followeeId)
-              .get();
-            const userSnapshot = queryUser.docs[0];
-            const userData = userSnapshot.data();
+              const queryUser = await firestore()
+                .collection("users")
+                .where("uid", "==", followData.followeeId)
+                .get();
+              const userSnapshot = queryUser.docs[0];
+              const userData = userSnapshot.data();
 
-            if (!(userData.lastPostAt == "0")) {
-              tempObj[firstKey] = userData.uid;
-              tempObj[secondKey] = userData.displayName;
-              tempObj[thirdKey] = userData.photoURL;
-              tempObj[forthKey] = userData.lastPostAt;
+              if (!(userData.lastPostAt == "0")) {
+                tempObj[firstKey] = userData.uid;
+                tempObj[secondKey] = userData.displayName;
+                tempObj[thirdKey] = userData.photoURL;
+                tempObj[forthKey] = userData.lastPostAt;
 
-              tempList.push(tempObj);
+                tempList.push(tempObj);
+              }
+
+              cnt = cnt + 1;
             }
-
-            cnt = cnt + 1;
           }
+        } catch (error) {
+          console.log("Error fetching documents: ", error);
         }
-      } catch (error) {
-        console.log("Error fetching documents: ", error);
-      }
-    } else if (status == "star") {
-      try {
-        const queryFav = await firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .get();
+      } else if (status == "star") {
+        try {
+          const queryFav = await firestore()
+            .collection("star")
+            .doc(auth.currentUser.uid)
+            .get();
 
-        const starList = [];
-        for (const [key, value] of Object.entries(queryFav.data())) {
-          if (key == value) {
-            starList.push(value);
-          }
-        }
-        if (!(starList.length == 0)) {
-          let cnt = 0;
-          while (cnt < starList.length) {
-            let tempObj = {};
-
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", starList[cnt])
-              .get();
-            const userSnapshot = queryUser.docs[0];
-            const userData = userSnapshot.data();
-
-            if (!(userData.lastPostAt == "0")) {
-              tempObj[firstKey] = userData.uid;
-              tempObj[secondKey] = userData.displayName;
-              tempObj[thirdKey] = userData.photoURL;
-              tempObj[forthKey] = userData.lastPostAt;
-
-              tempList.push(tempObj);
+          const starList = [];
+          for (const [key, value] of Object.entries(queryFav.data())) {
+            if (key == value) {
+              starList.push(value);
             }
-
-            cnt = cnt + 1;
           }
+          if (!(starList.length == 0)) {
+            let cnt = 0;
+            while (cnt < starList.length) {
+              let tempObj = {};
+
+              const queryUser = await firestore()
+                .collection("users")
+                .where("uid", "==", starList[cnt])
+                .get();
+              const userSnapshot = queryUser.docs[0];
+              const userData = userSnapshot.data();
+
+              if (!(userData.lastPostAt == "0")) {
+                tempObj[firstKey] = userData.uid;
+                tempObj[secondKey] = userData.displayName;
+                tempObj[thirdKey] = userData.photoURL;
+                tempObj[forthKey] = userData.lastPostAt;
+
+                tempList.push(tempObj);
+              }
+
+              cnt = cnt + 1;
+            }
+          }
+        } catch (error) {
+          console.log("Error fetching documents: ", error);
         }
-      } catch (error) {
-        console.log("Error fetching documents: ", error);
       }
     }
 
@@ -709,65 +682,46 @@ export default function TrackUserMapView() {
     fetchIndexBar(status);
   };
 
-  // ボタンを表示してフェードイン
-  const showAnimatedButtons = () => {
-    setShowButtons(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1, // 完全に表示
-      duration: 500, // 0.5秒でフェードイン
-      useNativeDriver: true,
-    }).start();
-  };
-
-  // 新しいボタン1を押したときにボタンをフェードアウトして非表示
-  const hideButtons = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0, // 完全に非表示
-      duration: 500, // 0.5秒でフェードアウト
-      useNativeDriver: true,
-    }).start(() => {
-      setShowButtons(false); // フェードアウト完了後にボタンを非表示
-    });
-  };
-
   const handleVisitState = async (spotId) => {
-    const querySnapshot = await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .collection("spot")
-      .where("spotId", "==", spotId)
-      .get();
-
-    const currentTime = new Date().toISOString();
-
-    if (!querySnapshot.empty) {
-      const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
-      await firestore()
+    if (auth.currentUser != null) {
+      const querySnapshot = await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
         .collection("spot")
-        .doc(docId)
-        .update({
-          timeStamp: currentTime,
-        });
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .collection("spot")
-        .add({
-          spotId: spotId,
-          timeStamp: currentTime,
-        });
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
+        .where("spotId", "==", parseInt(spotId))
         .get();
-      const spotPoint = queryUser.data().spotPoint + 1;
 
-      await firestore().collection("users").doc(auth.currentUser.uid).update({
-        spotPoint: spotPoint,
-      });
+      const currentTime = new Date().toISOString();
+
+      if (!querySnapshot.empty) {
+        const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
+        await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .doc(docId)
+          .update({
+            timeStamp: currentTime,
+          });
+      } else {
+        await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .add({
+            spotId: parseInt(spotId),
+            timeStamp: currentTime,
+          });
+        const queryUser = await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .get();
+        const spotPoint = queryUser.data().spotPoint + 1;
+
+        await firestore().collection("users").doc(auth.currentUser.uid).update({
+          spotPoint: spotPoint,
+        });
+      }
     }
   };
 
@@ -777,7 +731,7 @@ export default function TrackUserMapView() {
     return fibonacci(num - 1) + fibonacci(num - 2);
   }
 
-  const handleAddNewPin = async () => {
+  const handlePost = async () => {
     const queryUser = await firestore()
       .collection("users")
       .doc(auth.currentUser.uid)
@@ -786,26 +740,16 @@ export default function TrackUserMapView() {
     const userData = queryUser.data();
 
     const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
-    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
-    if (pointRequired <= userData.spotPoint) {
-      router.push({
-        pathname: "/camera",
-        params: {
-          latitude: position.latitude,
-          longitude: position.longitude,
-          spotId: 0,
-          point: pointLeft,
-          spotNo: parseInt(userData.spotCreate) + 1,
-        },
-      });
-    } else {
-      alert(
-        "ポイントが足りません。新しいピンを作成するには" +
-          pointRequired +
-          "ポイントが必要です。\n現在所持しているポイント：" +
-          userData.spotPoint
-      );
-    }
+
+    router.push({
+      pathname: "/selectSpot",
+      params: {
+        latitude: position.latitude,
+        longitude: position.longitude,
+        pointRequired: pointRequired,
+        userPoint: userData.spotPoint,
+      },
+    });
   };
 
   useEffect(() => {
@@ -963,84 +907,6 @@ export default function TrackUserMapView() {
         onClose={() => setModalVisible(false)}
       />
 
-      {/* 新しいボタンを表示 */}
-      {showButtons && (
-        <Animated.View
-          style={[styles.newButtonContainer, { opacity: fadeAnim }]}
-        >
-          <TouchableOpacity
-            style={styles.horizontalContainer}
-            onPress={hideButtons}
-          >
-            <View style={styles.menuTextHolder} />
-            <View style={styles.roundButton}>
-              <Icon name="times" size={25} color="#000" />
-            </View>
-            <View style={styles.menuText}>
-              <Text>キャンセル</Text>
-            </View>
-          </TouchableOpacity>
-          {user ? (
-            <TouchableOpacity
-              style={styles.horizontalContainer}
-              onPress={() => {
-                router.push({
-                  pathname: "/selectSpot",
-                  params: {
-                    latitude: position.latitude,
-                    longitude: position.longitude,
-                  },
-                });
-              }}
-            >
-              <View style={styles.menuTextHolder} />
-              <View style={styles.roundButton}>
-                <Icon name="map-marked-alt" size={25} color="#000" />
-              </View>
-              <View style={styles.menuText}>
-                <Text>既存ピンに投稿</Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.roundButton}
-              onPress={() => {
-                router.push({
-                  pathname: "/loginForm",
-                });
-              }}
-            >
-              <Icon name="map-marked-alt" size={25} color="#000" />
-            </TouchableOpacity>
-          )}
-          {user ? (
-            <TouchableOpacity
-              style={styles.horizontalContainer}
-              onPress={handleAddNewPin}
-            >
-              <View style={styles.menuTextHolder} />
-              <View style={styles.roundButton}>
-                <Icon name="map-marker-alt" size={25} color="#000" />
-              </View>
-              <View style={styles.menuText}>
-                <Text>新規ピンに投稿</Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.roundButton}
-              onPress={() => {
-                router.push({
-                  pathname: "/loginForm",
-                });
-              }}
-            >
-              <Icon name="map-marker-alt" size={25} color="#000" />
-            </TouchableOpacity>
-          )}
-        </Animated.View>
-      )}
-
       {user ? (
         <Pressable
           style={{
@@ -1055,7 +921,7 @@ export default function TrackUserMapView() {
             borderRadius: 35,
             display: postButtonVisible ? "flex" : "none",
           }}
-          onPress={showAnimatedButtons}
+          onPress={handlePost}
         >
           <Icon name="camera" size={30} color="#000" />
         </Pressable>

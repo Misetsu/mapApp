@@ -1,12 +1,22 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, Button, Alert } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Button,
+  Alert,
+} from "react-native";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
 const RepliesList = ({ replies, navigateProfile, postId }) => {
   const [parentReplyId, setParentReplyId] = useState(null); // 親返信ID
-  const [newReplyText, setNewReplyText] = useState("");    // 新しい返信内容
+  const [newReplyText, setNewReplyText] = useState(""); // 新しい返信内容
 
   const handleReplyPress = (replyId) => {
     setParentReplyId(parentReplyId === replyId ? null : parseInt(replyId)); // 親返信をトグル
@@ -90,12 +100,14 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
       {parentReplyId === item.parentReplyId && (
         <View style={styles.replyInputContainer}>
           <TextInput
-            style={styles.replyInput}
+            style={styles.input}
             value={newReplyText}
             onChangeText={setNewReplyText}
             placeholder="返信を入力..."
           />
-          <Button title="送信" onPress={submitReply} />
+          <TouchableOpacity style={styles.replyBtn} onPress={submitReply}>
+            <Text>送信</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -116,7 +128,8 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
 
 const styles = StyleSheet.create({
   replyContainer: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
   },
@@ -152,7 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
   },
   repliesList: {
-    marginTop: 20,
+    marginTop: 10,
   },
   replyButton: {
     color: "blue",
@@ -160,6 +173,7 @@ const styles = StyleSheet.create({
   },
   replyInputContainer: {
     flexDirection: "row",
+    gap: 5,
     alignItems: "center",
     paddingTop: 5,
   },
@@ -170,6 +184,23 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 5,
     marginRight: 5,
+  },
+  input: {
+    backgroundColor: "#FAFAFA",
+    borderColor: "gray",
+    borderWidth: 1,
+    padding: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    width: "100%",
+    flex: 1,
+  },
+  replyBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    justifyContent: "center",
+    backgroundColor: "#A3DE83",
   },
 });
 

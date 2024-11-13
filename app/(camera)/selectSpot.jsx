@@ -7,76 +7,56 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import Geolocation from "@react-native-community/geolocation";
-import MapView, { Marker } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.01;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-
 const auth = FirebaseAuth();
 
 export default function SelectSpot() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { latitude, longitude } = params;
-  const [position, setPosition] = useState({
-    //ユーザーの位置情報を保持
-    latitude: 0,
-    longitude: 0,
-    accuracy: 0,
-    altitude: 0,
-    altitudeAccuracy: 0,
-    heading: 0,
-    speed: 0,
-  });
-
-  const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
-  const [initialRegion, setInitialRegion] = useState(null);
-  const [Region, setRegion] = useState(null);
-
-  const [spotId, setSpotId] = useState(0);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [markerCords, setMarkerCords] = useState([]);
+  const { latitude, longitude, pointRequired, userPoint } = params;
+  const [spotList, setSpotList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
 
-  const setmodal = (marker) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
-      if (distance < marker.areaRadius) {
-        setSpotId(marker.id);
-        router.push({
-          pathname: "/camera",
-          params: {
-            latitude: 0,
-            longitude: 0,
-            spotId: marker.id,
-            point: 0,
-            spotNo: 0,
-          },
-        });
-      } else {
-        setSpotId(marker.id);
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
+  const fetchSpotList = async () => {
+    const querySpot = await firestore().collection("spot").orderBy("id").get();
+
+    const tempArray = [];
+    if (!querySpot.empty) {
+      querySpot.forEach((docs) => {
+        const item = docs.data();
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          item.mapLatitude,
+          item.mapLongitude
+        );
+        if (distance < item.areaRadius) {
+          tempArray.push({
+            id: item.id,
+            name: item.name,
+            latitude: item.mapLatitude,
+            longitude: item.mapLongitude,
+            distance: distance.toFixed(1),
+          });
+        }
+      });
+
+      setSpotList(tempArray);
     }
+    setLoading(false);
   };
 
   function toRadians(degrees) {
@@ -107,185 +87,222 @@ export default function SelectSpot() {
     }
   }
 
-  const getPinColor = (marker) => {
-    try {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
-      return distance < marker.areaRadius
-        ? require("../image/pin_orange.png")
-        : require("../image/pin_blue.png");
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
+  function fibonacci(num) {
+    if (num == 1) return 0;
+    if (num == 2) return 1;
+    return fibonacci(num - 1) + fibonacci(num - 2);
+  }
+
+  const handleAddNewPin = async () => {
+    const queryUser = await firestore()
+      .collection("users")
+      .doc(auth.currentUser.uid)
+      .get();
+
+    const userData = queryUser.data();
+
+    const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
+    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
+    if (pointRequired <= userData.spotPoint) {
+      router.push({
+        pathname: "/camera",
+        params: {
+          latitude: latitude,
+          longitude: longitude,
+          spotId: 0,
+          point: pointLeft,
+          spotNo: parseInt(userData.spotCreate) + 1,
+        },
+      });
     }
   };
 
-  const fetchAllMarkerCord = async () => {
-    const fetchResult = [];
+  useEffect(() => {
     setLoading(true);
-    try {
-      const querySnapshot = await firestore()
-        .collection("spot")
-        .orderBy("id")
-        .get();
-
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((docs) => {
-          const item = docs.data();
-          fetchResult.push(item);
-        });
-
-        setMarkerCords(fetchResult);
-      } else {
-        console.log("empty");
-      }
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    //リアルタイムでユーザーの位置情報を監視し、更新
-    const watchId = Geolocation.watchPosition(
-      (position) => {
-        try {
-          setPosition(position.coords);
-          if (!initialRegion) {
-            setInitialRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            });
-            setRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-              flag: 0,
-            });
-          } else {
-            setError("Position or coords is undefined");
-          }
-        } catch (error) {
-          setError(`Error updating position: ${error.message}`);
-        }
-      },
-      (err) => {
-        setError(err.message);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        distanceFilter: 5,
-        maximumAge: 1000,
-      }
-    );
-    return () => Geolocation.clearWatch(watchId);
-  }, [initialRegion]);
-
-  useEffect(() => {
-    setUser(auth.currentUser);
-    fetchAllMarkerCord();
+    fetchSpotList();
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
-      </View>
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )}
-      {initialRegion && (
-        <MapView
-          key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          style={StyleSheet.absoluteFillObject}
-          customMapStyle={customMapStyle}
-          initialRegion={initialRegion}
-          region={Region}
-          scrollEnabled={true}
-          zoomEnabled={true}
-          rotateEnabled={true}
-          pitchEnabled={true}
-        >
-          <Marker
-            coordinate={{
-              latitude: position.latitude,
-              longitude: position.longitude,
-            }}
-            initialRegion={{
-              latitude: position.latitude,
-              longitude: position.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            }}
-          >
-            <View style={styles.radius}>
-              <View style={styles.marker} />
-            </View>
-          </Marker>
-
-          {markerCords.map((marker) => (
-            <TouchableOpacity style={styles.hitSlop} key={marker.id}>
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(marker.mapLatitude),
-                  longitude: parseFloat(marker.mapLongitude),
-                }}
-                title={marker.name}
-                onPress={() => setmodal(marker)}
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.pagetitle}>投稿</Text>
+      <View>
+        {loading ? (
+          <View style={styles.centerView}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : (
+          <View>
+            <View style={styles.listContainer}>
+              <Text style={styles.subtitle}>
+                現在地に新しいピンを立てて投稿
+              </Text>
+              <Text style={styles.subtitle}>
+                必要なポイント：{pointRequired}
+              </Text>
+              <Text style={styles.subtitle}>
+                所持しているポイント：{userPoint}
+              </Text>
+              <TouchableOpacity
+                style={styles.itemContainer}
+                onPress={handleAddNewPin}
               >
-                <Image
-                  source={getPinColor(marker)}
-                  style={styles.markerImage} //ピンの色
-                />
-              </Marker>
-            </TouchableOpacity>
-          ))}
-        </MapView>
-      )}
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          width: "100%",
-          backgroundColor: "#F2F2F2",
-          flexDirection: "row", // 横並びに配置
-          justifyContent: "space-between", // 左右にスペースを均等に配置
-          alignItems: "center", // 縦方向の中央揃え
-          height: 50, // 高さを指定
-        }}
-      >
-        <TouchableOpacity
-          onPress={handleBackPress}
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        >
-          {/* 右側のアイコンやテキストをここに追加 */}
+                <View style={{ flexDirection: "row" }}>
+                  <Image
+                    source={require("../image/UnvisitedPin.png")}
+                    style={styles.listImage}
+                  />
+                  <View>
+                    <Text style={styles.nameText}>新規ピン</Text>
+                    <Text style={styles.positionText}>
+                      {latitude}
+                      {"    "}
+                      {longitude}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.subtitle}>近くのピンに投稿</Text>
+
+            <FlatList
+              style={styles.listContainer}
+              data={spotList}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                return (
+                  <TouchableOpacity
+                    style={styles.itemContainer}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/camera",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: item.id,
+                          point: 0,
+                          spotNo: 0,
+                        },
+                      });
+                    }}
+                  >
+                    <View style={{ flexDirection: "row" }}>
+                      <Image
+                        source={require("../image/ActionPin.png")}
+                        style={styles.listImage}
+                      />
+                      <View>
+                        <Text style={styles.nameText}>{item.name}</Text>
+                        <Text style={styles.positionText}>
+                          {item.latitude}
+                          {"    "}
+                          {item.longitude}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.distanceText}>{item.distance}m</Text>
+                  </TouchableOpacity>
+                );
+              }}
+              ListEmptyComponent={
+                <Text style={styles.boldText}>
+                  現在地の近くにピンがありません。
+                </Text>
+              }
+            />
+          </View>
+        )}
+      </View>
+      <View style={styles.Back}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <Icon name="angle-left" size={24} color="#000" />
         </TouchableOpacity>
-        <Text>投稿したいピンを選択してください</Text>
-        <TouchableOpacity
-          style={{
-            width: 50, // 横幅を設定
-            height: 50, // 高さを設定
-            justifyContent: "center", // 縦中央揃え
-            alignItems: "center", // 横中央揃え
-          }}
-        />
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#F2F5C8",
+  },
+  pagetitle: {
+    fontSize: 30,
+    textAlign: "center",
+    fontWeight: "300",
+  },
+  subtitle: {
+    fontSize: 18,
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "600",
+    color: "#000000",
+    paddingTop: 5,
+  },
+  centerView: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  listContainer: {
+    paddingBottom: 5,
+  },
+  itemContainer: {
+    padding: 10,
+    flexDirection: "row",
+    backgroundColor: "#A3DE83",
+    justifyContent: "space-between",
+    margin: 10, // ボタン間にスペースを追加
+    marginLeft: 0,
+    marginRight: 0,
+  },
+  listImage: {
+    height: 40,
+    width: 40,
+    marginRight: 10,
+  },
+  nameText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  distanceText: {
+    color: "#239D60",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  positionText: {
+    color: "#239D60",
+    fontSize: 12,
+    fontWeight: "400",
+  },
+  positionContainer: {
+    alignItems: "center",
+    paddingTop: 20,
+  },
+  boldText: {
+    fontWeight: "bold",
+  },
+  text: {
+    fontWeight: "normal",
+  },
+  pointText: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+});
