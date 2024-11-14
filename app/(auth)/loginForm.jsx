@@ -63,8 +63,9 @@ export default function LoginScreen() {
           photoURL: auth.currentUser.photoURL,
         },
       });
+    } else {
+      router.replace({ pathname: "/" });
     }
-    router.replace({ pathname: "/" });
   };
 
   const signInWithEmail = async () => {
