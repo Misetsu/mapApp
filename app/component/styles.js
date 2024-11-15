@@ -81,37 +81,42 @@ export const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
-  button: {
+  mapbutton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "rgba(255, 255, 255, 0.75)",
     width: 70,
     height: 70,
-    marginBottom: 10, // ボタン間にスペースを追加
+  },
+  footerbutton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    width: 70,
+    height: 70,
   },
   buttonText: {
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
   },
-  loignBtnContainer: {
+  footer: {
+    justifyContent: "center",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingLeft: 10,
+    paddingRight: 10,
+
+  },
+  mapfixed: {
     position: "absolute",
     top: 85,
     right: 0,
   },
-  mapfixed: {
-    position: "absolute",
-    top: 155,
-    right: 0,
-  },
   defaultlocation: {
     position: "absolute",
-    top: 225,
-    right: 0,
-  },
-  settingButton: {
-    position: "absolute",
-    top: 295,
+    top: 155,
     right: 0,
   },
   indexContainer: {

@@ -100,9 +100,9 @@ export default function TrackUserMapView() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-          Math.cos(toRadians(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -813,7 +813,7 @@ export default function TrackUserMapView() {
       {initialRegion && (
         <MapView
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          style={StyleSheet.absoluteFillObject}
+          style={[StyleSheet.absoluteFillObject, { marginTop: 85, marginBottom: 70, }]}
           customMapStyle={customMapStyle}
           initialRegion={initialRegion}
           region={Region}
@@ -859,17 +859,8 @@ export default function TrackUserMapView() {
       )}
       {/* タスクバーアイコン */}
       <SafeAreaView style={styles.indexContainer}>
-        <TouchableOpacity
-          style={styles.listProfileIndexButton}
-          onPress={() => {
-            router.push({
-              pathname: "/search",
-            });
-          }}
-        >
-          <Icon name="search" size={30} color="#000"></Icon>
-        </TouchableOpacity>
         <FlatList
+          style={{marginLeft: 15}}
           horizontal={true}
           data={userList}
           keyExtractor={(item) => item.userId}
@@ -907,73 +898,12 @@ export default function TrackUserMapView() {
         onClose={() => setModalVisible(false)}
       />
 
-      {user ? (
-        <Pressable
-          style={{
-            position: "absolute",
-            alignSelf: "center",
-            justifyContent: "center", // ボタン内のテキストを中央に配置
-            alignItems: "center",
-            bottom: 30,
-            width: 70,
-            height: 70,
-            backgroundColor: "rgba(255, 255, 255, 0.75)",
-            borderRadius: 35,
-            display: postButtonVisible ? "flex" : "none",
-          }}
-          onPress={handlePost}
-        >
-          <Icon name="camera" size={30} color="#000" />
-        </Pressable>
-      ) : (
-        <Pressable
-          style={{
-            position: "absolute",
-            alignSelf: "center",
-            justifyContent: "center", // ボタン内のテキストを中央に配置
-            alignItems: "center",
-            bottom: 30,
-            width: 70,
-            height: 70,
-            backgroundColor: "rgba(255, 255, 255, 0.75)",
-            borderRadius: 35,
-            display: postButtonVisible ? "flex" : "none",
-          }}
-          onPress={() => {
-            router.push({ pathname: "/loginForm" });
-          }}
-        >
-          <Icon name="camera" size={30} color="#000" />
-        </Pressable>
-      )}
 
-      {user ? (
-        <View style={styles.loignBtnContainer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              router.push("/myPage");
-            }}
-          >
-            <Icon name="user-alt" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.loignBtnContainer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              router.push("/loginForm");
-            }}
-          >
-            <Icon name="user-alt" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-      )}
+
       {mapfixed ? (
         <View style={styles.mapfixed}>
           <TouchableOpacity
-            style={styles.button}
+            style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#28b6b8" />
@@ -982,7 +912,7 @@ export default function TrackUserMapView() {
       ) : (
         <View style={styles.mapfixed}>
           <TouchableOpacity
-            style={styles.button}
+            style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
             <Icon name="arrows-alt" size={24} color="#000" />
@@ -991,7 +921,7 @@ export default function TrackUserMapView() {
       )}
       <View style={styles.defaultlocation}>
         <TouchableOpacity
-          style={styles.button}
+          style={styles.mapbutton}
           onPress={() =>
             defaultlocation(
               position.latitude,
@@ -1004,13 +934,79 @@ export default function TrackUserMapView() {
           <Icon name="crosshairs" size={24} color="#3333ff" />
         </TouchableOpacity>
       </View>
-      <View style={styles.settingButton}>
-        <TouchableOpacity
-          onPress={() => router.push("/setting")}
-          style={styles.button}
-        >
-          <Icon name="cog" size={24} color="#000" />
-        </TouchableOpacity>
+
+
+      <View style={styles.footer}>
+        {user ? (
+          <View style={styles.postbutton}>
+            <Pressable
+              style={styles.footerbutton}
+              onPress={handlePost}
+            >
+              <Icon name="camera" size={24} color="#000" />
+                <Text style={styles.listProfileNameText}>投稿</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View>
+            <Pressable
+              style={styles.footerbutton}
+              onPress={() => {
+                router.push({ pathname: "/loginForm" });
+              }}
+            >
+              <Icon name="camera" size={30} color="#000" />
+              <Text style={styles.listProfileNameText}>投稿</Text>
+            </Pressable>
+          </View>
+        )}
+        <View style={styles.searchButton}>
+          <TouchableOpacity
+            style={styles.footerbutton}
+            onPress={() => {
+              router.push({
+                pathname: "/search",
+              });
+            }}
+          >
+            <Icon name="search" size={24} color="#000"/>
+            <Text style={styles.listProfileNameText}>検索</Text>
+          </TouchableOpacity>
+        </View>
+        {user ? (
+          <View style={styles.loignBtnContainer}>
+            <TouchableOpacity
+              style={styles.footerbutton}
+              onPress={() => {
+                router.push("/myPage");
+              }}
+            >
+              <Icon name="user-alt" size={24} color="#000" />
+              <Text style={styles.listProfileNameText}>マイページ</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.loignBtnContainer}>
+            <TouchableOpacity
+              style={styles.footerbutton}
+              onPress={() => {
+                router.push("/loginForm");
+              }}
+            >
+              <Icon name="user-alt" size={24} color="#000" />
+              <Text style={styles.listProfileNameText}>ログイン</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.settingButton}>
+          <TouchableOpacity
+            onPress={() => router.push("/setting")}
+            style={styles.footerbutton}
+          >
+            <Icon name="cog" size={24} color="#000" />
+            <Text style={styles.listProfileNameText}>設定</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
