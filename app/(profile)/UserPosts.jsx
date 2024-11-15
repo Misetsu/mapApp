@@ -11,6 +11,8 @@ import {
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
+import Icon from "react-native-vector-icons/FontAwesome5";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const auth = FirebaseAuth();
 
@@ -19,10 +21,14 @@ export default function UserPosts() {
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
   const [modalVisible, setModalVisible] = useState(false); // モーダル表示の制御用
+  const [startpage, setstartpage] = useState(0); // クリックされた画像の詳細用
+  const [endpage, setendpage] = useState(9); // モーダル表示の制御用
+  const [len, setlen] = useState(0);
   const userId = auth.currentUser?.uid;
 
   useEffect(() => {
     const fetchPosts = async () => {
+      AsyncStorage.clear();
       setLoading(true);
       try {
         const PhotoArray = [];
@@ -37,9 +43,10 @@ export default function UserPosts() {
         if (photoSnapshot.empty) {
           return;
         }
+        setlen(photoSnapshot.size)
 
         // photo の各ドキュメントをループ処理
-        const photoPromises = photoSnapshot.docs.map(async (photoDoc) => {
+        const photoPromises = photoSnapshot.docs.slice(startpage,endpage).map(async (photoDoc) => {
           const photoData = photoDoc.data();
           let photoUri = "";
 
@@ -67,7 +74,24 @@ export default function UserPosts() {
     };
 
     fetchPosts();
-  }, [userId]);
+  }, [userId,startpage]);
+
+  const paging = (arrow) => {
+    let stpage = 0;
+    let edpage = 0;
+    if(arrow == "left" && startpage - 9 >= 0){
+        stpage =  startpage - 9;
+        edpage =  endpage - 9;
+        setstartpage(stpage);
+        setendpage(edpage);
+    }
+    else if(arrow == "right"){
+      stpage =  startpage + 9;
+      edpage =  endpage + 9;
+      setstartpage(stpage);
+      setendpage(edpage);
+  };
+  };
 
   const handleImagePress = async (post) => {
     try {
@@ -190,7 +214,20 @@ export default function UserPosts() {
           </View>
         </View>
       </Modal>
+      <View style={styles.arrow}>
+      {startpage != 0 && (
+      <TouchableOpacity style={styles.arrowleft} onPress={() =>paging("left")}>
+            <Icon name="arrow-left" size={24} color="#000" />
+      </TouchableOpacity>
+      )}
+      {endpage < len && (
+      <TouchableOpacity style={styles.arrowright} onPress={() =>paging("right")}>
+            <Icon name="arrow-right" size={24} color="#000" />
+      </TouchableOpacity>
+      )}
+      </View>
     </View>
+    
   );
 }
 
@@ -271,4 +308,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "300",
   },
+  arrow:{
+    flexDirection: "row", // 子要素を横並びに配置
+  },
+  arrowright:{
+    marginLeft: 'auto', // 左に自動マージンを設定して右寄せ
+    alignSelf: 'flex-end', // コンテナ内の右側に配置
+  },
+  arrowleft:{
+    marginRight: 'auto', // 左に自動マージンを設定して右寄せ
+    alignSelf: 'flex-start', // コンテナ内の右側に配置
+  }
 });

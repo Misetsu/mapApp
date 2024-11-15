@@ -236,6 +236,7 @@ export default function myPage() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
+              <ScrollView style={styles.modalContent}>
               {followList.map((follow) => {
                 return (
                   <TouchableOpacity
@@ -257,6 +258,7 @@ export default function myPage() {
                   </TouchableOpacity>
                 );
               })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowModal}
@@ -276,6 +278,7 @@ export default function myPage() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
+            <ScrollView style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
               {followerList.map((follower) => {
                 return (
@@ -298,6 +301,7 @@ export default function myPage() {
                   </TouchableOpacity>
                 );
               })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowerModal}
@@ -345,6 +349,7 @@ export default function myPage() {
           </View>
         )}
 
+        
         {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
 
         <View
@@ -496,16 +501,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
   },
   modalOverlay: {
-    flex: 1,
+    flex: 0.6,
+    marginTop: "auto",
+    marginBottom: "auto",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
+    backgroundColor: "rgba(0, 0, 0)", // 背景を半透明に
   },
   modalContent: {
     width: "90%",
     padding: 20,
     paddingTop: 15,
-    backgroundColor: "#F2F5C2",
+    backgroundColor: "#F2F5A0",
     borderRadius: 10,
   },
   listUsernamecontainer: {
