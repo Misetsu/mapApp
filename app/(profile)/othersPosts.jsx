@@ -145,7 +145,7 @@ export default function UserPosts(uid) {
 
   const navigateDetailPage = (postId, showImage) => {
     router.push({
-      pathname: "/replay",
+      pathname: "/component/replay",
       params: { postId: postId, showImage: showImage },
     });
   };

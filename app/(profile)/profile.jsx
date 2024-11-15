@@ -325,7 +325,10 @@ export default function profile() {
                       source={{ uri: follow.photoURL }}
                       style={styles.listProfileImage}
                     />
-                    <Text>{follow.displayName}</Text>
+                    <View style={styles.listUsernamecontainer}>
+                      <Text style={styles.listUsername}></Text>
+                      <Text>{follow.displayName}</Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -362,7 +365,11 @@ export default function profile() {
                       source={{ uri: follower.photoURL }}
                       style={styles.listProfileImage}
                     />
-                    <Text>{follower.displayName}</Text>
+                    <View style={styles.listUsernamecontainer}>
+                      <Text style={styles.listUsername}>
+                        {follower.displayName}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
