@@ -42,6 +42,7 @@ export default function TrackUserMapView() {
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
+  const [regions,setregions] = useState(null);
   const [Region, setRegion] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
@@ -499,8 +500,14 @@ export default function TrackUserMapView() {
           } else {
             item.visited = "";
           }
-
+          if(
+          item.mapLatitude >= regions.latitude - regions.latitudeDelta / 2 &&
+          item.mapLatitude <= regions.latitude + regions.latitudeDelta / 2 &&
+          item.mapLongitude >= regions.longitude - regions.longitudeDelta / 2 &&
+          item.mapLongitude <= regions.longitude + regions.longitudeDelta / 2
+          ){
           fetchResult.push(item);
+          }
         });
         setMarkerCords(fetchResult);
       }
@@ -510,6 +517,17 @@ export default function TrackUserMapView() {
       setChosenUser(null);
       setLoading(false);
     }
+  };
+  const onRegionChangeComplete = (newRegion) => {
+    setregions(newRegion);  // 新しい表示領域を状態に設定
+
+    // 現在の表示領域をコンソールに出力
+    console.log("現在の表示領域:");
+    console.log("緯度:", newRegion.latitude);
+    console.log("経度:", newRegion.longitude);
+    console.log("緯度Delta:", newRegion.latitudeDelta);
+    console.log("経度Delta:", newRegion.longitudeDelta);
+    fetchAllMarkerCord()
   };
 
   const fetchIndexBar = async (status) => {
@@ -773,7 +791,14 @@ export default function TrackUserMapView() {
               longitudeDelta: LONGITUDE_DELTA,
               flag: 0,
             });
+            setRegion({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            })
             setPostButtonVisible(true);
+            fetchAllMarkerCord()
           } else {
             setError("Position or coords is undefined");
           }
@@ -796,7 +821,6 @@ export default function TrackUserMapView() {
 
   useEffect(() => {
     setUser(auth.currentUser);
-    fetchAllMarkerCord();
     fetchIndexBar(indexStatus);
   }, []);
 
@@ -821,6 +845,7 @@ export default function TrackUserMapView() {
           zoomEnabled={mapfixed}
           rotateEnabled={mapfixed}
           pitchEnabled={mapfixed}
+          onRegionChangeComplete={onRegionChangeComplete}
         >
           <Marker
             coordinate={{
@@ -852,6 +877,7 @@ export default function TrackUserMapView() {
               <Image
                 source={getPinColor(marker)}
                 style={styles.markerImage} //ピンの色
+                visible={true}
               />
             </Marker>
           ))}
