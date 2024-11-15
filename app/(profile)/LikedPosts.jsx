@@ -79,53 +79,60 @@ export default function UserLikedPosts() {
     fetchLikedPosts();
   }, [userId]);
 
-  const handleImagePress = async (post) => {
-    try {
-      // postId を使って post コレクションからデータを取得
-      const postSnapshot = await firestore()
-        .collection("post")
-        .where("id", "==", post.postId) // 画像の postId を使って投稿を取得
-        .get();
+  // const handleImagePress = async (post) => {
+  //   try {
+  //     // postId を使って post コレクションからデータを取得
+  //     const postSnapshot = await firestore()
+  //       .collection("post")
+  //       .where("id", "==", post.postId) // 画像の postId を使って投稿を取得
+  //       .get();
 
-      let postDetails = null;
-      if (!postSnapshot.empty) {
-        // 一致する投稿が見つかった場合、データを取得
-        postDetails = postSnapshot.docs[0].data(); // 最初の一致したドキュメントを取得
-      }
+  //     let postDetails = null;
+  //     if (!postSnapshot.empty) {
+  //       // 一致する投稿が見つかった場合、データを取得
+  //       postDetails = postSnapshot.docs[0].data(); // 最初の一致したドキュメントを取得
+  //     }
 
-      // spotId を使って spot コレクションから名前を取得
-      const spotSnapshot = await firestore()
-        .collection("spot")
-        .where("id", "==", post.spotId) // 画像の spotId を使ってスポットを取得
-        .get();
+  //     // spotId を使って spot コレクションから名前を取得
+  //     const spotSnapshot = await firestore()
+  //       .collection("spot")
+  //       .where("id", "==", post.spotId) // 画像の spotId を使ってスポットを取得
+  //       .get();
 
-      let spotName = null;
-      if (!spotSnapshot.empty) {
-        // 一致するスポットが見つかった場合、データを取得
-        spotName = spotSnapshot.docs[0].data().name; // スポットの名前を取得
-      }
+  //     let spotName = null;
+  //     if (!spotSnapshot.empty) {
+  //       // 一致するスポットが見つかった場合、データを取得
+  //       spotName = spotSnapshot.docs[0].data().name; // スポットの名前を取得
+  //     }
 
-      // like のカウントを取得
-      const likeSnapShot = await firestore()
-        .collection("like")
-        .where("postId", "==", post.postId)
-        .get();
+  //     // like のカウントを取得
+  //     const likeSnapShot = await firestore()
+  //       .collection("like")
+  //       .where("postId", "==", post.postId)
+  //       .get();
 
-      let likeCount = 0;
-      if (!likeSnapShot.empty) {
-        likeCount = likeSnapShot.docs[0].data().count || 0; // デフォルトのカウントを 0 に設定
-      }
+  //     let likeCount = 0;
+  //     if (!likeSnapShot.empty) {
+  //       likeCount = likeSnapShot.docs[0].data().count || 0; // デフォルトのカウントを 0 に設定
+  //     }
 
-      setSelectedPost({ ...post, postDetails, spotName, likeCount }); // 画像の情報と投稿の詳細、スポットの名前、いいねの数を保存
-      setModalVisible(true); // モーダルを表示
-    } catch (error) {
-      console.error("投稿データの取得中にエラーが発生しました: ", error);
-    }
-  };
+  //     setSelectedPost({ ...post, postDetails, spotName, likeCount }); // 画像の情報と投稿の詳細、スポットの名前、いいねの数を保存
+  //     setModalVisible(true); // モーダルを表示
+  //   } catch (error) {
+  //     console.error("投稿データの取得中にエラーが発生しました: ", error);
+  //   }
+  // };
 
-  const closeModal = () => {
-    setModalVisible(false); // モーダルを閉じる
-    setSelectedPost(null); // 選択された画像のリセット
+  // const closeModal = () => {
+  //   setModalVisible(false); // モーダルを閉じる
+  //   setSelectedPost(null); // 選択された画像のリセット
+  // };
+
+  const navigateDetailPage = (postId, showImage) => {
+    router.push({
+      pathname: "/component/replay",
+      params: { postId: postId, showImage: showImage },
+    });
   };
 
   if (loading) {
@@ -146,7 +153,7 @@ export default function UserLikedPosts() {
           {likedPosts.map((post) => (
             <TouchableOpacity
               key={post.postId}
-              onPress={() => handleImagePress(post)}
+              onPress={() => navigateDetailPage(post.postId, true)}
               style={styles.postContainer}
             >
               {post.photoUri ? (
@@ -160,7 +167,7 @@ export default function UserLikedPosts() {
       )}
 
       {/* モーダルの定義 */}
-      <Modal
+      {/* <Modal
         visible={modalVisible}
         transparent={true}
         animationType="fade"
@@ -199,7 +206,7 @@ export default function UserLikedPosts() {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 }
