@@ -316,7 +316,7 @@ export default function profile() {
                 return (
                   <TouchableOpacity
                     key={follow.uid}
-                    style={styles.followList}
+                    style={styles.followListuser}
                     onPress={() => {
                       handleProfile(follow.uid);
                     }}
@@ -353,7 +353,7 @@ export default function profile() {
                 return (
                   <TouchableOpacity
                     key={follower.uid}
-                    style={styles.followList}
+                    style={styles.followListuser}
                     onPress={() => {
                       handleProfile(follower.uid);
                     }}
