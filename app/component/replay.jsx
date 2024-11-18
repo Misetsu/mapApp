@@ -351,15 +351,15 @@ const ReplyScreen = () => {
                         <Icon
                           name="heart"
                           size={25}
-                          color={isLiked ? "#000" : "#f00"}
+                          color={selectedPost.likeFlag ? "#000" : "#f00"}
                         />
                         <Text
                           style={[
-                            { color: isLiked ? "black" : "red" },
+                            { color: selectedPost.likeFlag ? "black" : "red" },
                             styles.likeNum,
                           ]}
                         >
-                          {isLiked
+                          {selectedPost.likeFlag
                             ? selectedPost.likeCount - 1
                             : selectedPost.likeCount}
                         </Text>
@@ -378,15 +378,15 @@ const ReplyScreen = () => {
                         <Icon
                           name="heart"
                           size={25}
-                          color={isLiked ? "#f00" : "#000"}
+                          color={selectedPost.likeFlag ? "#f00" : "#000"}
                         />
                         <Text
                           style={[
-                            { color: isLiked ? "red" : "black" },
+                            { color: selectedPost.likeFlag ? "red" : "black" },
                             styles.likeNum,
                           ]}
                         >
-                          {isLiked
+                          {selectedPost.likeFlag
                             ? selectedPost.likeCount + 1
                             : selectedPost.likeCount}
                         </Text>
