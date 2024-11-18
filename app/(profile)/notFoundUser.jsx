@@ -119,6 +119,16 @@ export default function profile() {
     }
   };
 
+  const handleFollowPress = () => {
+    // Followテキストが押されたときにフォローモーダルを表示
+    setIsFollowModalVisible(true);
+  };
+
+  const handleFollowerPress = () => {
+    // Followerテキストが押されたときにフォロワーモーダルを表示
+    setIsFollowerModalVisible(true);
+  };
+
   const handleCloseFollowModal = () => {
     // フォローモーダルを閉じる
     setIsFollowModalVisible(false);
@@ -131,6 +141,7 @@ export default function profile() {
 
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
+    router.back();
   };
 
   return (

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
-import firestore from "@react-native-firebase/firestore";
+import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -32,8 +32,6 @@ const ReplyScreen = () => {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
-
-  console.log(showImage);
 
   const handleBackPress = () => {
     router.back();
@@ -98,7 +96,7 @@ const ReplyScreen = () => {
 
           const likeSnapShot = await firestore()
             .collection("like")
-            .where("postId", "==", postId)
+            .where("postId", "==", parseInt(postId))
             .get();
 
           const likeData = likeSnapShot.docs[0].data();
@@ -210,7 +208,7 @@ const ReplyScreen = () => {
     } else {
       const querylike = await firestore()
         .collection("like")
-        .where("postId", "==", postId)
+        .where("postId", "==", parseInt(postId))
         .get();
       const queryId = querylike.docs[0].ref._documentPath._parts[1];
       await firestore()
@@ -230,7 +228,7 @@ const ReplyScreen = () => {
     } else {
       const querylike = await firestore()
         .collection("like")
-        .where("postId", "==", postId)
+        .where("postId", "==", parseInt(postId))
         .get();
       const queryId = querylike.docs[0].ref._documentPath._parts[1];
       await firestore()
@@ -339,7 +337,7 @@ const ReplyScreen = () => {
                         style={styles.actionButton}
                         onPress={
                           auth.currentUser
-                            ? () => handleLike(post.postId)
+                            ? () => handleLike(postId)
                             : () => {
                                 router.push("/loginForm");
                               }

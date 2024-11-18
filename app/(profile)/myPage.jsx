@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
+import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./UserPosts";
 import LikedPosts from "./LikedPosts";
