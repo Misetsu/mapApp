@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
@@ -21,29 +22,37 @@ export default function SearchScreen() {
   const [searchResult, setSearchResult] = useState([]); // 検索結果
   const [following, setFollowing] = useState({}); // フォローしているユーザーの状態
   const [recommendedUsers, setRecommendedUsers] = useState([]); // おすすめユーザーリスト
-  const [officialUser, setOfficialUser] = useState(null); // 公式ユーザー
+  const [officialUsers, setOfficialUsers] = useState([]); // 公式ユーザー
 
   useEffect(() => {
-    fetchFollowingData(); // フォローしているユーザーのデータを取得
-    fetchRecommendedUsers(); // おすすめユーザーを取得
-    fetchOfficialUser(); // 公式ユーザーを取得
+    fetchFollowingData(); 
+    fetchRecommendedUsers(); 
+    fetchOfficialUsers(); 
   }, []);
 
   // 公式ユーザーを取得
-  const fetchOfficialUser = async () => {
+  const fetchOfficialUsers = async () => {
     try {
-      const officialUid = "2tjGBOa6snXpIpxb2drbSvUAmb83";
-      const userSnapshot = await firestore()
-        .collection("users")
-        .where("uid", "==", officialUid)
-        .get();
-      const officialUserData = userSnapshot.docs[0]?.data();
-      setOfficialUser(officialUserData);
+      const officialUids = [
+        "2tjGBOa6snXpIpxb2drbSvUAmb83", 
+        "H0zKYLQyeggzzCYgZM6bUddAItU2", 
+      ];
+
+      const userDetails = await Promise.all(
+        officialUids.map(async (uid) => {
+          const userSnapshot = await firestore()
+            .collection("users")
+            .where("uid", "==", uid)
+            .get();
+          return userSnapshot.docs[0]?.data(); 
+        })
+      );
+
+      setOfficialUsers(userDetails.filter((user) => user)); 
     } catch (error) {
-      console.error("Error fetching official user data:", error);
+      console.error("Error fetching official users data:", error);
     }
   };
-
   // 現在のユーザーがフォローしているユーザーを取得
   const fetchFollowingData = async () => {
     try {
@@ -196,19 +205,35 @@ export default function SearchScreen() {
   const handleFollowToggle = async (uid) => {
     try {
       if (following[uid]) {
-        // フォロー中の場合
-        const followDoc = await firestore()
-          .collection("follow")
-          .where("followerId", "==", auth.currentUser.uid)
-          .where("followeeId", "==", uid)
-          .get();
-
-        if (!followDoc.empty) {
-          await followDoc.docs[0].ref.delete(); // フォローデータを削除
-          setFollowing((prevState) => ({ ...prevState, [uid]: false })); // ステートを更新
-        }
+        // フォロー解除の確認ダイアログを表示
+        Alert.alert(
+          "確認", // タイトル
+          "本当にフォローを外しますか？", // メッセージ
+          [
+            {
+              text: "キャンセル", // キャンセルボタン
+              style: "cancel",
+            },
+            {
+              text: "フォローを解除", // 確認ボタン
+              onPress: async () => {
+                // フォロー解除の処理
+                const followDoc = await firestore()
+                  .collection("follow")
+                  .where("followerId", "==", auth.currentUser.uid)
+                  .where("followeeId", "==", uid)
+                  .get();
+  
+                if (!followDoc.empty) {
+                  await followDoc.docs[0].ref.delete(); // フォローデータを削除
+                  setFollowing((prevState) => ({ ...prevState, [uid]: false })); // ステートを更新
+                }
+              },
+            },
+          ]
+        );
       } else {
-        // フォローしていない場合
+        // フォローする処理
         await firestore().collection("follow").add({
           followerId: auth.currentUser.uid,
           followeeId: uid,
@@ -219,7 +244,7 @@ export default function SearchScreen() {
       console.error("Error toggling follow state:", error);
     }
   };
-
+  
   // プロフィール画面に遷移
   const handleProfile = (uid) => {
     router.push({
@@ -230,7 +255,6 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 検索バーのUI */}
       <View style={styles.searchBar}>
         <Icon name="search" size={20} color="#000" style={styles.icon} />
         <TextInput
@@ -241,17 +265,18 @@ export default function SearchScreen() {
         />
       </View>
 
-      {/* おすすめ公式ユーザーの表示 */}
-      {officialUser && (
+      {officialUsers.length > 0 && (
         <View style={styles.recommendedContainer}>
           <Text style={styles.sectionTitle}>おすすめ公式ユーザー</Text>
-          <UserItem
-            key={officialUser.uid}
-            user={officialUser}
-            isFollowing={following[officialUser.uid]}
-            onProfilePress={() => handleProfile(officialUser.uid)}
-            onFollowToggle={() => handleFollowToggle(officialUser.uid)}
-          />
+          {officialUsers.map((user) => (
+            <UserItem
+              key={user.uid}
+              user={user}
+              isFollowing={following[user.uid]}
+              onProfilePress={() => handleProfile(user.uid)}
+              onFollowToggle={() => handleFollowToggle(user.uid)}
+            />
+          ))}
         </View>
       )}
 

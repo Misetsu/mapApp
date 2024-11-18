@@ -17,7 +17,7 @@
       "bundleIdentifier": "com.anonymous.mapApp"
     },
     "android": {
-      "jsEngine": "hermes",
+      "jsEngine": "jsc",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

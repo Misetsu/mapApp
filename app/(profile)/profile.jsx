@@ -14,6 +14,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./othersPosts";
+import { Alert } from "react-native";
 
 const auth = FirebaseAuth();
 
@@ -152,30 +153,49 @@ export default function profile() {
       router.push("/loginForm");
     } else {
       if (isFollowing) {
-        const queryStatus = await firestore()
-          .collection("follow")
-          .where("followeeId", "==", uid)
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
-        const docId = queryStatus.docs[0].id;
-        firestore().collection("follow").doc(docId).delete();
-        setIsFollowing(false);
-        if (isFav) {
-          firestore()
-            .collection("star")
-            .doc(auth.currentUser.uid)
-            .update({
-              [uid]: FieldValue.delete(),
-            });
-          setIsFav(false);
-        }
+        // フォロー解除の警告を表示
+        Alert.alert(
+          "確認", // タイトル
+          "本当にフォローを外しますか？", // メッセージ
+          [
+            {
+              text: "キャンセル", // キャンセルボタン
+              style: "cancel",
+            },
+            {
+              text: "フォロー解除", // 確認ボタン
+              onPress: async () => {
+                // フォロー解除の処理
+                const queryStatus = await firestore()
+                  .collection("follow")
+                  .where("followeeId", "==", uid)
+                  .where("followerId", "==", auth.currentUser.uid)
+                  .get();
+                const docId = queryStatus.docs[0].id;
+                await firestore().collection("follow").doc(docId).delete();
+                setIsFollowing(false);
+  
+                if (isFav) {
+                  await firestore()
+                    .collection("star")
+                    .doc(auth.currentUser.uid)
+                    .update({
+                      [uid]: FieldValue.delete(),
+                    });
+                  setIsFav(false);
+                }
+              },
+            },
+          ]
+        );
       } else {
+        // フォローする処理
         const queryFollow = await firestore()
           .collection("follow")
           .orderBy("id", "desc")
           .get();
         const maxId = queryFollow.docs[0].data().id + 1;
-        firestore().collection("follow").add({
+        await firestore().collection("follow").add({
           id: maxId,
           followerId: auth.currentUser.uid,
           followeeId: uid,
