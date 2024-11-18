@@ -943,7 +943,7 @@ export default function TrackUserMapView() {
               style={styles.footerbutton}
               onPress={handlePost}
             >
-              <Icon name="camera" size={24} color="#000" />
+              <Icon name="camera" size={24} color="#239D60" />
                 <Text style={styles.listProfileNameText}>投稿</Text>
             </Pressable>
           </View>
@@ -955,7 +955,7 @@ export default function TrackUserMapView() {
                 router.push({ pathname: "/loginForm" });
               }}
             >
-              <Icon name="camera" size={30} color="#000" />
+              <Icon name="camera" size={30} color="#239D60" />
               <Text style={styles.listProfileNameText}>投稿</Text>
             </Pressable>
           </View>
@@ -969,7 +969,7 @@ export default function TrackUserMapView() {
               });
             }}
           >
-            <Icon name="search" size={24} color="#000"/>
+            <Icon name="search" size={24} color="#239D60"/>
             <Text style={styles.listProfileNameText}>検索</Text>
           </TouchableOpacity>
         </View>
@@ -981,7 +981,7 @@ export default function TrackUserMapView() {
                 router.push("/myPage");
               }}
             >
-              <Icon name="user-alt" size={24} color="#000" />
+              <Icon name="user-alt" size={24} color="#239D60" />
               <Text style={styles.listProfileNameText}>マイページ</Text>
             </TouchableOpacity>
           </View>
@@ -993,7 +993,7 @@ export default function TrackUserMapView() {
                 router.push("/loginForm");
               }}
             >
-              <Icon name="user-alt" size={24} color="#000" />
+              <Icon name="user-alt" size={24} color="#239D60" />
               <Text style={styles.listProfileNameText}>ログイン</Text>
             </TouchableOpacity>
           </View>
@@ -1003,7 +1003,7 @@ export default function TrackUserMapView() {
             onPress={() => router.push("/setting")}
             style={styles.footerbutton}
           >
-            <Icon name="cog" size={24} color="#000" />
+            <Icon name="cog" size={24} color="#239D60" />
             <Text style={styles.listProfileNameText}>設定</Text>
           </TouchableOpacity>
         </View>
