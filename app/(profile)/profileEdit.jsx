@@ -28,7 +28,6 @@ export default function myPage() {
   const [googleProvider, setGoogleProvider] = useState(false);
   const [editable, setEditable] = useState(true);
 
-
   const handleBackPress = () => {
     if (router) {
       router.back();
@@ -52,6 +51,7 @@ export default function myPage() {
 
   // ユーザーの表示名を保存する関数
   const handleSave = async () => {
+    await uploadPhoto(photoUri); // 画像をアップロードし、URLを取得
     if (user) {
       await firestore().collection("users").doc(user.uid).update({
         displayName: displayName,
@@ -72,8 +72,7 @@ export default function myPage() {
 
     if (!result.canceled) {
       const { uri } = result.assets[0];
-      const photoUri = await uploadPhoto(uri); // 画像をアップロードし、URLを取得
-      setPhotoUri(photoUri);
+      setPhotoUri(uri);
     }
   };
 
@@ -96,8 +95,6 @@ export default function myPage() {
       photoURL: url,
     };
     await auth.currentUser.updateProfile(update);
-
-    return url;
   };
 
   const signout = async () => {
@@ -136,9 +133,7 @@ export default function myPage() {
             )}
           </TouchableOpacity>
         </View>
-        <Text style={styles.noamllabel}>
-          アイコンをタップして画像を変更
-        </Text>
+        <Text style={styles.noamllabel}>アイコンをタップして画像を変更</Text>
 
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
         <Text style={styles.displayName}>ユーザー名</Text>
@@ -157,17 +152,17 @@ export default function myPage() {
           value={displayEmail}
           onChangeText={setDisplayEmail}
           style={styles.textInput}
-          editable={true}
+          editable={false}
         />
-        <Text style={styles.noamllabel}>
+        {/* <Text style={styles.noamllabel}>
           有効なメールアドレスを入力してください
-        </Text>
+        </Text> */}
 
         {googleProvider ? (
           <></>
         ) : (
           <TouchableOpacity onPress={handleChangePassword}>
-            <Text style={styles.linklabel}>Change password?</Text>
+            <Text style={styles.linklabel}>パスワードを変更</Text>
           </TouchableOpacity>
         )}
 
@@ -176,7 +171,7 @@ export default function myPage() {
             style={styles.submit}
             onPress={() => {
               handleSave(); // まず handleSave を実行
-              router.push({ pathname: "/myPage" }); // 次にページ遷移
+              router.back(); // 次にページ遷移
             }}
           >
             <Text style={styles.submitText}>変更を保存</Text>
