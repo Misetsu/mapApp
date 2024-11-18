@@ -525,22 +525,22 @@ export default function TrackUserMapView() {
             .collection("follow")
             .where("followerId", "==", auth.currentUser.uid)
             .get();
-
           if (!queryFollow.empty) {
             let cnt = 0;
             while (cnt < queryFollow.size) {
               let tempObj = {};
               const followSnapshot = queryFollow.docs[cnt];
               const followData = followSnapshot.data();
-
               const queryUser = await firestore()
                 .collection("users")
                 .where("uid", "==", followData.followeeId)
                 .get();
               const userSnapshot = queryUser.docs[0];
               const userData = userSnapshot.data();
-
-              if (!(userData.lastPostAt == "0")) {
+              if (
+                !(userData.lastPostAt == "0") &&
+                !(userData.lastPostAt == undefined)
+              ) {
                 tempObj[firstKey] = userData.uid;
                 tempObj[secondKey] = userData.displayName;
                 tempObj[thirdKey] = userData.photoURL;
@@ -580,7 +580,10 @@ export default function TrackUserMapView() {
               const userSnapshot = queryUser.docs[0];
               const userData = userSnapshot.data();
 
-              if (!(userData.lastPostAt == "0")) {
+              if (
+                !(userData.lastPostAt == "0") &&
+                !(userData.lastPostAt == undefined)
+              ) {
                 tempObj[firstKey] = userData.uid;
                 tempObj[secondKey] = userData.displayName;
                 tempObj[thirdKey] = userData.photoURL;

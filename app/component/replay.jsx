@@ -191,10 +191,6 @@ const ReplyScreen = () => {
         fetchData();
         router.back();
       } catch (error) {
-        Alert.alert(
-          "エラー",
-          `返信の送信中にエラーが発生しました: ${error.message}`
-        );
         console.error("Error adding reply:", error);
       }
     } else {
@@ -203,8 +199,8 @@ const ReplyScreen = () => {
   };
 
   const handleUnlike = async (postId) => {
-    if (isLiked == false) {
-      handleSimpleLike(postId);
+    if (selectedPost.likeFlag == false) {
+      handleSimpleUnlike(postId);
     } else {
       const querylike = await firestore()
         .collection("like")
@@ -223,8 +219,8 @@ const ReplyScreen = () => {
   };
 
   const handleLike = async (postId) => {
-    if (isLiked) {
-      handleSimpleUnlike(postId);
+    if (selectedPost.likeFlag) {
+      handleSimpleLike(postId);
     } else {
       const querylike = await firestore()
         .collection("like")
