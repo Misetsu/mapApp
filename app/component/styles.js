@@ -138,11 +138,10 @@ export const styles = StyleSheet.create({
   },
   //インデックスバー上の画像
   listProfileImage: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     borderRadius: 20,
     alignSelf: "center",
-    marginTop: 5,
   },
   //インデックスバーアイコンの幅
   listProfileNameText: {
