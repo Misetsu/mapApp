@@ -351,17 +351,17 @@ const ReplyScreen = () => {
                         <Icon
                           name="heart"
                           size={25}
-                          color={selectedPost.likeFlag ? "#000" : "#f00"}
+                          color={selectedPost.likeFlag ? "#f00" : "#f00"}
                         />
                         <Text
                           style={[
-                            { color: selectedPost.likeFlag ? "black" : "red" },
+                            { color: selectedPost.likeFlag ? "red" : "red" },
                             styles.likeNum,
                           ]}
                         >
                           {selectedPost.likeFlag
-                            ? selectedPost.likeCount - 1
-                            : selectedPost.likeCount}
+                            ? selectedPost.likeCount
+                            : selectedPost.likeCount + 1}
                         </Text>
                       </TouchableOpacity>
                     ) : (
@@ -378,16 +378,18 @@ const ReplyScreen = () => {
                         <Icon
                           name="heart"
                           size={25}
-                          color={selectedPost.likeFlag ? "#f00" : "#000"}
+                          color={selectedPost.likeFlag ? "#000" : "#000"}
                         />
                         <Text
                           style={[
-                            { color: selectedPost.likeFlag ? "red" : "black" },
+                            {
+                              color: selectedPost.likeFlag ? "black" : "black",
+                            },
                             styles.likeNum,
                           ]}
                         >
                           {selectedPost.likeFlag
-                            ? selectedPost.likeCount + 1
+                            ? selectedPost.likeCount
                             : selectedPost.likeCount}
                         </Text>
                       </TouchableOpacity>
