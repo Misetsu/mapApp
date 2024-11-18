@@ -9,48 +9,40 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
-import UserPosts from "./UserPosts";
-import LikedPosts from "./LikedPosts";
-import SwitchWithIcons from "react-native-switch-with-icons";
-import Icon from "react-native-vector-icons/FontAwesome5";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const auth = FirebaseAuth();
 
-export default function myPage() {
-  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
+export default function profile() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
-  const [viewMode, setViewMode] = useState("posts"); // 投稿といいねの切り替え
-  const [userStatus, setUserStatus] = useState(0);
-  const [visible, setVisible] = useState(false);
-
-  const router = useRouter();
-
-  const handleBackPress = () => {
-    if (router) {
-      router.back();
-    }
-  };
 
   useEffect(() => {
+    const { uid } = params;
+
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
-      setUser(auth.currentUser);
-      setDisplayName(auth.currentUser.displayName);
-      setPhotoUri(auth.currentUser.photoURL);
+      const queryProfile = await firestore()
+        .collection("users")
+        .where("uid", "==", uid)
+        .get();
+      const profileData = queryProfile.docs[0].data();
+      setDisplayName(profileData.displayName);
+      setPhotoUri(profileData.photoURL);
 
-      // フォロー取得
+      // フォロー中取得
       const queryFollow = await firestore()
         .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
+        .where("followerId", "==", uid)
         .get();
 
       if (!queryFollow.empty) {
@@ -77,25 +69,12 @@ export default function myPage() {
           cnt = cnt + 1;
         }
         setFollowList(followArray);
-
-        // ユーザーデータを取得するための非同期関数
-        const fetchUserData = async () => {
-          setUser(auth.currentUser);
-          const queryUser = await firestore()
-            .collection("users")
-            .doc(auth.currentUser.uid)
-            .get();
-          const userData = queryUser.data();
-          setUserStatus(userData.publicStatus);
-        };
-
-        fetchUserData();
       }
 
-      // フォロワー取得
+      // フォローワー取得
       const queryFollower = await firestore()
         .collection("follow")
-        .where("followeeId", "==", auth.currentUser.uid)
+        .where("followeeId", "==", uid)
         .get();
 
       if (!queryFollower.empty) {
@@ -128,27 +107,15 @@ export default function myPage() {
     fetchUserData();
   }, []);
 
-  const handleStatus = async () => {
-    if (userStatus == 1) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 0 });
-      setUserStatus(0); // 公開状態に設定
-    } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
-      setUserStatus(1); // 非公開状態に設定
-    }
-  };
-
   const handleProfile = (uid) => {
-    if (uid == auth.currentUser.uid) {
-      router.push({ pathname: "/myPage" });
-    } else {
+    if (auth.currentUser == null) {
       router.push({ pathname: "/profile", params: { uid: uid } });
+    } else {
+      if (uid == auth.currentUser.uid) {
+        router.push({ pathname: "/myPage" });
+      } else {
+        router.push({ pathname: "/profile", params: { uid: uid } });
+      }
     }
   };
 
@@ -172,66 +139,15 @@ export default function myPage() {
     setIsFollowerModalVisible(false);
   };
 
-  const toggleView = () => {
-    // 自分の投稿といいねを切り替える
-    setViewMode(viewMode === "posts" ? "liked" : "posts");
-  };
-
-  const signout = async () => {
-    await auth.signOut().then(() => {
-      GoogleSignin.revokeAccess();
-    });
-    router.replace({ pathname: "/" });
-  };
-
-  const toggleDeleteModal = () => {
-    setVisible(visible ? false : true);
-  };
-
-  const handleDelete = async () => {
-    await deleteSubcollection(auth.currentUser.uid, "spot");
-
-    await firestore().collection("users").doc(auth.currentUser.uid).update({
-      email: FieldValue.delete(),
-      lastPostAt: FieldValue.delete(),
-      publicStatus: FieldValue.delete(),
-      spotCreate: FieldValue.delete(),
-      spotPoint: FieldValue.delete(),
-    });
-
-    await auth.currentUser.delete().then(() => {
-      GoogleSignin.revokeAccess();
-      router.replace("/");
-    });
-  };
-
-  const deleteSubcollection = async (parentDocId, subcollectionName) => {
-    try {
-      const subcollectionRef = firestore()
-        .collection("users")
-        .doc(parentDocId)
-        .collection(subcollectionName);
-
-      const snapshot = await subcollectionRef.get();
-
-      const batch = firestore().batch();
-      snapshot.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
-
-      await batch.commit();
-      console.log(`Subcollection '${subcollectionName}' deleted successfully!`);
-    } catch (error) {
-      console.error("Error deleting subcollection:", error);
-    }
+  const handleBackPress = () => {
+    router.back(); // 前の画面に戻る
+    router.back();
   };
 
   return (
     <ScrollView style={styles.scrview}>
-      {/* 右側のアイコンやテキストをここに追加 */}
-      {/*<Icon name="angle-left" size={24} color="#000" />*/}
       <View style={styles.container}>
-        <Text style={styles.pagetitle}>マイページ</Text>
+        <Text style={styles.pagetitle}>プロフィール</Text>
         <View style={styles.profileContainer}>
           {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
           {photoUri ? (
@@ -244,15 +160,11 @@ export default function myPage() {
         {/* フォロー、フォロワーを表示 */}
         <View style={styles.FFcontainer}>
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowPress}>
-            <Text style={styles.FFtext}>
-              フォロー中： {followList.length} 人
-            </Text>
+            <Text style={styles.FFtext}>フォロー中: {followList.length}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
-            <Text style={styles.FFtext}>
-              フォロワー： {followerList.length} 人
-            </Text>
+            <Text style={styles.FFtext}>フォロワー: {followerList.length}</Text>
           </TouchableOpacity>
         </View>
 
@@ -280,9 +192,8 @@ export default function myPage() {
                       style={styles.listProfileImage}
                     />
                     <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}>
-                        {follow.displayName}
-                      </Text>
+                      <Text style={styles.listUsername}></Text>
+                      <Text>{follow.displayName}</Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -338,101 +249,14 @@ export default function myPage() {
           </View>
         </Modal>
 
+        {/* ユーザーネームを表示するだけ */}
         <Text style={styles.displayName}>ユーザー名</Text>
         <TextInput
           value={displayName}
           style={styles.textInput}
           editable={false}
         />
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/profileEdit")}
-        >
-          <Text style={styles.buttonText}>プロフィール編集</Text>
-        </TouchableOpacity>
-        {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
-
-        <View style={styles.ChangeStatus}>
-          <Text>投稿を非公開にする：{userStatus ? "非公開" : "公開"}</Text>
-          <View style={styles.SwitchBtn}>
-            <SwitchWithIcons value={userStatus} onValueChange={handleStatus} />
-          </View>
-        </View>
-
-        {viewMode === "posts" ? (
-          <View style={styles.tabContainer}>
-            <Text style={styles.selectedTab}>自分の投稿</Text>
-            <TouchableOpacity style={styles.unselectedTab} onPress={toggleView}>
-              <Text>いいねした投稿</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.tabContainer}>
-            <TouchableOpacity style={styles.unselectedTab} onPress={toggleView}>
-              <Text>自分の投稿</Text>
-            </TouchableOpacity>
-            <Text style={styles.selectedTab}>いいねした投稿</Text>
-          </View>
-        )}
-
-        {viewMode === "posts" ? <UserPosts /> : <LikedPosts />}
-
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: "none", width: "50%", marginBottom: 0 },
-            ]}
-            onPress={signout}
-          >
-            <Text style={[styles.buttonText, { color: "#FF6666" }]}>
-              ログアウト
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: "none", width: "50%", marginBottom: 0 },
-            ]}
-            onPress={toggleDeleteModal}
-          >
-            <Text style={[styles.buttonText, { color: "#FF6666" }]}>
-              アカウント削除
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <Modal animationType="fade" transparent={true} visible={visible}>
-          <View style={styles.centerdView}>
-            <View style={styles.deleteModal}>
-              <Text style={styles.deleteModalText}>
-                本当にアカウント削除しますか？{"\n"}この操作は後戻りできません。
-              </Text>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={[
-                    styles.deleteModalButton,
-                    { borderRightWidth: 1, borderRightColor: "grey" },
-                  ]}
-                  onPress={toggleDeleteModal}
-                >
-                  <Text>キャンセル</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.deleteModalButton,
-                    { borderLeftWidth: 1, borderLeftColor: "grey" },
-                  ]}
-                  onPress={handleDelete}
-                >
-                  <Text style={{ color: "red" }}>削除</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
+        <Text>このアカウントは削除されました。</Text>
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
@@ -460,6 +284,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#A3DE83",
     height: 50,
     margin: 10, // ボタン間にスペースを追加
+    paddingHorizontal: 20,
   },
   buttonText: {
     fontSize: 18,
@@ -525,6 +350,16 @@ const styles = StyleSheet.create({
     margin: 10,
     backgroundColor: "#F2F5C8",
   },
+  actionBar: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    marginTop: 10,
+    marginBottom: 10,
+    width: "90%",
+    display: "flex",
+    flexDirection: "row",
+    gap: 20,
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -583,61 +418,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-  },
-  tabContainer: {
-    width: "100%",
-    marginTop: 20,
-    flexDirection: "row",
-    borderBottomColor: "#A3DE83",
-    borderBottomWidth: 5,
-  },
-  selectedTab: {
-    width: "50%",
-    paddingTop: 20,
-    paddingBottom: 5,
-    backgroundColor: "#A3DE83",
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
-    alignItems: "center",
-    textAlign: "center",
-  },
-  unselectedTab: {
-    width: "50%",
-    paddingTop: 20,
-    paddingBottom: 5,
-    backgroundColor: "#BABABA",
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
-    alignItems: "center",
-    textAlign: "center",
-  },
-  centerdView: {
-    width: "100%",
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  deleteModal: {
-    width: "80%",
-    height: "20%",
-    backgroundColor: "white",
-    borderRadius: 20,
-  },
-  deleteModalText: {
-    padding: 20,
-  },
-  buttonRow: {
-    width: "100%",
-    position: "absolute",
-    bottom: 0,
-    flexDirection: "row",
-  },
-  deleteModalButton: {
-    borderTopWidth: 2,
-    borderTopColor: "grey",
-    padding: 20,
-    width: "50%",
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

@@ -44,6 +44,10 @@ export default function profile() {
       setDisplayName(profileData.displayName);
       setPhotoUri(profileData.photoURL);
 
+      if (profileData.email == undefined) {
+        router.push({ pathname: "/notFoundUser", params: { uid: uid } }); // TODO
+      }
+
       if (profileData.publicStatus == 0) {
         setPublicStatus(true);
       }
@@ -316,7 +320,7 @@ export default function profile() {
                 return (
                   <TouchableOpacity
                     key={follow.uid}
-                    style={styles.followList}
+                    style={styles.followListuser}
                     onPress={() => {
                       handleProfile(follow.uid);
                     }}
@@ -325,7 +329,11 @@ export default function profile() {
                       source={{ uri: follow.photoURL }}
                       style={styles.listProfileImage}
                     />
-                    <Text>{follow.displayName}</Text>
+                    <View style={styles.listUsernamecontainer}>
+                      <Text style={styles.listUsername}>
+                        {follow.displayName}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -353,7 +361,7 @@ export default function profile() {
                 return (
                   <TouchableOpacity
                     key={follower.uid}
-                    style={styles.followList}
+                    style={styles.followListuser}
                     onPress={() => {
                       handleProfile(follower.uid);
                     }}
@@ -362,7 +370,11 @@ export default function profile() {
                       source={{ uri: follower.photoURL }}
                       style={styles.listProfileImage}
                     />
-                    <Text>{follower.displayName}</Text>
+                    <View style={styles.listUsernamecontainer}>
+                      <Text style={styles.listUsername}>
+                        {follower.displayName}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
