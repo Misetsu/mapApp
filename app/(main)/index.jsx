@@ -60,6 +60,7 @@ export default function TrackUserMapView() {
   const [chosenUser, setChosenUser] = useState(null);
 
   const setmodal = (marker) => {
+
     try {
       const distance = calculateDistance(
         position.latitude,
@@ -452,6 +453,13 @@ export default function TrackUserMapView() {
           longitudeDelta: LONGITUDE_DELTA,
           flag: 1,
         });
+        setregions({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        });
+
       } else {
         setRegion({
           latitude: latitude,
@@ -460,6 +468,13 @@ export default function TrackUserMapView() {
           longitudeDelta: LONGITUDE_DELTA,
           flag: 0,
         });
+        setregions({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        });
+
       }
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -500,6 +515,7 @@ export default function TrackUserMapView() {
           } else {
             item.visited = "";
           }
+          if(regions != null){
           if(
           item.mapLatitude >= regions.latitude - regions.latitudeDelta / 2 &&
           item.mapLatitude <= regions.latitude + regions.latitudeDelta / 2 &&
@@ -508,11 +524,12 @@ export default function TrackUserMapView() {
           ){
           fetchResult.push(item);
           }
+        }
         });
         setMarkerCords(fetchResult);
       }
     } catch (error) {
-      console.error("Error fetching documents: ", error);
+      console.error("Error fetching documentssss: ", error);
     } finally {
       setChosenUser(null);
       setLoading(false);
@@ -520,13 +537,7 @@ export default function TrackUserMapView() {
   };
   const onRegionChangeComplete = (newRegion) => {
     setregions(newRegion);  // 新しい表示領域を状態に設定
-
     // 現在の表示領域をコンソールに出力
-    console.log("現在の表示領域:");
-    console.log("緯度:", newRegion.latitude);
-    console.log("経度:", newRegion.longitude);
-    console.log("緯度Delta:", newRegion.latitudeDelta);
-    console.log("経度Delta:", newRegion.longitudeDelta);
     fetchAllMarkerCord()
   };
 
@@ -771,6 +782,7 @@ export default function TrackUserMapView() {
   };
 
   useEffect(() => {
+
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
@@ -791,12 +803,6 @@ export default function TrackUserMapView() {
               longitudeDelta: LONGITUDE_DELTA,
               flag: 0,
             });
-            setRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            })
             setPostButtonVisible(true);
             fetchAllMarkerCord()
           } else {
@@ -823,6 +829,9 @@ export default function TrackUserMapView() {
     setUser(auth.currentUser);
     fetchIndexBar(indexStatus);
   }, []);
+  useEffect(() => {
+    fetchAllMarkerCord()
+  }, [regions]);
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>

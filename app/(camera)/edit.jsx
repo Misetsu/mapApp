@@ -101,7 +101,7 @@ export default function edit() {
 
       await firestore().collection("users").doc(auth.currentUser.uid).update({
         spotCreate: spotNo,
-        spotPoint: point,
+        spotPoint: parseInt(point),
         lastPostAt: currentTime,
       });
 
