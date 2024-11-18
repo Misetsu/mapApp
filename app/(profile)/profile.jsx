@@ -330,8 +330,9 @@ export default function profile() {
                       style={styles.listProfileImage}
                     />
                     <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}></Text>
-                      <Text>{follow.displayName}</Text>
+                      <Text style={styles.listUsername}>
+                        {follow.displayName}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 );
