@@ -42,6 +42,7 @@ export default function TrackUserMapView() {
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
+  const [regions,setregions] = useState(null);
   const [Region, setRegion] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
@@ -59,6 +60,7 @@ export default function TrackUserMapView() {
   const [chosenUser, setChosenUser] = useState(null);
 
   const setmodal = (marker) => {
+
     try {
       const distance = calculateDistance(
         position.latitude,
@@ -451,6 +453,13 @@ export default function TrackUserMapView() {
           longitudeDelta: LONGITUDE_DELTA,
           flag: 1,
         });
+        setregions({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        });
+
       } else {
         setRegion({
           latitude: latitude,
@@ -459,6 +468,13 @@ export default function TrackUserMapView() {
           longitudeDelta: LONGITUDE_DELTA,
           flag: 0,
         });
+        setregions({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        });
+
       }
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -499,17 +515,30 @@ export default function TrackUserMapView() {
           } else {
             item.visited = "";
           }
-
+          if(regions != null){
+          if(
+          item.mapLatitude >= regions.latitude - regions.latitudeDelta / 2 &&
+          item.mapLatitude <= regions.latitude + regions.latitudeDelta / 2 &&
+          item.mapLongitude >= regions.longitude - regions.longitudeDelta / 2 &&
+          item.mapLongitude <= regions.longitude + regions.longitudeDelta / 2
+          ){
           fetchResult.push(item);
+          }
+        }
         });
         setMarkerCords(fetchResult);
       }
     } catch (error) {
-      console.error("Error fetching documents: ", error);
+      console.error("Error fetching documentssss: ", error);
     } finally {
       setChosenUser(null);
       setLoading(false);
     }
+  };
+  const onRegionChangeComplete = (newRegion) => {
+    setregions(newRegion);  // 新しい表示領域を状態に設定
+    // 現在の表示領域をコンソールに出力
+    fetchAllMarkerCord()
   };
 
   const fetchIndexBar = async (status) => {
@@ -756,6 +785,7 @@ export default function TrackUserMapView() {
   };
 
   useEffect(() => {
+
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
@@ -777,6 +807,7 @@ export default function TrackUserMapView() {
               flag: 0,
             });
             setPostButtonVisible(true);
+            fetchAllMarkerCord()
           } else {
             setError("Position or coords is undefined");
           }
@@ -799,9 +830,11 @@ export default function TrackUserMapView() {
 
   useEffect(() => {
     setUser(auth.currentUser);
-    fetchAllMarkerCord();
     fetchIndexBar(indexStatus);
   }, []);
+  useEffect(() => {
+    fetchAllMarkerCord()
+  }, [regions]);
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
@@ -824,6 +857,7 @@ export default function TrackUserMapView() {
           zoomEnabled={mapfixed}
           rotateEnabled={mapfixed}
           pitchEnabled={mapfixed}
+          onRegionChangeComplete={onRegionChangeComplete}
         >
           <Marker
             coordinate={{
@@ -855,6 +889,7 @@ export default function TrackUserMapView() {
               <Image
                 source={getPinColor(marker)}
                 style={styles.markerImage} //ピンの色
+                visible={true}
               />
             </Marker>
           ))}
