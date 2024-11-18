@@ -189,11 +189,41 @@ export default function myPage() {
   };
 
   const handleDelete = async () => {
-    await firestore().collection("users").doc(auth.currentUser.uid).delete();
+    await deleteSubcollection(auth.currentUser.uid, "spot");
+
+    await firestore().collection("users").doc(auth.currentUser.uid).update({
+      email: FieldValue.delete(),
+      lastPostAt: FieldValue.delete(),
+      publicStatus: FieldValue.delete(),
+      spotCreate: FieldValue.delete(),
+      spotPoint: FieldValue.delete(),
+    });
+
     await auth.currentUser.delete().then(() => {
       GoogleSignin.revokeAccess();
       router.replace("/");
     });
+  };
+
+  const deleteSubcollection = async (parentDocId, subcollectionName) => {
+    try {
+      const subcollectionRef = firestore()
+        .collection("users")
+        .doc(parentDocId)
+        .collection(subcollectionName);
+
+      const snapshot = await subcollectionRef.get();
+
+      const batch = firestore().batch();
+      snapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+      console.log(`Subcollection '${subcollectionName}' deleted successfully!`);
+    } catch (error) {
+      console.error("Error deleting subcollection:", error);
+    }
   };
 
   return (

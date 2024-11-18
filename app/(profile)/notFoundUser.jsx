@@ -13,23 +13,18 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
-import UserPosts from "./othersPosts";
 
 const auth = FirebaseAuth();
 
 export default function profile() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { uid } = params;
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
   const [followList, setFollowList] = useState([]);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isFav, setIsFav] = useState(false);
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
-  const [publicStatus, setPublicStatus] = useState(false);
 
   useEffect(() => {
     const { uid } = params;
@@ -43,14 +38,6 @@ export default function profile() {
       const profileData = queryProfile.docs[0].data();
       setDisplayName(profileData.displayName);
       setPhotoUri(profileData.photoURL);
-
-      if (profileData.email == undefined) {
-        router.push({ pathname: "/notFoundUser", params: { uid: uid } }); // TODO
-      }
-
-      if (profileData.publicStatus == 0) {
-        setPublicStatus(true);
-      }
 
       // フォロー中取得
       const queryFollow = await firestore()
@@ -105,10 +92,6 @@ export default function profile() {
             .get();
           const userData = queryUser.docs[0].data();
 
-          if (userData.uid == auth.currentUser.uid) {
-            setPublicStatus(true);
-          }
-
           tempObj[firstKey] = userData.uid;
           tempObj[secondKey] = userData.displayName;
           tempObj[thirdKey] = userData.photoURL;
@@ -121,106 +104,8 @@ export default function profile() {
       }
     };
 
-    const fetchFollowStatus = async () => {
-      if (auth.currentUser == null) {
-        setIsFollowing(false);
-      } else {
-        const queryStatus = await firestore()
-          .collection("follow")
-          .where("followeeId", "==", uid)
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
-        if (!queryStatus.empty) {
-          setIsFollowing(true);
-        } else {
-          setIsFollowing(false);
-        }
-      }
-    };
-
-    const fetchFavStatus = async () => {
-      if (auth.currentUser == null) {
-        setIsFav(false);
-      } else {
-        const queryFav = await firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .get();
-        const favData = queryFav.get(uid);
-        if (favData === undefined || !queryFav.exists) {
-          setIsFav(false);
-        } else {
-          setIsFav(true);
-        }
-      }
-    };
-
     fetchUserData();
-    fetchFollowStatus();
-    fetchFavStatus();
   }, []);
-
-  const handleFollow = async () => {
-    if (auth.currentUser == null) {
-      router.push("/loginForm");
-    } else {
-      if (isFollowing) {
-        const queryStatus = await firestore()
-          .collection("follow")
-          .where("followeeId", "==", uid)
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
-        const docId = queryStatus.docs[0].id;
-        firestore().collection("follow").doc(docId).delete();
-        setIsFollowing(false);
-        if (isFav) {
-          firestore()
-            .collection("star")
-            .doc(auth.currentUser.uid)
-            .update({
-              [uid]: FieldValue.delete(),
-            });
-          setIsFav(false);
-        }
-      } else {
-        const queryFollow = await firestore()
-          .collection("follow")
-          .orderBy("id", "desc")
-          .get();
-        const maxId = queryFollow.docs[0].data().id + 1;
-        firestore().collection("follow").add({
-          id: maxId,
-          followerId: auth.currentUser.uid,
-          followeeId: uid,
-        });
-        setIsFollowing(true);
-      }
-    }
-  };
-
-  const handleFav = async () => {
-    if (auth.currentUser == null) {
-      router.push("/loginForm");
-    } else {
-      if (isFav) {
-        firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .update({
-            [uid]: FieldValue.delete(),
-          });
-        setIsFav(false);
-      } else {
-        firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .update({
-            [uid]: uid,
-          });
-        setIsFav(true);
-      }
-    }
-  };
 
   const handleProfile = (uid) => {
     if (auth.currentUser == null) {
@@ -232,16 +117,6 @@ export default function profile() {
         router.push({ pathname: "/profile", params: { uid: uid } });
       }
     }
-  };
-
-  const handleFollowPress = () => {
-    // Followテキストが押されたときにフォローモーダルを表示
-    setIsFollowModalVisible(true);
-  };
-
-  const handleFollowerPress = () => {
-    // Followerテキストが押されたときにフォロワーモーダルを表示
-    setIsFollowerModalVisible(true);
   };
 
   const handleCloseFollowModal = () => {
@@ -260,8 +135,6 @@ export default function profile() {
 
   return (
     <ScrollView style={styles.scrview}>
-      {/* 右側のアイコンやテキストをここに追加 */}
-      {/*<Icon name="angle-left" size={24} color="#000" />*/}
       <View style={styles.container}>
         <Text style={styles.pagetitle}>プロフィール</Text>
         <View style={styles.profileContainer}>
@@ -282,28 +155,6 @@ export default function profile() {
           <TouchableOpacity style={styles.FFnum} onPress={handleFollowerPress}>
             <Text style={styles.FFtext}>フォロワー: {followerList.length}</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* フォローボタンを追加 */}
-        <View style={styles.actionBar}>
-          {isFollowing ? (
-            <TouchableOpacity style={styles.button} onPress={handleFollow}>
-              <Text style={styles.buttonText}>フォロー解除</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.button} onPress={handleFollow}>
-              <Text style={styles.buttonText}>フォロー</Text>
-            </TouchableOpacity>
-          )}
-          {isFav ? (
-            <TouchableOpacity onPress={handleFav}>
-              <Icon name="star" size={40} color="#f2c530" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={handleFav}>
-              <Icon name="star-o" size={40} color="#000" />
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* フォローモーダル */}
@@ -394,11 +245,7 @@ export default function profile() {
           style={styles.textInput}
           editable={false}
         />
-        {publicStatus ? (
-          <UserPosts uid={uid} />
-        ) : (
-          <Text>このアカウントは非公開です。</Text>
-        )}
+        <Text>このアカウントは削除されました。</Text>
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
