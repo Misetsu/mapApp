@@ -224,7 +224,7 @@ const ReplyScreen = () => {
 
   const handleLike = async (postId) => {
     if (isLiked) {
-      handleUnlike(postId);
+      handleSimpleUnlike(postId);
     } else {
       const querylike = await firestore()
         .collection("like")
@@ -240,6 +240,38 @@ const ReplyScreen = () => {
         });
       setIsLiked(true);
     }
+  };
+
+  const handleSimpleUnlike = async (postId) => {
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: parseInt(selectedPost.likeCount),
+        [auth.currentUser.uid]: FieldValue.delete(),
+      });
+    setIsLiked(false);
+  };
+
+  const handleSimpleLike = async (postId) => {
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: parseInt(selectedPost.likeCount),
+        [auth.currentUser.uid]: auth.currentUser.uid,
+      });
+    setIsLiked(true);
   };
 
   return (
@@ -305,7 +337,7 @@ const ReplyScreen = () => {
                   )}
 
                   <View>
-                    {selectedPost.likeFlag ? (
+                    {isLiked ? (
                       <TouchableOpacity
                         style={styles.actionButton}
                         onPress={
