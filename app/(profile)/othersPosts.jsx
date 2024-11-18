@@ -12,7 +12,6 @@ import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const auth = FirebaseAuth();
 
@@ -57,33 +56,35 @@ export default function UserPosts(uid) {
           return;
         }
 
-        setlen(photoSnapshot.size)
+        setlen(photoSnapshot.size);
         // photo の各ドキュメントをループ処理
-        const photoPromises = photoSnapshot.docs.slice(startpage,endpage).map(async (photoDoc) => {
-          const photoData = photoDoc.data();
-          let photoUri = "";
-          let visited = false;
+        const photoPromises = photoSnapshot.docs
+          .slice(startpage, endpage)
+          .map(async (photoDoc) => {
+            const photoData = photoDoc.data();
+            let photoUri = "";
+            let visited = false;
 
-          // 画像パスが存在する場合、URL を取得
-          if (photoData.imagePath) {
-            photoUri = await storage()
-              .ref(photoData.imagePath)
-              .getDownloadURL();
-          }
-
-          if (photoData.spotId in vivstedSpot) {
-            if (photoData.timeStamp < vivstedSpot[photoData.spotId]) {
-              visited = true;
+            // 画像パスが存在する場合、URL を取得
+            if (photoData.imagePath) {
+              photoUri = await storage()
+                .ref(photoData.imagePath)
+                .getDownloadURL();
             }
-          }
 
-          return {
-            photoUri: photoUri,
-            postId: photoData.postId, // postId も保存
-            spotId: photoData.spotId, // spotId も保存
-            visited: visited,
-          };
-        });
+            if (photoData.spotId in vivstedSpot) {
+              if (photoData.timeStamp < vivstedSpot[photoData.spotId]) {
+                visited = true;
+              }
+            }
+
+            return {
+              photoUri: photoUri,
+              postId: photoData.postId, // postId も保存
+              spotId: photoData.spotId, // spotId も保存
+              visited: visited,
+            };
+          });
 
         const photos = await Promise.all(photoPromises);
         setPosts(photos);
@@ -96,7 +97,6 @@ export default function UserPosts(uid) {
 
     fetchPosts();
   }, [startpage]);
-
 
   const handleImagePress = async (post) => {
     try {
@@ -159,21 +159,18 @@ export default function UserPosts(uid) {
   const paging = (arrow) => {
     let stpage = 0;
     let edpage = 0;
-    if(arrow == "left" && startpage - 9 >= 0){
-        stpage =  startpage - 9;
-        edpage =  endpage - 9;
-        setstartpage(stpage);
-        setendpage(edpage);
-    }
-    else if(arrow == "right"){
-      stpage =  startpage + 9;
-      edpage =  endpage + 9;
+    if (arrow == "left" && startpage - 9 >= 0) {
+      stpage = startpage - 9;
+      edpage = endpage - 9;
       setstartpage(stpage);
       setendpage(edpage);
+    } else if (arrow == "right") {
+      stpage = startpage + 9;
+      edpage = endpage + 9;
+      setstartpage(stpage);
+      setendpage(edpage);
+    }
   };
-  };
-
-
 
   return (
     <View style={styles.container}>
@@ -262,16 +259,22 @@ export default function UserPosts(uid) {
         </View>
       </Modal>
       <View style={styles.arrow}>
-      {startpage != 0 && (
-      <TouchableOpacity style={styles.arrowleft} onPress={() =>paging("left")}>
+        {startpage != 0 && (
+          <TouchableOpacity
+            style={styles.arrowleft}
+            onPress={() => paging("left")}
+          >
             <Icon name="arrow-left" size={24} color="#000" />
-      </TouchableOpacity>
-      )}
-      {endpage < len && (
-      <TouchableOpacity style={styles.arrowright} onPress={() =>paging("right")}>
+          </TouchableOpacity>
+        )}
+        {endpage < len && (
+          <TouchableOpacity
+            style={styles.arrowright}
+            onPress={() => paging("right")}
+          >
             <Icon name="arrow-right" size={24} color="#000" />
-      </TouchableOpacity>
-      )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -354,15 +357,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "300",
   },
-  arrow:{
+  arrow: {
     flexDirection: "row", // 子要素を横並びに配置
   },
-  arrowright:{
-    marginLeft: 'auto', // 左に自動マージンを設定して右寄せ
-    alignSelf: 'flex-end', // コンテナ内の右側に配置
+  arrowright: {
+    marginLeft: "auto", // 左に自動マージンを設定して右寄せ
+    alignSelf: "flex-end", // コンテナ内の右側に配置
   },
-  arrowleft:{
-    marginRight: 'auto', // 左に自動マージンを設定して右寄せ
-    alignSelf: 'flex-start', // コンテナ内の右側に配置
-  }
+  arrowleft: {
+    marginRight: "auto", // 左に自動マージンを設定して右寄せ
+    alignSelf: "flex-start", // コンテナ内の右側に配置
+  },
 });
