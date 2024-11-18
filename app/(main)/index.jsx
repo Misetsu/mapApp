@@ -785,7 +785,7 @@ export default function TrackUserMapView() {
         setError(err.message);
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,

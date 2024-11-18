@@ -204,7 +204,7 @@ const ReplyScreen = () => {
 
   const handleUnlike = async (postId) => {
     if (isLiked == false) {
-      handleLike(postId);
+      handleSimpleLike(postId);
     } else {
       const querylike = await firestore()
         .collection("like")
@@ -389,7 +389,7 @@ const ReplyScreen = () => {
                           ]}
                         >
                           {selectedPost.likeFlag
-                            ? selectedPost.likeCount
+                            ? selectedPost.likeCount - 1
                             : selectedPost.likeCount}
                         </Text>
                       </TouchableOpacity>

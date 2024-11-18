@@ -8,6 +8,7 @@ import {
   Modal,
   TouchableOpacity,
 } from "react-native";
+import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
@@ -15,6 +16,7 @@ import storage from "@react-native-firebase/storage";
 const auth = FirebaseAuth();
 
 export default function UserLikedPosts() {
+  const router = useRouter();
   const [likedPosts, setLikedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null); // クリックされた画像の詳細用
