@@ -43,6 +43,7 @@ export default function TrackUserMapView() {
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
   const [regions,setregions] = useState(null);
+  const [saveregion,setsaveregions] = useState(null);
   const [Region, setRegion] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
@@ -58,6 +59,7 @@ export default function TrackUserMapView() {
   const [userList, setUserList] = useState([]);
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
+  const [mapflag,setmapflag] = useState(true)
 
   const setmodal = (marker) => {
 
@@ -69,12 +71,14 @@ export default function TrackUserMapView() {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
+        setmapflag(true)
         setSpotId(marker.id);
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
         fetchPostData(marker.id);
       } else {
+        setmapflag(false)
         setSpotId(marker.id);
         setModalVisible(true);
         setPostImage(false);
@@ -482,6 +486,7 @@ export default function TrackUserMapView() {
   };
 
   const fetchAllMarkerCord = async () => {
+    if(!modalVisible){
     let vivstedSpot = {};
 
     if (auth.currentUser != null) {
@@ -501,7 +506,7 @@ export default function TrackUserMapView() {
     }
 
     const fetchResult = [];
-    setLoading(true);
+
     try {
       const querySnapshot = await firestore()
         .collection("spot")
@@ -526,7 +531,9 @@ export default function TrackUserMapView() {
           }
         }
         });
-        setMarkerCords(fetchResult);
+        if(regions != null && mapflag){
+          setMarkerCords(fetchResult);
+        }
       }
     } catch (error) {
       console.error("Error fetching documentssss: ", error);
@@ -534,9 +541,13 @@ export default function TrackUserMapView() {
       setChosenUser(null);
       setLoading(false);
     }
+  }
   };
   const onRegionChangeComplete = (newRegion) => {
+    if(mapflag){
     setregions(newRegion);  // 新しい表示領域を状態に設定
+    }
+    setsaveregions(newRegion)
     // 現在の表示領域をコンソールに出力
     fetchAllMarkerCord()
   };
@@ -645,6 +656,8 @@ export default function TrackUserMapView() {
 
   const handleIconPress = () => {
     if (iconName === "times") {
+      setmapflag(true)
+      setregions(saveregion)
       fetchAllMarkerCord();
       if (indexStatus == "follow") {
         setIconName("user-friends"); // アイコン名を "times" に変更
@@ -693,8 +706,14 @@ export default function TrackUserMapView() {
       querySpot.forEach((docs) => {
         const item = docs.data();
         fetchResult.push(item);
+        setmapflag(false)
+        setsaveregions(regions)
+        setregions(null)
       });
       setMarkerCords(fetchResult);
+    }
+    else{
+      setmapflag(true)
     }
     setIconName("times");
     setChosenUser(userId);
