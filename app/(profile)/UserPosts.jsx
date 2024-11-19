@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Text,
   ActivityIndicator,
-  Modal,
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";

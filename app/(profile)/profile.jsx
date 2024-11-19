@@ -203,6 +203,7 @@ export default function profile() {
         );
       } else {
         // フォローする処理
+        // フォローする処理
         const queryFollow = await firestore()
           .collection("follow")
           .orderBy("id", "desc")
