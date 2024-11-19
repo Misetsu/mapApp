@@ -72,11 +72,23 @@ export default function UserLikedPosts() {
                 photoUri: photoUri,
                 postTxt: photoData.postTxt, // 投稿テキスト
                 spotId: photoData.spotId, // スポットIDも保存
+                timeStamp: photoData.timeStamp,
               };
             }
           });
 
         const likedPostsData = await Promise.all(likedPostPromises);
+
+        likedPostsData.sort((a, b) => {
+          if (b.timeStamp < a.timeStamp) {
+            return -1;
+          }
+          if (b.timeStamp > a.timeStamp) {
+            return 1;
+          }
+          return 0;
+        });
+
         setLikedPosts(likedPostsData);
       } catch (error) {
         console.error("いいねした投稿の取得中にエラーが発生しました: ", error);
