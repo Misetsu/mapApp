@@ -15,6 +15,14 @@ import FirebaseAuth from "@react-native-firebase/auth";
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
 
+const router = useRouter();
+
+const handleBackPress = () => {
+  if (router) {
+    router.back();
+  }
+};
+
 export default function SearchScreen() {
   const router = useRouter();
   const [searchText, setSearchText] = useState(""); // 検索テキスト
@@ -288,6 +296,11 @@ export default function SearchScreen() {
           })}
         </View>
       )}
+            <View style={styles.Back}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -371,5 +384,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
 });
