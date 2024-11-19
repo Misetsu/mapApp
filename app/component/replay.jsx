@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
-import firestore from "@react-native-firebase/firestore";
+import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -31,8 +31,7 @@ const ReplyScreen = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  console.log(showImage);
+  const [isLiked, setIsLiked] = useState(false);
 
   const handleBackPress = () => {
     router.back();
@@ -95,7 +94,29 @@ const ReplyScreen = () => {
             spotName = spotSnapshot.docs[0].data().name;
           }
 
-          setSelectedPost({ ...photoDoc, postDetails, spotName, userDetails });
+          const likeSnapShot = await firestore()
+            .collection("like")
+            .where("postId", "==", parseInt(postId))
+            .get();
+
+          const likeData = likeSnapShot.docs[0].data();
+          const likeCount = likeData.count;
+          let likeFlag = true;
+          if (likeData[auth.currentUser.uid] != undefined) {
+            likeFlag = true;
+          } else {
+            likeFlag = false;
+          }
+
+          setIsLiked(likeFlag);
+          setSelectedPost({
+            ...photoDoc,
+            postDetails,
+            spotName,
+            userDetails,
+            likeCount,
+            likeFlag,
+          });
         }
       } else {
         setPhotoUri(null);
@@ -132,7 +153,7 @@ const ReplyScreen = () => {
 
   useEffect(() => {
     fetchData();
-  }, [postId]);
+  }, []);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -170,15 +191,83 @@ const ReplyScreen = () => {
         fetchData();
         router.back();
       } catch (error) {
-        Alert.alert(
-          "エラー",
-          `返信の送信中にエラーが発生しました: ${error.message}`
-        );
         console.error("Error adding reply:", error);
       }
     } else {
       Alert.alert("エラー", "返信を入力してください。");
     }
+  };
+
+  const handleUnlike = async (postId) => {
+    if (selectedPost.likeFlag == false) {
+      handleSimpleUnlike(postId);
+    } else {
+      const querylike = await firestore()
+        .collection("like")
+        .where("postId", "==", parseInt(postId))
+        .get();
+      const queryId = querylike.docs[0].ref._documentPath._parts[1];
+      await firestore()
+        .collection("like")
+        .doc(queryId)
+        .update({
+          count: parseInt(selectedPost.likeCount) - 1,
+          [auth.currentUser.uid]: FieldValue.delete(),
+        });
+      setIsLiked(false);
+    }
+  };
+
+  const handleLike = async (postId) => {
+    if (selectedPost.likeFlag) {
+      handleSimpleLike(postId);
+    } else {
+      const querylike = await firestore()
+        .collection("like")
+        .where("postId", "==", parseInt(postId))
+        .get();
+      const queryId = querylike.docs[0].ref._documentPath._parts[1];
+      await firestore()
+        .collection("like")
+        .doc(queryId)
+        .update({
+          count: parseInt(selectedPost.likeCount) + 1,
+          [auth.currentUser.uid]: auth.currentUser.uid,
+        });
+      setIsLiked(true);
+    }
+  };
+
+  const handleSimpleUnlike = async (postId) => {
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: parseInt(selectedPost.likeCount),
+        [auth.currentUser.uid]: FieldValue.delete(),
+      });
+    setIsLiked(false);
+  };
+
+  const handleSimpleLike = async (postId) => {
+    const querylike = await firestore()
+      .collection("like")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    const queryId = querylike.docs[0].ref._documentPath._parts[1];
+    await firestore()
+      .collection("like")
+      .doc(queryId)
+      .update({
+        count: parseInt(selectedPost.likeCount),
+        [auth.currentUser.uid]: auth.currentUser.uid,
+      });
+    setIsLiked(true);
   };
 
   return (
@@ -242,6 +331,66 @@ const ReplyScreen = () => {
                       />
                     </View>
                   )}
+
+                  <View>
+                    {isLiked ? (
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={
+                          auth.currentUser
+                            ? () => handleUnlike(postId)
+                            : () => {
+                                router.push("/loginForm");
+                              }
+                        }
+                      >
+                        <Icon
+                          name="heart"
+                          size={25}
+                          color={selectedPost.likeFlag ? "#f00" : "#f00"}
+                        />
+                        <Text
+                          style={[
+                            { color: selectedPost.likeFlag ? "red" : "red" },
+                            styles.likeNum,
+                          ]}
+                        >
+                          {selectedPost.likeFlag
+                            ? selectedPost.likeCount
+                            : selectedPost.likeCount + 1}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={
+                          auth.currentUser
+                            ? () => handleLike(postId)
+                            : () => {
+                                router.push("/loginForm");
+                              }
+                        }
+                      >
+                        <Icon
+                          name="heart"
+                          size={25}
+                          color={selectedPost.likeFlag ? "#000" : "#000"}
+                        />
+                        <Text
+                          style={[
+                            {
+                              color: selectedPost.likeFlag ? "black" : "black",
+                            },
+                            styles.likeNum,
+                          ]}
+                        >
+                          {selectedPost.likeFlag
+                            ? selectedPost.likeCount - 1
+                            : selectedPost.likeCount}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <View style={styles.postDetails}>
                     <Text style={styles.spotText}>
                       {selectedPost.postDetails.postTxt != ""
@@ -409,6 +558,19 @@ const styles = StyleSheet.create({
   postDate: {
     fontSize: 12,
     color: "gray",
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    padding: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
+  likeNum: {
+    marginLeft: 10,
+    fontSize: 16,
   },
 });
 
