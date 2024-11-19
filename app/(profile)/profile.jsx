@@ -187,7 +187,7 @@ export default function profile() {
                 const docId = queryStatus.docs[0].id;
                 await firestore().collection("follow").doc(docId).delete();
                 setIsFollowing(false);
-  
+
                 if (isFav) {
                   await firestore()
                     .collection("star")
@@ -202,6 +202,7 @@ export default function profile() {
           ]
         );
       } else {
+        // フォローする処理
         // フォローする処理
         const queryFollow = await firestore()
           .collection("follow")
@@ -336,27 +337,29 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              {followList.map((follow) => {
-                return (
-                  <TouchableOpacity
-                    key={follow.uid}
-                    style={styles.followListuser}
-                    onPress={() => {
-                      handleProfile(follow.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}>
-                        {follow.displayName}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+              <ScrollView style={styles.modalContent}>
+                {followList.map((follow) => {
+                  return (
+                    <TouchableOpacity
+                      key={follow.uid}
+                      style={styles.followListuser}
+                      onPress={() => {
+                        handleProfile(follow.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: follow.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <View style={styles.listUsernamecontainer}>
+                        <Text style={styles.listUsername}>
+                          {follow.displayName}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowModal}
@@ -377,27 +380,29 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
-              {followerList.map((follower) => {
-                return (
-                  <TouchableOpacity
-                    key={follower.uid}
-                    style={styles.followListuser}
-                    onPress={() => {
-                      handleProfile(follower.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follower.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}>
-                        {follower.displayName}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+              <ScrollView style={styles.modalContent}>
+                {followerList.map((follower) => {
+                  return (
+                    <TouchableOpacity
+                      key={follower.uid}
+                      style={styles.followListuser}
+                      onPress={() => {
+                        handleProfile(follower.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: follower.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <View style={styles.listUsernamecontainer}>
+                        <Text style={styles.listUsername}>
+                          {follower.displayName}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowerModal}
