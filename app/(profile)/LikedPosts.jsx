@@ -12,7 +12,7 @@ import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const auth = FirebaseAuth();
 
@@ -42,40 +42,53 @@ export default function UserLikedPosts() {
         if (likeSnapshot.empty) {
           return;
         }
-        setlen(likeSnapshot.size)
+        setlen(likeSnapshot.size);
 
+        const likedPostPromises = likeSnapshot.docs
+          .slice(startpage, endpage)
+          .map(async (likeDoc) => {
+            const likeData = likeDoc.data();
+            const postId = likeData.postId;
 
-        const likedPostPromises = likeSnapshot.docs.slice(startpage,endpage).map(async (likeDoc) => {
-          const likeData = likeDoc.data();
-          const postId = likeData.postId;
+            // postId を使って photo コレクションからデータを取得
+            const photoSnapshot = await firestore()
+              .collection("photo")
+              .where("postId", "==", postId) // postId に基づいて photo データを取得
+              .get();
 
-          // postId を使って photo コレクションからデータを取得
-          const photoSnapshot = await firestore()
-            .collection("photo")
-            .where("postId", "==", postId) // postId に基づいて photo データを取得
-            .get();
+            if (!photoSnapshot.empty) {
+              const photoData = photoSnapshot.docs[0].data(); // 1つ目の一致したデータを取得
+              let photoUri = "";
 
-          if (!photoSnapshot.empty) {
-            const photoData = photoSnapshot.docs[0].data(); // 1つ目の一致したデータを取得
-            let photoUri = "";
+              // 画像パスが存在する場合、URL を取得
+              if (photoData.imagePath) {
+                photoUri = await storage()
+                  .ref(photoData.imagePath)
+                  .getDownloadURL();
+              }
 
-            // 画像パスが存在する場合、URL を取得
-            if (photoData.imagePath) {
-              photoUri = await storage()
-                .ref(photoData.imagePath)
-                .getDownloadURL();
+              return {
+                postId: photoData.postId,
+                photoUri: photoUri,
+                postTxt: photoData.postTxt, // 投稿テキスト
+                spotId: photoData.spotId, // スポットIDも保存
+                timeStamp: photoData.timeStamp,
+              };
             }
-
-            return {
-              postId: photoData.postId,
-              photoUri: photoUri,
-              postTxt: photoData.postTxt, // 投稿テキスト
-              spotId: photoData.spotId, // スポットIDも保存
-            };
-          }
-        });
+          });
 
         const likedPostsData = await Promise.all(likedPostPromises);
+
+        likedPostsData.sort((a, b) => {
+          if (b.timeStamp < a.timeStamp) {
+            return -1;
+          }
+          if (b.timeStamp > a.timeStamp) {
+            return 1;
+          }
+          return 0;
+        });
+
         setLikedPosts(likedPostsData);
       } catch (error) {
         console.error("いいねした投稿の取得中にエラーが発生しました: ", error);
@@ -85,7 +98,7 @@ export default function UserLikedPosts() {
     };
 
     fetchLikedPosts();
-  }, [userId,startpage]);
+  }, [userId, startpage]);
 
   const handleImagePress = async (post) => {
     try {
@@ -148,20 +161,18 @@ export default function UserLikedPosts() {
   const paging = (arrow) => {
     let stpage = 0;
     let edpage = 0;
-    if(arrow == "left" && startpage - 9 >= 0){
-        stpage =  startpage - 9;
-        edpage =  endpage - 9;
-        setstartpage(stpage);
-        setendpage(edpage);
-    }
-    else if(arrow == "right"){
-      stpage =  startpage + 9;
-      edpage =  endpage + 9;
+    if (arrow == "left" && startpage - 9 >= 0) {
+      stpage = startpage - 9;
+      edpage = endpage - 9;
       setstartpage(stpage);
       setendpage(edpage);
+    } else if (arrow == "right") {
+      stpage = startpage + 9;
+      edpage = endpage + 9;
+      setstartpage(stpage);
+      setendpage(edpage);
+    }
   };
-  };
-
 
   return (
     <View style={styles.container}>
@@ -227,16 +238,22 @@ export default function UserLikedPosts() {
         </View>
       </Modal>
       <View style={styles.arrow}>
-      {startpage != 0 && (
-      <TouchableOpacity style={styles.arrowleft} onPress={() =>paging("left")}>
+        {startpage != 0 && (
+          <TouchableOpacity
+            style={styles.arrowleft}
+            onPress={() => paging("left")}
+          >
             <Icon name="arrow-left" size={24} color="#000" />
-      </TouchableOpacity>
-      )}
-      {endpage < len && (
-      <TouchableOpacity style={styles.arrowright} onPress={() =>paging("right")}>
+          </TouchableOpacity>
+        )}
+        {endpage < len && (
+          <TouchableOpacity
+            style={styles.arrowright}
+            onPress={() => paging("right")}
+          >
             <Icon name="arrow-right" size={24} color="#000" />
-      </TouchableOpacity>
-      )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -319,15 +336,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "300",
   },
-  arrow:{
+  arrow: {
     flexDirection: "row", // 子要素を横並びに配置
   },
-  arrowright:{
-    marginLeft: 'auto', // 左に自動マージンを設定して右寄せ
-    alignSelf: 'flex-end', // コンテナ内の右側に配置
+  arrowright: {
+    marginLeft: "auto", // 左に自動マージンを設定して右寄せ
+    alignSelf: "flex-end", // コンテナ内の右側に配置
   },
-  arrowleft:{
-    marginRight: 'auto', // 左に自動マージンを設定して右寄せ
-    alignSelf: 'flex-start', // コンテナ内の右側に配置
-  }
+  arrowleft: {
+    marginRight: "auto", // 左に自動マージンを設定して右寄せ
+    alignSelf: "flex-start", // コンテナ内の右側に配置
+  },
 });
