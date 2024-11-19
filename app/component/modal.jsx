@@ -57,7 +57,8 @@ export default function MyModal({
   const onShare = ()=>{
     try {
       const result = Share.open({
-        message: `${spotName}の投稿をチェック！！`,
+        message: `${spotName}の投稿をチェック！！
+        http://syuto.s322.xrea.com/?_gl=1*1ald7wm*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2*_ga*MjAzMzg2MzgzMC4xNzMxOTM2NDM2*_ga_J8YE7Q8ZQD*MTczMTkzNjQzNS4xLjEuMTczMTkzOTgwMy41My4xLjE0NTc0MTEwMw..&_ga=2.194102957.1689046770.1731936436-2033863830.1731936436`,
         });
       console.log(result);
     } catch (error) {
