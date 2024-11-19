@@ -99,11 +99,14 @@ export default function edit() {
         })
         .catch((error) => console.log(error));
 
-      await firestore().collection("users").doc(auth.currentUser.uid).update({
-        spotCreate: spotNo,
-        spotPoint: parseInt(point),
-        lastPostAt: currentTime,
-      });
+      await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .update({
+          spotCreate: parseInt(spotNo),
+          spotPoint: parseInt(point),
+          lastPostAt: currentTime,
+        });
 
       handleVisitState(maxId);
     } else {
