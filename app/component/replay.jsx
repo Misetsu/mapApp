@@ -270,6 +270,10 @@ const ReplyScreen = () => {
     setIsLiked(true);
   };
 
+  const handleDelete = async () => {
+    Alert.alert("確認", "投稿を削除しますか？", []);
+  };
+
   return (
     <View>
       {/* <ScrollView style={styles.container}> */}
@@ -402,7 +406,9 @@ const ReplyScreen = () => {
                         >
                           <Icon name="pen" size={25} />
                         </TouchableOpacity>
-                        <Icon name="trash" size={25} />
+                        <TouchableOpacity onPress={handleDelete}>
+                          <Icon name="trash" size={25} />
+                        </TouchableOpacity>
                       </View>
                     ) : (
                       <></>
