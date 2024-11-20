@@ -332,7 +332,7 @@ const ReplyScreen = () => {
                     </View>
                   )}
 
-                  <View>
+                  <View style={styles.rowSpaceView}>
                     {isLiked ? (
                       <TouchableOpacity
                         style={styles.actionButton}
@@ -389,6 +389,23 @@ const ReplyScreen = () => {
                             : selectedPost.likeCount}
                         </Text>
                       </TouchableOpacity>
+                    )}
+                    {selectedPost.userDetails.uid == auth.currentUser.uid ? (
+                      <View style={styles.rowView}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            router.push({
+                              pathname: "/editPost",
+                              params: { postId },
+                            });
+                          }}
+                        >
+                          <Icon name="pen" size={25} />
+                        </TouchableOpacity>
+                        <Icon name="trash" size={25} />
+                      </View>
+                    ) : (
+                      <></>
                     )}
                   </View>
                   <View style={styles.postDetails}>
@@ -571,6 +588,14 @@ const styles = StyleSheet.create({
   likeNum: {
     marginLeft: 10,
     fontSize: 16,
+  },
+  rowView: {
+    flexDirection: "row",
+    gap: 15,
+  },
+  rowSpaceView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
 
