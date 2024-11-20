@@ -15,14 +15,6 @@ import FirebaseAuth from "@react-native-firebase/auth";
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
 
-const router = useRouter();
-
-const handleBackPress = () => {
-  if (router) {
-    router.back();
-  }
-};
-
 export default function SearchScreen() {
   const router = useRouter();
   const [searchText, setSearchText] = useState(""); // 検索テキスト
@@ -30,6 +22,12 @@ export default function SearchScreen() {
   const [following, setFollowing] = useState({}); // フォローしているユーザーの状態
   const [recommendedUsers, setRecommendedUsers] = useState([]); // おすすめユーザーリスト
   const [officialUser, setOfficialUser] = useState(null); // 公式ユーザー
+
+  const handleBackPress = () => {
+    if (router) {
+      router.back();
+    }
+  };
 
   useEffect(() => {
     fetchFollowingData(); // フォローしているユーザーのデータを取得
@@ -238,15 +236,22 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 検索バーのUI */}
-      <View style={styles.searchBar}>
-        <Icon name="search" size={20} color="#000" style={styles.icon} />
-        <TextInput
-          style={[styles.input, { fontSize: 18 }]}
-          placeholder="検索"
-          onChangeText={handleSearch}
-          value={searchText}
-        />
+        <View style={styles.header}>
+          <View style={styles.Back}>
+            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Icon name="angle-left" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+            {/* 検索バーのUI */}
+            <View style={styles.searchBar}>
+              <Icon name="search" size={20} color="#000" style={styles.icon} />
+              <TextInput
+                style={[styles.input, { fontSize: 18 }]}
+                placeholder="検索"
+                onChangeText={handleSearch}
+                value={searchText}
+              />
+      </View>
       </View>
 
       {/* おすすめ公式ユーザーの表示 */}
@@ -296,11 +301,6 @@ export default function SearchScreen() {
           })}
         </View>
       )}
-            <View style={styles.Back}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Icon name="angle-left" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -330,7 +330,13 @@ const UserItem = ({ user, isFollowing, onProfilePress, onFollowToggle }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  header:{
+    flexDirection: "row",
+    paddingTop: 15,
   },
   searchBar: {
     flexDirection: "row",
@@ -339,7 +345,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     padding: 5,
-    marginBottom: 20,
+    marginTop: 15,
+    width: "80%",
+    height: 50,
   },
   icon: {
     marginRight: 10,
@@ -385,10 +393,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
   },
+  Back:{
+  },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
     marginTop: 5, // ボタン間にスペースを追加
