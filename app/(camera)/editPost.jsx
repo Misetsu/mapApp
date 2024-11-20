@@ -35,15 +35,6 @@ const EditPostScreen = () => {
     router.back();
   };
 
-  const navigateProfile = (uid) => {
-    router.push({
-      pathname: "/profile",
-      params: {
-        uid: uid,
-      },
-    });
-  };
-
   if (!postId) {
     Alert.alert("エラー", "投稿IDが指定されていません。");
     return null;
@@ -127,18 +118,25 @@ const EditPostScreen = () => {
       if (!tagSnapshot.empty) {
         tagSnapshot.forEach(async (docs) => {
           const item = docs.data();
-          const tagNameSnapshot = await firestore()
-            .collection("tag")
-            .where("tagId", "==", parseInt(item.tagId))
-            .get();
-          item.tagName = tagNameSnapshot.docs[0].data().tagName;
-          fetchResult.push(item);
+          fetchResult.push(item.tagId);
         });
       }
       setSelectedTag(fetchResult);
     } catch (error) {
       console.error("データ取得中にエラーが発生しました: ", error);
     }
+  };
+
+  const addTag = (tagId) => {
+    if (selectedTag.includes(tagId)) {
+      deleteTag(tagId);
+    } else {
+      setSelectedTag((tag) => [...tag, tagId]);
+    }
+  };
+
+  const deleteTag = (tagId) => {
+    setSelectedTag((tag) => tag.filter((item) => item !== tagId));
   };
 
   const fetchTag = async () => {
@@ -153,7 +151,6 @@ const EditPostScreen = () => {
 
   return (
     <View>
-      {/* <ScrollView style={styles.container}> */}
       <View style={styles.container}>
         {loading ? (
           <View style={styles.centerContainer}>
@@ -204,9 +201,14 @@ const EditPostScreen = () => {
                             return (
                               <TouchableOpacity
                                 style={styles.tagView}
-                                key={tag.tagId}
+                                key={tag}
+                                onPress={() => {
+                                  deleteTag(tag);
+                                }}
                               >
-                                <Text>{tag.tagName}</Text>
+                                <Text>
+                                  {allTag.find((o) => o.tagId == tag).tagName}
+                                </Text>
                                 <Icon name="times-circle" size={16} />
                               </TouchableOpacity>
                             );
@@ -221,6 +223,9 @@ const EditPostScreen = () => {
                           <TouchableOpacity
                             style={styles.tagView}
                             key={tag.tagId}
+                            onPress={() => {
+                              addTag(tag.tagId);
+                            }}
                           >
                             <Icon name="tag" size={16} />
                             <Text>{tag.tagName}</Text>
