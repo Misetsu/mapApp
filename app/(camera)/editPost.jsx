@@ -144,6 +144,30 @@ const EditPostScreen = () => {
     await fetchAllTag();
   };
 
+  const handleSave = async () => {
+    const tagPostRef = firestore()
+      .collection("tagPost")
+      .where("postId", "==", parseInt(postId));
+    let batch = firestore.batch();
+
+    tagPostRef.get().then((snapshot) => {
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      return batch.commit();
+    });
+
+    selectedTag.forEach(async (tagId) => {
+      await firestore()
+        .collection("tagPost")
+        .add({
+          postId: parseInt(postId),
+          tagId: parseInt(tagId),
+        });
+    });
+    router.back();
+  };
+
   useEffect(() => {
     fetchData();
     fetchTag();
@@ -235,6 +259,9 @@ const EditPostScreen = () => {
                     </View>
                   </View>
                 </View>
+                <TouchableOpacity style={styles.submit} onPress={handleSave}>
+                  <Text style={styles.submitText}>保存</Text>
+                </TouchableOpacity>
               </>
             )}
           </>
@@ -410,6 +437,19 @@ const styles = StyleSheet.create({
     width: "100%",
     borderBottomWidth: 2,
     marginVertical: 5,
+  },
+  submit: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#239D60",
+    height: 50,
+    margin: 10, // ボタン間にスペースを追加
+  },
+  submitText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#f2f2f2",
+    textAlign: "center",
   },
 });
 
