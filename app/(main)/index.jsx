@@ -532,6 +532,7 @@ export default function TrackUserMapView() {
         }
         });
         if(regions != null && mapflag){
+          
           setMarkerCords(fetchResult);
         }
       }
@@ -542,7 +543,7 @@ export default function TrackUserMapView() {
       setLoading(false);
     }
   }
-  };
+};
   const onRegionChangeComplete = (newRegion) => {
     if(mapflag){
     setregions(newRegion);  // 新しい表示領域を状態に設定
@@ -825,6 +826,12 @@ export default function TrackUserMapView() {
               longitudeDelta: LONGITUDE_DELTA,
               flag: 0,
             });
+            setregions({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            })
             setPostButtonVisible(true);
             fetchAllMarkerCord()
           } else {
@@ -851,6 +858,7 @@ export default function TrackUserMapView() {
     setUser(auth.currentUser);
     fetchIndexBar(indexStatus);
   }, []);
+
   useEffect(() => {
     fetchAllMarkerCord()
   }, [regions]);
