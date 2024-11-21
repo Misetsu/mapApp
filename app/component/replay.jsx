@@ -8,7 +8,9 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  FlatList, // ScrollViewからFlatListに変更
+  FlatList, // ScrollViewからFlatListに変更z
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -32,6 +34,12 @@ const ReplyScreen = () => {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+
+  const handleScroll = (event) => {
+    const { contentOffset } = event.nativeEvent;
+    setIsScrolling(contentOffset.y > 0); // スクロール位置が0以上なら非表示
+  };
 
   const handleBackPress = () => {
     router.back();
@@ -153,7 +161,11 @@ const ReplyScreen = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [postId]);
+
+  useEffect(() => {
+    console.log("Replies Data:", replies);
+  }, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -339,153 +351,153 @@ const ReplyScreen = () => {
   };
 
   return (
-    <View>
-      {/* <ScrollView style={styles.container}> */}
-      <View style={styles.container}>
-        {loading ? (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#0000ff" />
-          </View>
-        ) : (
-          <>
-            {selectedPost && (
-              <>
-                <View style={styles.header}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // iOSの場合はオフセット調整
+    >
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : (
+        <>
+          {selectedPost && (
+            <>
+              <View style={styles.header}>
+                <TouchableOpacity
+                  onPress={handleBackPress}
+                  style={styles.iconButton}
+                >
+                  <Icon name="angle-left" size={24} color="#000" />
+                </TouchableOpacity>
+                <Text style={styles.spotName}>{selectedPost.spotName}</Text>
+                <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
+              </View>
+              <View style={styles.contentContainer}>
+                <View style={styles.postUserBar}>
                   <TouchableOpacity
-                    onPress={handleBackPress}
-                    style={styles.iconButton}
+                    style={styles.postUser}
+                    onPress={() => {
+                      navigateProfile(selectedPost.userDetails.uid);
+                    }}
                   >
-                    <Icon name="angle-left" size={24} color="#000" />
+                    <Image
+                      source={{ uri: selectedPost.userDetails.photoURL }}
+                      style={styles.postIconImage}
+                    />
+                    <Text style={{ fontSize: 16 }}>
+                      {selectedPost.userDetails.displayName}
+                    </Text>
                   </TouchableOpacity>
-                  <Text style={styles.spotName}>{selectedPost.spotName}</Text>
-                  <TouchableOpacity
-                    style={styles.iconButton}
-                  ></TouchableOpacity>
+                  <Text style={styles.postDate}>
+                    {formatInTimeZone(
+                      new Date(selectedPost.postDetails.timeStamp),
+                      "Asia/Tokyo",
+                      "yyyy年MM月dd日 HH:mm"
+                    )}
+                  </Text>
                 </View>
-                <View style={styles.contentContainer}>
-                  <View style={styles.postUserBar}>
+                {showImage == "true" ? (
+                  <View style={styles.imageContainer}>
+                    <Image source={{ uri: photoUri }} style={styles.image} />
+                  </View>
+                ) : (
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: photoUri }}
+                      style={styles.image}
+                      blurRadius={50}
+                    />
+                  </View>
+                )}
+
+                <View style={styles.rowSpaceView}>
+                  {isLiked ? (
                     <TouchableOpacity
-                      style={styles.postUser}
-                      onPress={() => {
-                        navigateProfile(selectedPost.userDetails.uid);
-                      }}
+                      style={styles.actionButton}
+                      onPress={
+                        auth.currentUser
+                          ? () => handleUnlike(postId)
+                          : () => {
+                              router.push("/loginForm");
+                            }
+                      }
                     >
-                      <Image
-                        source={{ uri: selectedPost.userDetails.photoURL }}
-                        style={styles.postIconImage}
+                      <Icon
+                        name="heart"
+                        size={25}
+                        color={selectedPost.likeFlag ? "#f00" : "#f00"}
                       />
-                      <Text style={{ fontSize: 16 }}>
-                        {selectedPost.userDetails.displayName}
+                      <Text
+                        style={[
+                          { color: selectedPost.likeFlag ? "red" : "red" },
+                          styles.likeNum,
+                        ]}
+                      >
+                        {selectedPost.likeFlag
+                          ? selectedPost.likeCount
+                          : selectedPost.likeCount + 1}
                       </Text>
                     </TouchableOpacity>
-                    <Text style={styles.postDate}>
-                      {formatInTimeZone(
-                        new Date(selectedPost.postDetails.timeStamp),
-                        "Asia/Tokyo",
-                        "yyyy年MM月dd日 HH:mm"
-                      )}
-                    </Text>
-                  </View>
-                  {showImage == "true" ? (
-                    <View style={styles.imageContainer}>
-                      <Image source={{ uri: photoUri }} style={styles.image} />
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={
+                        auth.currentUser
+                          ? () => handleLike(postId)
+                          : () => {
+                              router.push("/loginForm");
+                            }
+                      }
+                    >
+                      <Icon
+                        name="heart"
+                        size={25}
+                        color={selectedPost.likeFlag ? "#000" : "#000"}
+                      />
+                      <Text
+                        style={[
+                          {
+                            color: selectedPost.likeFlag ? "black" : "black",
+                          },
+                          styles.likeNum,
+                        ]}
+                      >
+                        {selectedPost.likeFlag
+                          ? selectedPost.likeCount - 1
+                          : selectedPost.likeCount}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {selectedPost.userDetails.uid == auth.currentUser.uid ? (
+                    <View style={styles.rowView}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          router.push({
+                            pathname: "/editPost",
+                            params: { postId },
+                          });
+                        }}
+                      >
+                        <Icon name="pen" size={25} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handleDelete}>
+                        <Icon name="trash" size={25} />
+                      </TouchableOpacity>
                     </View>
                   ) : (
-                    <View style={styles.imageContainer}>
-                      <Image
-                        source={{ uri: photoUri }}
-                        style={styles.image}
-                        blurRadius={50}
-                      />
-                    </View>
+                    <></>
                   )}
-
-                  <View style={styles.rowSpaceView}>
-                    {isLiked ? (
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={
-                          auth.currentUser
-                            ? () => handleUnlike(postId)
-                            : () => {
-                                router.push("/loginForm");
-                              }
-                        }
-                      >
-                        <Icon
-                          name="heart"
-                          size={25}
-                          color={selectedPost.likeFlag ? "#f00" : "#f00"}
-                        />
-                        <Text
-                          style={[
-                            { color: selectedPost.likeFlag ? "red" : "red" },
-                            styles.likeNum,
-                          ]}
-                        >
-                          {selectedPost.likeFlag
-                            ? selectedPost.likeCount
-                            : selectedPost.likeCount + 1}
-                        </Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={
-                          auth.currentUser
-                            ? () => handleLike(postId)
-                            : () => {
-                                router.push("/loginForm");
-                              }
-                        }
-                      >
-                        <Icon
-                          name="heart"
-                          size={25}
-                          color={selectedPost.likeFlag ? "#000" : "#000"}
-                        />
-                        <Text
-                          style={[
-                            {
-                              color: selectedPost.likeFlag ? "black" : "black",
-                            },
-                            styles.likeNum,
-                          ]}
-                        >
-                          {selectedPost.likeFlag
-                            ? selectedPost.likeCount - 1
-                            : selectedPost.likeCount}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                    {selectedPost.userDetails.uid == auth.currentUser.uid ? (
-                      <View style={styles.rowView}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            router.push({
-                              pathname: "/editPost",
-                              params: { postId },
-                            });
-                          }}
-                        >
-                          <Icon name="pen" size={25} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleDelete}>
-                          <Icon name="trash" size={25} />
-                        </TouchableOpacity>
-                      </View>
-                    ) : (
-                      <></>
-                    )}
-                  </View>
-                  <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>
-                      {selectedPost.postDetails.postTxt != ""
-                        ? selectedPost.postDetails.postTxt
-                        : "詳細がありません"}
-                    </Text>
-                  </View>
-
+                </View>
+                <View style={styles.postDetails}>
+                  <Text style={styles.spotText}>
+                    {selectedPost.postDetails.postTxt != ""
+                      ? selectedPost.postDetails.postTxt
+                      : "詳細がありません"}
+                  </Text>
+                </View>
+                <View style={styles.sky}>
                   <FlatList
                     data={replies}
                     renderItem={({ item }) => (
@@ -493,37 +505,43 @@ const ReplyScreen = () => {
                         replies={[item]}
                         navigateProfile={navigateProfile}
                         postId={postId}
+                        style={styles.test}
                       />
                     )}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item, index) => item.id || String(index)} // idが空の場合はインデックスを使用
                     style={styles.repliesList}
                     ListEmptyComponent={
                       <Text style={styles.noRepliesText}>
                         まだ返信がありません。
                       </Text>
                     }
+                    onScroll={handleScroll} // スクロールイベントを監視
+                    scrollEventThrottle={16} // イベントの感度調整
                   />
                 </View>
-              </>
-            )}
-          </>
-        )}
-      </View>
-      {/* </ScrollView> */}
+              </View>
+            </>
+          )}
+        </>
+      )}
 
-      <View style={styles.sendReply}>
-        <TextInput
-          style={styles.input}
-          placeholder="返信を入力..."
-          value={replyText}
-          onChangeText={setReplyText}
-          multiline
-        />
-        <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
-          <Text style={styles.replyBtnText}>送信</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      {/* </ScrollView> */}
+      {/* スクロール中で非表示 */}
+      {!isScrolling && (
+        <View style={styles.sendReply}>
+          <TextInput
+            style={styles.input}
+            placeholder="返信を入力..."
+            value={replyText}
+            onChangeText={setReplyText}
+            multiline
+          />
+          <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
+            <Text style={styles.replyBtnText}>送信</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </KeyboardAvoidingView>
   );
 };
 
@@ -531,6 +549,8 @@ const styles = StyleSheet.create({
   container: {
     height: height - 60,
     backgroundColor: "#F2F5C8",
+    flex: 1,
+    marginBottom: "auto",
   },
   centerContainer: {
     width: "100%",
@@ -538,6 +558,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F2F5C8",
+    flex: 1,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -588,7 +609,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     borderRadius: 5,
-    width: "100%",
+    width: "80%", // 少し小さくしてボタンと並べる
     flex: 1,
   },
   replyBtn: {
@@ -604,6 +625,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
+    marginBottom: "auto",
+    backgroundColor: "white",
   },
   replyText: {
     fontSize: 14,
@@ -619,12 +642,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sendReply: {
-    width: "100%",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: "#F2F5C8",
     flexDirection: "row",
     paddingHorizontal: 10,
     paddingBottom: 10,
     gap: 10,
+    alignItems: "center", // 中央に揃える
+    justifyContent: "space-between", // ボタンとテキスト入力を端に揃える
+    flex: 1,
   },
   postUserBar: {
     flexDirection: "row",
@@ -666,6 +695,16 @@ const styles = StyleSheet.create({
   rowSpaceView: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  test: {
+    backgroundColor: "white",
+    adding: 10,
+    marginBottom: "auto",
+    height: ((height * 0.3) / 4) * 3,
+    flex: 1, // 画面全体を使う
+  },
+  sky: {
+    height: 300,
   },
 });
 
