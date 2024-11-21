@@ -163,6 +163,7 @@ const EditPostScreen = () => {
         .add({
           postId: parseInt(postId),
           tagId: parseInt(tagId),
+          spotId: parseInt(selectedPost.postDetails.spotId),
         });
     });
     router.back();

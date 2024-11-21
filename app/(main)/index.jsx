@@ -42,7 +42,7 @@ export default function TrackUserMapView() {
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
-  const [regions,setregions] = useState(null);
+  const [regions, setregions] = useState(null);
   const [Region, setRegion] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
@@ -58,9 +58,9 @@ export default function TrackUserMapView() {
   const [userList, setUserList] = useState([]);
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
+  const [allTag, setAllTag] = useState([]);
 
   const setmodal = (marker) => {
-
     try {
       const distance = calculateDistance(
         position.latitude,
@@ -459,7 +459,6 @@ export default function TrackUserMapView() {
           latitudeDelta: LATITUDE_DELTA,
           longitudeDelta: LONGITUDE_DELTA,
         });
-
       } else {
         setRegion({
           latitude: latitude,
@@ -474,7 +473,6 @@ export default function TrackUserMapView() {
           latitudeDelta: LATITUDE_DELTA,
           longitudeDelta: LONGITUDE_DELTA,
         });
-
       }
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -515,16 +513,20 @@ export default function TrackUserMapView() {
           } else {
             item.visited = "";
           }
-          if(regions != null){
-          if(
-          item.mapLatitude >= regions.latitude - regions.latitudeDelta / 2 &&
-          item.mapLatitude <= regions.latitude + regions.latitudeDelta / 2 &&
-          item.mapLongitude >= regions.longitude - regions.longitudeDelta / 2 &&
-          item.mapLongitude <= regions.longitude + regions.longitudeDelta / 2
-          ){
-          fetchResult.push(item);
+          if (regions != null) {
+            if (
+              item.mapLatitude >=
+                regions.latitude - regions.latitudeDelta / 2 &&
+              item.mapLatitude <=
+                regions.latitude + regions.latitudeDelta / 2 &&
+              item.mapLongitude >=
+                regions.longitude - regions.longitudeDelta / 2 &&
+              item.mapLongitude <=
+                regions.longitude + regions.longitudeDelta / 2
+            ) {
+              fetchResult.push(item);
+            }
           }
-        }
         });
         setMarkerCords(fetchResult);
       }
@@ -536,9 +538,9 @@ export default function TrackUserMapView() {
     }
   };
   const onRegionChangeComplete = (newRegion) => {
-    setregions(newRegion);  // 新しい表示領域を状態に設定
+    setregions(newRegion); // 新しい表示領域を状態に設定
     // 現在の表示領域をコンソールに出力
-    fetchAllMarkerCord()
+    fetchAllMarkerCord();
   };
 
   const fetchIndexBar = async (status) => {
@@ -784,8 +786,22 @@ export default function TrackUserMapView() {
     });
   };
 
-  useEffect(() => {
+  const fetchAllTag = async () => {
+    const fetchResult = [];
+    const tagSnapshot = await firestore()
+      .collection("tag")
+      .orderBy("tagId")
+      .get();
+    if (!tagSnapshot.empty) {
+      tagSnapshot.forEach((doc) => {
+        const item = doc.data();
+        fetchResult.push(item);
+      });
+    }
+    setAllTag(fetchResult);
+  };
 
+  useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
@@ -807,7 +823,7 @@ export default function TrackUserMapView() {
               flag: 0,
             });
             setPostButtonVisible(true);
-            fetchAllMarkerCord()
+            fetchAllMarkerCord();
           } else {
             setError("Position or coords is undefined");
           }
@@ -831,9 +847,11 @@ export default function TrackUserMapView() {
   useEffect(() => {
     setUser(auth.currentUser);
     fetchIndexBar(indexStatus);
+    fetchAllTag();
   }, []);
+
   useEffect(() => {
-    fetchAllMarkerCord()
+    fetchAllMarkerCord();
   }, [regions]);
 
   return (
@@ -933,6 +951,23 @@ export default function TrackUserMapView() {
         >
           <Icon name={iconName} size={30} color="#000"></Icon>
         </TouchableOpacity>
+      </SafeAreaView>
+
+      <SafeAreaView style={styles.tagContainer}>
+        <FlatList
+          horizontal={true}
+          data={allTag}
+          keyExtractor={(item) => item.tagId}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity style={styles.tag}>
+                <Icon name="tag" size={16} />
+                <Text>{item.tagName}</Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
       </SafeAreaView>
 
       <MyModal
