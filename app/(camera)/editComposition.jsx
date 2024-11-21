@@ -35,8 +35,17 @@ export default function edit() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const viewRef = useRef();
-  const { imageUri, latitude, longitude, spotId, Composition, direction } =
-    params;
+  const {
+    imageUri,
+    latitude,
+    longitude,
+    spotId,
+    Composition,
+    topRightdirection,
+    topLeftdirection,
+    bottomRightdirection,
+    bottomLeftdirection,
+  } = params;
 
   const uploadPost = async () => {
     setIsoading(true);
@@ -207,30 +216,42 @@ export default function edit() {
               style={styles.imageContainer}
             >
               <Image source={{ uri: imageUri }} style={styles.fullImage} />
-              <View
-                style={
-                  direction == "top"
-                    ? styles.topHalfImageContainer
-                    : direction == "bottom"
-                    ? styles.bottomHalfImageContainer
-                    : direction == "left"
-                    ? styles.leftHalfImageContainer
-                    : styles.righthalfImageContainer
-                }
-              >
-                <Image
-                  source={{ uri: Composition }}
-                  style={
-                    direction == "top"
-                      ? styles.topHalfImage
-                      : direction == "bottom"
-                      ? styles.bottomHalfImage
-                      : direction == "left"
-                      ? styles.leftHalfImage
-                      : styles.rightHalfImage
-                  }
-                />
-              </View>
+              {/* 左上 */}
+              {topLeftdirection == "true" && (
+                <View style={styles.modalButtonTopLeft}>
+                  <Image
+                    source={{ uri: Composition }}
+                    style={styles.topLeftDisplay}
+                  />
+                </View>
+              )}
+              {/* 左下 */}
+              {bottomLeftdirection == "true" && (
+                <View style={styles.modalButtonBottomLeft}>
+                  <Image
+                    source={{ uri: Composition }}
+                    style={styles.bottomLeftDisplay}
+                  />
+                </View>
+              )}
+              {/* 右上 */}
+              {topRightdirection == "true" && (
+                <View style={styles.modalButtonTopRight}>
+                  <Image
+                    source={{ uri: Composition }}
+                    style={styles.topRightDisplay}
+                  />
+                </View>
+              )}
+              {/* 右下 */}
+              {bottomRightdirection == "true" && (
+                <View style={styles.modalButtonBottomRight}>
+                  <Image
+                    source={{ uri: Composition }}
+                    style={styles.bottomRightDisplay}
+                  />
+                </View>
+              )}
             </ViewShot>
             {spotId == 0 && focusedInput !== "post" ? (
               <View>
@@ -290,50 +311,6 @@ const styles = StyleSheet.create({
     width: imageWidth,
     height: imageHeight,
   },
-  topHalfImageContainer: {
-    position: "absolute",
-    width: imageWidth,
-    height: "50%",
-    overflow: "hidden",
-  },
-  topHalfImage: {
-    width: imageWidth,
-    height: imageHeight,
-  },
-  bottomHalfImageContainer: {
-    position: "absolute",
-    width: imageWidth,
-    height: "50%",
-    overflow: "hidden",
-    top: "50%",
-  },
-  bottomHalfImage: {
-    width: imageWidth,
-    height: imageHeight,
-    transform: [{ translateY: -imageHeight / 2 }],
-  },
-  leftHalfImageContainer: {
-    position: "absolute",
-    top: 0,
-    width: "50%",
-    overflow: "hidden",
-  },
-  leftHalfImage: {
-    width: imageWidth,
-    height: imageHeight,
-  },
-  righthalfImageContainer: {
-    position: "absolute",
-    width: "50%",
-    height: imageHeight,
-    overflow: "hidden",
-    left: "50%",
-  },
-  rightHalfImage: {
-    width: imageWidth,
-    height: imageHeight,
-    transform: [{ translateX: -imageWidth / 2 }],
-  },
   displayName: {
     fontSize: 15,
     marginTop: 20,
@@ -375,5 +352,55 @@ const styles = StyleSheet.create({
     height: 75,
     backgroundColor: "red",
     borderRadius: 75,
+  },
+  modalButtonTopLeft: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+  },
+  modalButtonTopRight: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+    left: "50%",
+  },
+  modalButtonBottomLeft: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+    top: "50%",
+  },
+  modalButtonBottomRight: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+    top: "50%",
+    left: "50%",
+  },
+  topLeftDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+  },
+  topRightDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateX: -imageWidth / 2 }],
+  },
+  bottomLeftDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: -imageHeight / 2 }],
+  },
+  bottomRightDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [
+      { translateX: -imageWidth / 2 },
+      { translateY: -imageHeight / 2 },
+    ],
   },
 });

@@ -15,8 +15,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import Share from 'react-native-share';
-import * as Linking from 'expo-linking';
+import Share from "react-native-share";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
@@ -29,11 +28,10 @@ export default function MyModal({
   spotId,
   loading,
   onClose,
-  spotName
+  spotName,
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
-  const [modalurl,setmodalurl] = useState(null)
 
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
@@ -47,33 +45,31 @@ export default function MyModal({
 
   postData.map((post) => {
     if (post) {
-      // postが未定義でないことを確認
-      tempObj1[post.id] = post.likeFlag; // postIdをidに修正
-      tempObj2[post.id] = post.likeCount;
+      tempObj1[post.postId] = post.likeFlag; // postIdをidに修正
+      tempObj2[post.postId] = post.likeCount;
     }
   });
 
-  const generateShareMessage = (spotName,spotId) => {
-    console.log(spotId)
+  const generateShareMessage = (spotName, spotId) => {
+    console.log(spotId);
     const baseURL = "http://syuto.s322.xrea.com/";
     const queryParams = new URLSearchParams({
       _gl: "1*1edlls4*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
       _ga: "MjAzMzg2MzgzMC4xNzMxOTM2NDM2",
       _ga_J8YE7Q8ZQD: "MTczMjA3NzA0Mi40LjEuMTczMjA3NzA2Ni4zNi4xLjQyOTA0MTgz",
-      spotId: spotId
+      spotId: spotId,
     }).toString();
-  
+
     return `${spotName}の投稿をチェック！！\n${baseURL}?${queryParams}`;
   };
-  const onShare = ()=>{
+
+  const onShare = () => {
     try {
       const result = Share.open({
-        message: generateShareMessage(spotName,spotId)
-        });
+        message: generateShareMessage(spotName, spotId),
+      });
       console.log(result);
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (warning) {}
   };
 
   const handleUnlike = async (postId) => {
@@ -86,6 +82,7 @@ export default function MyModal({
         .collection("like")
         .where("postId", "==", postId)
         .get();
+      console.log(tempObj2[postId]);
       const queryId = querylike.docs[0].ref._documentPath._parts[1];
       await firestore()
         .collection("like")
@@ -179,9 +176,9 @@ export default function MyModal({
           >
             {postData.map((post) => {
               if (!post) return null; // postが未定義の場合はスキップ
-              const isLiked = likes[post.id]; // idを使用する
-              const flag = tempObj1[post.id];
-              const count = tempObj2[post.id];
+              const isLiked = likes[post.postId]; // idを使用する
+              const flag = tempObj1[post.postId];
+              const count = tempObj2[post.postId];
               return (
                 <View key={post.postId} style={styles.postView}>
                   <TouchableOpacity
@@ -217,7 +214,13 @@ export default function MyModal({
                           {flag ? (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleUnlike(post.postId, index)}
+                              onPress={
+                                auth.currentUser
+                                  ? () => handleUnlike(post.postId)
+                                  : () => {
+                                      router.push("/loginForm");
+                                    }
+                              }
                             >
                               <Icon
                                 name="heart"
@@ -236,7 +239,13 @@ export default function MyModal({
                           ) : (
                             <TouchableOpacity
                               style={styles.actionButton}
-                              onPress={() => handleLike(post.postId, index)}
+                              onPress={
+                                auth.currentUser
+                                  ? () => handleLike(post.postId)
+                                  : () => {
+                                      router.push("/loginForm");
+                                    }
+                              }
                             >
                               <Icon
                                 name="heart"
@@ -290,15 +299,15 @@ export default function MyModal({
                         onPress={() => {
                           router.push({
                             pathname: "/component/replay",
-                            params: { postId: post.postId }, // idを使用
+                            params: {
+                              postId: post.postId,
+                              showImage: postImage,
+                            }, // idを使用
                           });
                         }}
                       >
-                        <Icon
-                          name="comment"
-                          size={25}
-                          color={isLiked ? "#f00" : "#000"}
-                        />
+                        <Icon name="comment" size={25} color={"#000"} />
+                        <Text> {post.replyCount}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -315,11 +324,7 @@ export default function MyModal({
                           });
                         }}
                       >
-                        <Icon
-                          name="images"
-                          size={25}
-                          color={isLiked ? "#f00" : "#000"}
-                        />
+                        <Icon name="images" size={25} color={"#000"} />
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -337,13 +342,8 @@ export default function MyModal({
                           });
                         }}
                       >
-                        <Icon
-                          name="map-marked-alt"
-                          size={25}
-                          color={isLiked ? "#f00" : "#000"}
-                        />
+                        <Icon name="map-marked-alt" size={25} color={"#000"} />
                       </TouchableOpacity>
-                      
                     </View>
                     <View style={styles.postText}>
                       <Text>{post.postText}</Text>
@@ -356,13 +356,10 @@ export default function MyModal({
                       </Text>
                       <TouchableOpacity
                         style={styles.actionButton}
-                        onPress={()=>onShare()}
-                      ><Icon
-                      name="share"
-                      size={25}
-                      color={isLiked ? "#f00" : "#000"}
-                    />
-                    </TouchableOpacity>
+                        onPress={() => onShare()}
+                      >
+                        <Icon name="share" size={25} color={"#000"} />
+                      </TouchableOpacity>
                     </View>
                   </View>
                   <View style={styles.closeButton}>

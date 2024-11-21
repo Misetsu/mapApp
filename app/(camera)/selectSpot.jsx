@@ -102,7 +102,7 @@ export default function SelectSpot() {
     const userData = queryUser.data();
 
     const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
-    const pointLeft = parseInt(userData.spotPoint) - pointRequired;
+    const pointLeft = parseInt(userData.spotPoint) - parseInt(pointRequired);
     if (pointRequired <= userData.spotPoint) {
       router.push({
         pathname: "/camera",
@@ -110,7 +110,7 @@ export default function SelectSpot() {
           latitude: latitude,
           longitude: longitude,
           spotId: 0,
-          point: pointLeft,
+          point: parseInt(pointLeft),
           spotNo: parseInt(userData.spotCreate) + 1,
         },
       });

@@ -29,7 +29,9 @@ export default function myPage() {
   const [editable, setEditable] = useState(true);
 
   const handleBackPress = () => {
-    router.back(); // 前の画面に戻る
+    if (router) {
+      router.back();
+    }
   };
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function myPage() {
 
   // ユーザーの表示名を保存する関数
   const handleSave = async () => {
+    await uploadPhoto(photoUri); // 画像をアップロードし、URLを取得
     if (user) {
       await firestore().collection("users").doc(user.uid).update({
         displayName: displayName,
@@ -69,8 +72,7 @@ export default function myPage() {
 
     if (!result.canceled) {
       const { uri } = result.assets[0];
-      const photoUri = await uploadPhoto(uri); // 画像をアップロードし、URLを取得
-      setPhotoUri(photoUri);
+      setPhotoUri(uri);
     }
   };
 
@@ -93,8 +95,6 @@ export default function myPage() {
       photoURL: url,
     };
     await auth.currentUser.updateProfile(update);
-
-    return url;
   };
 
   const signout = async () => {
@@ -120,22 +120,9 @@ export default function myPage() {
   };
 
   return (
-    <ScrollView>
-      <TouchableOpacity
-        onPress={handleBackPress}
-        style={{
-          width: 50, // 横幅を設定
-          height: 50, // 高さを設定
-          justifyContent: "center", // 縦中央揃え
-          alignItems: "center", // 横中央揃え
-        }}
-      >
-        {/* 右側のアイコンやテキストをここに追加 */}
-        <Icon name="angle-left" size={24} color="#000" />
-      </TouchableOpacity>
-
+    <ScrollView style={styles.scrview}>
       <View style={styles.container}>
-        <Text style={styles.pagetitle}>Profile Edit</Text>
+        <Text style={styles.pagetitle}>プロフィール編集</Text>
         <View style={styles.profileContainer}>
           {/* プロフィール画像がある場合に表示し、ない場合はプレースホルダーを表示。画像タップでライブラリを開く*/}
           <TouchableOpacity onPress={handlePickImage}>
@@ -146,29 +133,36 @@ export default function myPage() {
             )}
           </TouchableOpacity>
         </View>
+        <Text style={styles.noamllabel}>アイコンをタップして画像を変更</Text>
 
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
-        <Text style={styles.displayName}>Username</Text>
+        <Text style={styles.displayName}>ユーザー名</Text>
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
           style={styles.textInput}
           editable={true}
         />
+        <Text style={styles.noamllabel}>
+          ユーザー名{"(名前)"}を入力してください
+        </Text>
         {/* メールアドレスを表示し、テキストボックスに入力でメールアドレス変更*/}
-        <Text style={styles.displayName}>Email</Text>
+        <Text style={styles.displayName}>メールアドレス</Text>
         <TextInput
           value={displayEmail}
           onChangeText={setDisplayEmail}
           style={styles.textInput}
-          editable={true}
+          editable={false}
         />
+        {/* <Text style={styles.noamllabel}>
+          有効なメールアドレスを入力してください
+        </Text> */}
 
         {googleProvider ? (
           <></>
         ) : (
           <TouchableOpacity onPress={handleChangePassword}>
-            <Text style={styles.linklabel}>Change password?</Text>
+            <Text style={styles.linklabel}>パスワードを変更</Text>
           </TouchableOpacity>
         )}
 
@@ -177,12 +171,17 @@ export default function myPage() {
             style={styles.submit}
             onPress={() => {
               handleSave(); // まず handleSave を実行
-              router.push({ pathname: "/myPage" }); // 次にページ遷移
+              router.back(); // 次にページ遷移
             }}
           >
-            <Text style={styles.submitText}>SAVE</Text>
+            <Text style={styles.submitText}>変更を保存</Text>
           </TouchableOpacity>
         )}
+      </View>
+      <View style={styles.Back}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Icon name="angle-left" size={24} color="#000" />
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -193,15 +192,24 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  scrview: {
+    backgroundColor: "#F2F5C8",
+  },
   profileContainer: {
     alignItems: "center",
   },
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#A3DE83",
     height: 50,
-    marginTop: 10, // ボタン間にスペースを追加
+    margin: 10, // ボタン間にスペースを追加
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "#000000",
+    textAlign: "center",
+    fontWeight: "300",
   },
   closeButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
@@ -210,17 +218,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 5,
   },
-  buttonText: {
-    fontSize: 18,
-    color: "black",
-    textAlign: "center",
-    fontWeight: "300",
-  },
   pagetitle: {
     fontSize: 30,
-    margin: 10,
+    height: 70,
+    marginTop: 0,
     textAlign: "center",
     fontWeight: "300",
+    color: "#000000",
+  },
+  noamllabel: {
+    fontSize: 15,
+    margin: 10,
+    textAlign: "center",
+    fontWeight: "600",
+    color: "#239D60",
   },
   displayName: {
     fontSize: 15,
@@ -286,17 +297,30 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     fontSize: 20,
     height: 40,
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
+    borderColor: "#239D60",
     marginVertical: 16,
     color: "black",
     fontWeight: "300",
   },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
   submit: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "black",
+    backgroundColor: "#239D60",
     height: 50,
-    marginTop: 10, // ボタン間にスペースを追加
+    margin: 10, // ボタン間にスペースを追加
   },
   submitText: {
     fontSize: 18,
@@ -312,16 +336,5 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     color: "#1a0dab",
     fontWeight: "600",
-  },
-  backButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    height: 50,
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: "black",
-    textAlign: "center",
-    fontWeight: "300",
   },
 });

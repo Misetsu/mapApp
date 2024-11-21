@@ -33,10 +33,6 @@
     "experiments": {
       "typedRoutes": true
     },
-    "permissions": [
-      "CAMERA",
-      "CAMERA_ROLL",
-      "PHOTO_LIBRARY"
-    ]
+    "permissions": ["CAMERA", "CAMERA_ROLL", "PHOTO_LIBRARY"]
   }
 }
