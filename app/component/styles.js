@@ -88,12 +88,6 @@ export const styles = StyleSheet.create({
     width: 70,
     height: 70,
   },
-  footerbutton: {
-    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
-    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    width: 70,
-    height: 70,
-  },
   buttonText: {
     color: "white",
     fontWeight: "bold",
@@ -108,7 +102,17 @@ export const styles = StyleSheet.create({
     width: "100%",
     paddingLeft: 10,
     paddingRight: 10,
-
+  },
+  footerbutton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    width: 70,
+    height: 70,
+  },//インデックスバー上の画像
+  footerImage: {
+    width: 35,
+    height: 35,
+    alignSelf: "center",
   },
   mapfixed: {
     position: "absolute",
@@ -138,10 +142,11 @@ export const styles = StyleSheet.create({
   },
   //インデックスバー上の画像
   listProfileImage: {
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
     borderRadius: 20,
     alignSelf: "center",
+  marginTop: 5,
   },
   //インデックスバーアイコンの幅
   listProfileNameText: {
@@ -195,6 +200,16 @@ export const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+export { default as BorderStar } from './../svg/BorderStar.svg';
+export { default as Location } from './../svg/Location.svg';
+export { default as MapFixed } from './../svg/MapFixed.svg';
+export { default as MapUnFixed } from './../svg/MapUnFixed.svg';
+export { default as NewPost } from './../svg/NewPost.svg';
+export { default as Search } from './../svg/Search.svg';
+export { default as Setting } from './../svg/Setting.svg';
+export { default as User } from './../svg/User.svg';
+export { default as Uers } from './../svg/Users.svg';
 
 export const customMapStyle = [
   {

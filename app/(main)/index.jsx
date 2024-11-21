@@ -18,7 +18,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
-import Icon from "react-native-vector-icons/FontAwesome5";
+import {BorderStar, Location, MapFixed, MapUnFixed, NewPost, Search, Setting, User, Users} from '../svg'
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -55,7 +55,7 @@ export default function TrackUserMapView() {
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
-  const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
+  const [iconName, setIconName] = useState("users"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
 
   const setmodal = (marker) => {
@@ -611,22 +611,28 @@ export default function TrackUserMapView() {
     setUserList(tempList);
   };
 
-  const handleIconPress = () => {
+// アイコンマップを定義
+const handleicons = {
+  users: require('./../image/Users.png'),
+  star: require('./../image/BorderStar.png'), // 他のアイコンを追加
+};
+
+const handleIconPress = () => {
     if (iconName === "times") {
-      fetchAllMarkerCord();
-      if (indexStatus == "follow") {
-        setIconName("user-friends"); // アイコン名を "times" に変更
+    fetchAllMarkerCord();
+    if (indexStatus == "follow") {
+        setIconName("users"); // アイコン名を "times" に変更
       } else {
-        setIconName("star");
-      }
-    } else if (indexStatus == "follow") {
-      handleChangeIndex();
-      setIconName("star"); // アイコン名を "times" に変更
-    } else {
-      handleChangeIndex();
-      setIconName("user-friends");
+      setIconName("star");
     }
-  };
+  } else if (indexStatus == "follow") {
+    handleChangeIndex();
+      setIconName("star"); // アイコン名を "times" に変更
+  } else {
+    handleChangeIndex();
+      setIconName("users");
+  }
+};
 
   const handleUserChoose = async (userId) => {
     const queryPost = await firestore()
@@ -884,8 +890,10 @@ export default function TrackUserMapView() {
           style={styles.listProfileIndexButton}
           onPress={handleIconPress} // 変更した関数を呼び出す
         >
-          <Icon name={iconName} size={30} color="#000"></Icon>
-        </TouchableOpacity>
+        <Image
+          source={handleicons[iconName]}
+          style={styles.footerImage}
+        /></TouchableOpacity>
       </SafeAreaView>
 
       <MyModal
@@ -906,7 +914,10 @@ export default function TrackUserMapView() {
             style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
-            <Icon name="arrows-alt" size={24} color="#28b6b8" />
+          <Image
+            source={require( "./../image/MapFixed.png" )}
+            style={styles.footerImage}
+          />
           </TouchableOpacity>
         </View>
       ) : (
@@ -915,7 +926,10 @@ export default function TrackUserMapView() {
             style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
-            <Icon name="arrows-alt" size={24} color="#000" />
+          <Image
+            source={require( "./../image/MapUnFixed.png" )}
+            style={styles.footerImage}
+          />
           </TouchableOpacity>
         </View>
       )}
@@ -930,8 +944,10 @@ export default function TrackUserMapView() {
               LONGITUDE_DELTA
             )
           }
-        >
-          <Icon name="crosshairs" size={24} color="#3333ff" />
+        ><Image
+        source={require( "./../image/Location.png" )}
+        style={styles.footerImage}
+      />
         </TouchableOpacity>
       </View>
 
@@ -945,7 +961,7 @@ export default function TrackUserMapView() {
             >
               <Image
                 source={require( "./../image/NewPost.png" )}
-                style={styles.listProfileImage}
+                style={styles.footerImage}
               />
               <Text style={styles.listProfileNameText}>投稿</Text>
             </Pressable>
@@ -960,7 +976,7 @@ export default function TrackUserMapView() {
             >
               <Image
                 source={require( "./../image/NewPost.png" )}
-                style={styles.listProfileImage} />
+                style={styles.footerImage} />
               <Text style={styles.listProfileNameText}>投稿</Text>
             </Pressable>
           </View>
@@ -974,7 +990,10 @@ export default function TrackUserMapView() {
               });
             }}
           >
-            <Icon name="search" size={24} color="#239D60" />
+          <Image
+            source={require( "./../image/Search.png" )}
+            style={styles.footerImage}
+          />
             <Text style={styles.listProfileNameText}>検索</Text>
           </TouchableOpacity>
         </View>
@@ -986,7 +1005,10 @@ export default function TrackUserMapView() {
                 router.push("/myPage");
               }}
             >
-              <Icon name="user-alt" size={24} color="#239D60" />
+            <Image
+              source={require( "./../image/User.png" )}
+              style={styles.footerImage}
+            />
               <Text style={styles.listProfileNameText}>マイページ</Text>
             </TouchableOpacity>
           </View>
@@ -998,7 +1020,10 @@ export default function TrackUserMapView() {
                 router.push("/loginForm");
               }}
             >
-              <Icon name="user-alt" size={24} color="#239D60" />
+            <Image
+              source={require( "./../image/Search.png" )}
+              style={styles.footerImage}
+            />
               <Text style={styles.listProfileNameText}>ログイン</Text>
             </TouchableOpacity>
           </View>
@@ -1008,7 +1033,10 @@ export default function TrackUserMapView() {
             onPress={() => router.push("/setting")}
             style={styles.footerbutton}
           >
-            <Icon name="cog" size={24} color="#239D60" />
+          <Image
+            source={require( "./../image/Setting.png" )}
+            style={styles.footerImage}
+          />
             <Text style={styles.listProfileNameText}>設定</Text>
           </TouchableOpacity>
         </View>
