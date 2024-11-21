@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  Linking
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -19,6 +20,7 @@ import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import queryString from 'query-string';
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -58,6 +60,9 @@ export default function TrackUserMapView() {
   const [userList, setUserList] = useState([]);
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
+  const [openedByURL, setOpenedByURL] = useState(false);
+  const [url, setURL] = useState(null);
+  const [data, setData] = useState(null);
 
   const setmodal = (marker) => {
     try {
@@ -86,6 +91,30 @@ export default function TrackUserMapView() {
     }
   };
 
+  useEffect(() => {
+    // アプリが初回起動時に渡されたURLを取得
+    Linking.getInitialURL().then((initialURL) => {
+      console.log(initialURL)
+      if (initialURL) {
+        setOpenedByURL(true);
+        setURL(initialURL);
+      }
+    })
+
+        // アプリがバックグラウンドからURLで開かれたときのリスナー
+        const handleURL = (event) => {
+          console.log(event)
+          if (event.url) {
+            setOpenedByURL(true);
+            setURL(event.url);
+          }
+        };
+    
+        const listener = Linking.addEventListener('url', handleURL);
+    
+        // クリーンアップ
+        return () => listener.remove();
+  },[])
   function toRadians(degrees) {
     try {
       return (degrees * Math.PI) / 180;
