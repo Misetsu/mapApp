@@ -148,7 +148,7 @@ const EditPostScreen = () => {
     const tagPostRef = firestore()
       .collection("tagPost")
       .where("postId", "==", parseInt(postId));
-    let batch = firestore.batch();
+    let batch = firestore().batch();
 
     tagPostRef.get().then((snapshot) => {
       snapshot.docs.forEach((doc) => {
@@ -158,6 +158,7 @@ const EditPostScreen = () => {
     });
 
     selectedTag.forEach(async (tagId) => {
+      console.log(tagId);
       await firestore()
         .collection("tagPost")
         .add({

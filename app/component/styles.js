@@ -138,7 +138,11 @@ export const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
-    borderRadius: 15,
+    borderRadius: 20,
+    flexDirection: "row",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "white",
   },
   userList: {
     display: "flex",

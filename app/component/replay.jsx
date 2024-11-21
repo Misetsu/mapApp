@@ -5,7 +5,6 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  Alert,
   Image,
   ActivityIndicator,
   TouchableOpacity,
@@ -280,7 +279,7 @@ const ReplyScreen = () => {
       {
         text: "削除",
         onPress: async () => {
-          let batch = firestore.batch();
+          let batch = firestore().batch();
 
           await firestore()
             .collection("post")

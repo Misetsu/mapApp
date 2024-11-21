@@ -962,7 +962,7 @@ export default function TrackUserMapView() {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity style={styles.tag}>
-                <Icon name="tag" size={16} />
+                <Icon name="tag" size={18} />
                 <Text>{item.tagName}</Text>
               </TouchableOpacity>
             );
