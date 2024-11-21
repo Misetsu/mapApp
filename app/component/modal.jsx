@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import Share from "react-native-share";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
@@ -27,6 +28,7 @@ export default function MyModal({
   spotId,
   loading,
   onClose,
+  spotName,
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
@@ -47,6 +49,28 @@ export default function MyModal({
       tempObj2[post.postId] = post.likeCount;
     }
   });
+
+  const generateShareMessage = (spotName, spotId) => {
+    console.log(spotId);
+    const baseURL = "http://syuto.s322.xrea.com/";
+    const queryParams = new URLSearchParams({
+      _gl: "1*1edlls4*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
+      _ga: "MjAzMzg2MzgzMC4xNzMxOTM2NDM2",
+      _ga_J8YE7Q8ZQD: "MTczMjA3NzA0Mi40LjEuMTczMjA3NzA2Ni4zNi4xLjQyOTA0MTgz",
+      spotId: spotId,
+    }).toString();
+
+    return `${spotName}の投稿をチェック！！\n${baseURL}?${queryParams}`;
+  };
+
+  const onShare = () => {
+    try {
+      const result = Share.open({
+        message: generateShareMessage(spotName, spotId),
+      });
+      console.log(result);
+    } catch (warning) {}
+  };
 
   const handleUnlike = async (postId) => {
     if (likes[postId] == true) {
@@ -330,6 +354,12 @@ export default function MyModal({
                           "yyyy年MM月dd日 HH:mm"
                         )}
                       </Text>
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => onShare()}
+                      >
+                        <Icon name="share" size={25} color={"#000"} />
+                      </TouchableOpacity>
                     </View>
                   </View>
                   <View style={styles.closeButton}>

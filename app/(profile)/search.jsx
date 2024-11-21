@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
-import Icon from "react-native-vector-icons/FontAwesome";
+import Icon from "react-native-vector-icons/FontAwesome5";
 import FirebaseAuth from "@react-native-firebase/auth";
 
 // Firebaseの認証とルーターを初期化
@@ -24,18 +24,24 @@ export default function SearchScreen() {
   const [recommendedUsers, setRecommendedUsers] = useState([]); // おすすめユーザーリスト
   const [officialUsers, setOfficialUsers] = useState([]); // 公式ユーザー
 
+  const handleBackPress = () => {
+    if (router) {
+      router.back();
+    }
+  };
+
   useEffect(() => {
-    fetchFollowingData(); 
-    fetchRecommendedUsers(); 
-    fetchOfficialUsers(); 
+    fetchFollowingData();
+    fetchRecommendedUsers();
+    fetchOfficialUsers();
   }, []);
 
   // 公式ユーザーを取得
   const fetchOfficialUsers = async () => {
     try {
       const officialUids = [
-        "2tjGBOa6snXpIpxb2drbSvUAmb83", 
-        "H0zKYLQyeggzzCYgZM6bUddAItU2", 
+        "2tjGBOa6snXpIpxb2drbSvUAmb83",
+        "H0zKYLQyeggzzCYgZM6bUddAItU2",
       ];
 
       const userDetails = await Promise.all(
@@ -44,11 +50,11 @@ export default function SearchScreen() {
             .collection("users")
             .where("uid", "==", uid)
             .get();
-          return userSnapshot.docs[0]?.data(); 
+          return userSnapshot.docs[0]?.data();
         })
       );
 
-      setOfficialUsers(userDetails.filter((user) => user)); 
+      setOfficialUsers(userDetails.filter((user) => user));
     } catch (error) {
       console.error("Error fetching official users data:", error);
     }
@@ -223,7 +229,7 @@ export default function SearchScreen() {
                   .where("followerId", "==", auth.currentUser.uid)
                   .where("followeeId", "==", uid)
                   .get();
-  
+
                 if (!followDoc.empty) {
                   await followDoc.docs[0].ref.delete(); // フォローデータを削除
                   setFollowing((prevState) => ({ ...prevState, [uid]: false })); // ステートを更新
@@ -244,7 +250,7 @@ export default function SearchScreen() {
       console.error("Error toggling follow state:", error);
     }
   };
-  
+
   // プロフィール画面に遷移
   const handleProfile = (uid) => {
     router.push({
@@ -255,14 +261,22 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchBar}>
-        <Icon name="search" size={20} color="#000" style={styles.icon} />
-        <TextInput
-          style={[styles.input, { fontSize: 18 }]}
-          placeholder="検索"
-          onChangeText={handleSearch}
-          value={searchText}
-        />
+      <View style={styles.header}>
+        <View style={styles.Back}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Icon name="angle-left" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
+        {/* 検索バーのUI */}
+        <View style={styles.searchBar}>
+          <Icon name="search" size={20} color="#000" style={styles.icon} />
+          <TextInput
+            style={[styles.input, { fontSize: 18 }]}
+            placeholder="検索"
+            onChangeText={handleSearch}
+            value={searchText}
+          />
+        </View>
       </View>
 
       {officialUsers.length > 0 && (
@@ -342,7 +356,11 @@ const UserItem = ({ user, isFollowing, onProfilePress, onFollowToggle }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   searchBar: {
     flexDirection: "row",
@@ -351,7 +369,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     padding: 5,
-    marginBottom: 20,
+    marginTop: 15,
+    width: "80%",
+    height: 50,
   },
   icon: {
     marginRight: 10,
@@ -396,5 +416,15 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
+  },
+  Back: {
+    top: 0,
+    left: 0,
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    width: 70,
+    height: 70,
   },
 });
