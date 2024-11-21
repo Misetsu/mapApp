@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
+import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./UserPosts";
 import LikedPosts from "./LikedPosts";
@@ -189,11 +189,41 @@ export default function myPage() {
   };
 
   const handleDelete = async () => {
-    await firestore().collection("users").doc(auth.currentUser.uid).delete();
+    await deleteSubcollection(auth.currentUser.uid, "spot");
+
+    await firestore().collection("users").doc(auth.currentUser.uid).update({
+      email: FieldValue.delete(),
+      lastPostAt: FieldValue.delete(),
+      publicStatus: FieldValue.delete(),
+      spotCreate: FieldValue.delete(),
+      spotPoint: FieldValue.delete(),
+    });
+
     await auth.currentUser.delete().then(() => {
       GoogleSignin.revokeAccess();
       router.replace("/");
     });
+  };
+
+  const deleteSubcollection = async (parentDocId, subcollectionName) => {
+    try {
+      const subcollectionRef = firestore()
+        .collection("users")
+        .doc(parentDocId)
+        .collection(subcollectionName);
+
+      const snapshot = await subcollectionRef.get();
+
+      const batch = firestore().batch();
+      snapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+      console.log(`Subcollection '${subcollectionName}' deleted successfully!`);
+    } catch (error) {
+      console.error("Error deleting subcollection:", error);
+    }
   };
 
   return (
@@ -236,27 +266,29 @@ export default function myPage() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              {followList.map((follow) => {
-                return (
-                  <TouchableOpacity
-                    key={follow.uid}
-                    style={styles.followListuser}
-                    onPress={() => {
-                      handleProfile(follow.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}>
-                        {follow.displayName}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+              <ScrollView style={styles.modalContent}>
+                {followList.map((follow) => {
+                  return (
+                    <TouchableOpacity
+                      key={follow.uid}
+                      style={styles.followListuser}
+                      onPress={() => {
+                        handleProfile(follow.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: follow.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <View style={styles.listUsernamecontainer}>
+                        <Text style={styles.listUsername}>
+                          {follow.displayName}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowModal}
@@ -277,27 +309,29 @@ export default function myPage() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
-              {followerList.map((follower) => {
-                return (
-                  <TouchableOpacity
-                    key={follower.uid}
-                    style={styles.followListuser}
-                    onPress={() => {
-                      handleProfile(follower.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follower.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}>
-                        {follower.displayName}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+              <ScrollView style={styles.modalContent}>
+                {followerList.map((follower) => {
+                  return (
+                    <TouchableOpacity
+                      key={follower.uid}
+                      style={styles.followListuser}
+                      onPress={() => {
+                        handleProfile(follower.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: follower.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <View style={styles.listUsernamecontainer}>
+                        <Text style={styles.listUsername}>
+                          {follower.displayName}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowerModal}
@@ -496,16 +530,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
   },
   modalOverlay: {
-    flex: 1,
+    flex: 0.6,
+    marginTop: "auto",
+    marginBottom: "auto",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
+    backgroundColor: "rgba(0, 0, 0)", // 背景を半透明に
   },
   modalContent: {
     width: "90%",
     padding: 20,
     paddingTop: 15,
-    backgroundColor: "#F2F5C2",
+    backgroundColor: "#F2F5A0",
     borderRadius: 10,
   },
   listUsernamecontainer: {

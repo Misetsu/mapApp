@@ -81,37 +81,47 @@ export const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
-  button: {
+  mapbutton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "rgba(255, 255, 255, 0.75)",
     width: 70,
     height: 70,
-    marginBottom: 10, // ボタン間にスペースを追加
   },
   buttonText: {
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
   },
-  loignBtnContainer: {
+  footer: {
+    justifyContent: "center",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#f2f5c8",
+    width: "100%",
+    paddingLeft: 10,
+    paddingRight: 10,
+  },
+  footerbutton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    width: 70,
+    height: 70,
+  }, //インデックスバー上の画像
+  footerImage: {
+    width: 35,
+    height: 35,
+    alignSelf: "center",
+  },
+  mapfixed: {
     position: "absolute",
     top: 85,
     right: 0,
   },
-  mapfixed: {
-    position: "absolute",
-    top: 155,
-    right: 0,
-  },
   defaultlocation: {
     position: "absolute",
-    top: 225,
-    right: 0,
-  },
-  settingButton: {
-    position: "absolute",
-    top: 295,
+    top: 155,
     right: 0,
   },
   indexContainer: {
@@ -120,8 +130,6 @@ export const styles = StyleSheet.create({
     width: "100%",
     height: 85,
     backgroundColor: "#f2f5c8",
-    borderBottomWidth: 3,
-    borderBottomColor: "#404040",
     paddingTop: 5,
     paddingBottom: 5,
     justifyContent: "center",
@@ -192,6 +200,16 @@ export const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+export { default as BorderStar } from "./../svg/BorderStar.svg";
+export { default as Location } from "./../svg/Location.svg";
+export { default as MapFixed } from "./../svg/MapFixed.svg";
+export { default as MapUnFixed } from "./../svg/MapUnFixed.svg";
+export { default as NewPost } from "./../svg/NewPost.svg";
+export { default as Search } from "./../svg/Search.svg";
+export { default as Setting } from "./../svg/Setting.svg";
+export { default as User } from "./../svg/User.svg";
+export { default as Uers } from "./../svg/Users.svg";
 
 export const customMapStyle = [
   {
