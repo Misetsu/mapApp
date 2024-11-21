@@ -18,7 +18,6 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
-import {BorderStar, Location, MapFixed, MapUnFixed, NewPost, Search, Setting, User, Users} from '../svg'
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
