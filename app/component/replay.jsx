@@ -9,7 +9,9 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  FlatList, // ScrollViewからFlatListに変更
+  FlatList, // ScrollViewからFlatListに変更z
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -31,8 +33,12 @@ const ReplyScreen = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  console.log(showImage);
+  const [isScrolling, setIsScrolling] = useState(false);
+ 
+  const handleScroll = (event) => {
+    const { contentOffset } = event.nativeEvent;
+    setIsScrolling(contentOffset.y > 0); // スクロール位置が0以上なら非表示
+  };
 
   const handleBackPress = () => {
     router.back();
@@ -134,6 +140,11 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
+  useEffect(() => {
+    console.log("Replies Data:", replies);
+  }, [replies]);
+  
+
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
 
@@ -182,9 +193,11 @@ const ReplyScreen = () => {
   };
 
   return (
-    <View>
-      {/* <ScrollView style={styles.container}> */}
-      <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // iOSの場合はオフセット調整
+    >
         {loading ? (
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#0000ff" />
@@ -257,37 +270,47 @@ const ReplyScreen = () => {
                         replies={[item]}
                         navigateProfile={navigateProfile}
                         postId={postId}
+                        style={styles.test}
                       />
                     )}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item, index) => item.id || String(index)} // idが空の場合はインデックスを使用
                     style={styles.repliesList}
+                    
+
                     ListEmptyComponent={
                       <Text style={styles.noRepliesText}>
                         まだ返信がありません。
                       </Text>
                     }
+                   
+                    onScroll={handleScroll} // スクロールイベントを監視
+                    scrollEventThrottle={16} // イベントの感度調整
                   />
                 </View>
               </>
             )}
           </>
         )}
-      </View>
+      
       {/* </ScrollView> */}
+      {/* スクロール中で非表示 */}
+      {!isScrolling && (
+        <View style={styles.sendReply}>
+          <TextInput
+            style={styles.input}
+            placeholder="返信を入力..."
+            value={replyText}
+            onChangeText={setReplyText}
+            multiline
+          />
+          <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
+            <Text style={styles.replyBtnText}>送信</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
-      <View style={styles.sendReply}>
-        <TextInput
-          style={styles.input}
-          placeholder="返信を入力..."
-          value={replyText}
-          onChangeText={setReplyText}
-          multiline
-        />
-        <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
-          <Text style={styles.replyBtnText}>送信</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      
+    </KeyboardAvoidingView>
   );
 };
 
@@ -295,6 +318,8 @@ const styles = StyleSheet.create({
   container: {
     height: height - 60,
     backgroundColor: "#F2F5C8",
+    flex: 1,
+    marginBottom: "auto"
   },
   centerContainer: {
     width: "100%",
@@ -302,6 +327,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F2F5C8",
+    flex: 1,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -352,7 +378,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     borderRadius: 5,
-    width: "100%",
+    width: "80%", // 少し小さくしてボタンと並べる
     flex: 1,
   },
   replyBtn: {
@@ -368,27 +394,38 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
+    marginBottom: "auto",
+    backgroundColor: "white",
   },
   replyText: {
     fontSize: 14,
     paddingHorizontal: 10,
+    
   },
   replyTimestamp: {
     fontSize: 12,
     color: "gray",
+    
   },
   noRepliesText: {
     textAlign: "center",
     color: "gray",
     marginTop: 10,
+    
   },
   sendReply: {
-    width: "100%",
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: "#F2F5C8",
     flexDirection: "row",
     paddingHorizontal: 10,
     paddingBottom: 10,
     gap: 10,
+    alignItems: 'center', // 中央に揃える
+    justifyContent: 'space-between', // ボタンとテキスト入力を端に揃える
+    flex: 1,
   },
   postUserBar: {
     flexDirection: "row",
@@ -405,11 +442,20 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
+
   },
   postDate: {
     fontSize: 12,
     color: "gray",
   },
+  test:{
+    backgroundColor: "white",
+    adding: 10,
+    marginBottom:"auto",
+    height: ((height * 0.3) / 4) * 3,
+    flex: 1, // 画面全体を使う
+  },
+
 });
 
 export default ReplyScreen;

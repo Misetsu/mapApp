@@ -9,14 +9,19 @@ import {
   TextInput,
   Button,
   Alert,
+  Dimensions,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
+const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const RepliesList = ({ replies, navigateProfile, postId }) => {
+  const router = useRouter();
   const [parentReplyId, setParentReplyId] = useState(null); // 親返信ID
   const [newReplyText, setNewReplyText] = useState(""); // 新しい返信内容
+  
 
   const handleReplyPress = (replyId) => {
     setParentReplyId(parentReplyId === replyId ? null : parseInt(replyId)); // 親返信をトグル
@@ -24,7 +29,7 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
   const auth = FirebaseAuth();
   const onReplySubmit = async (parentReplyId, newReplyText) => {
     const currentTime = new Date().toISOString();
-
+    
     if (newReplyText.trim()) {
       if (!auth.currentUser) {
         Alert.alert("エラー", "ログインしてください。");
@@ -45,6 +50,7 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
           });
 
         Alert.alert("成功", "返信が送信されました。");
+        router.back();
       } catch (error) {
         Alert.alert(
           "エラー",
@@ -114,15 +120,18 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
   );
 
   return (
+  <View style={styles.liststyle}>
     <FlatList
       data={replies} // ソートされた配列を使用
       renderItem={renderReply}
       keyExtractor={(item) => item.id}
       style={styles.repliesList}
+      contentContainerStyle={{ flexGrow: 1 }}
       ListEmptyComponent={
         <Text style={styles.noRepliesText}>まだ返信がありません。</Text>
       }
     />
+    </View>
   );
 };
 
@@ -132,27 +141,35 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
+    justifyContent: "flex-end", // 下から配置
+    
   },
   indentedReplyContainer: {
     marginLeft: 40, // 4マス分のインデント
+  
   },
   replyText: {
     fontSize: 14,
     paddingHorizontal: 10,
+    
+    
   },
   replyTimestamp: {
     fontSize: 12,
     color: "gray",
+    
   },
   noRepliesText: {
     textAlign: "center",
     color: "gray",
     marginTop: 10,
+    
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    
   },
   userBar: {
     flexDirection: "row",
@@ -163,9 +180,9 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
+    
   },
   repliesList: {
-    marginTop: 10,
   },
   replyButton: {
     color: "blue",
@@ -194,6 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: "100%",
     flex: 1,
+    
   },
   replyBtn: {
     paddingVertical: 10,
@@ -202,6 +220,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#A3DE83",
   },
+  liststyle:{
+    padding: 10,
+    marginBottom:"auto",
+    flex: 1, // 画面全体を使う
+  },
+  
 });
 
 export default RepliesList;
