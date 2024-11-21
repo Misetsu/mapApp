@@ -53,12 +53,22 @@ export default function MyModal({
     }
   });
 
-
+  const generateShareMessage = (spotName,spotId) => {
+    console.log(spotId)
+    const baseURL = "http://syuto.s322.xrea.com/";
+    const queryParams = new URLSearchParams({
+      _gl: "1*1edlls4*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
+      _ga: "MjAzMzg2MzgzMC4xNzMxOTM2NDM2",
+      _ga_J8YE7Q8ZQD: "MTczMjA3NzA0Mi40LjEuMTczMjA3NzA2Ni4zNi4xLjQyOTA0MTgz",
+      spotId: spotId
+    }).toString();
+  
+    return `${spotName}の投稿をチェック！！\n${baseURL}?${queryParams}`;
+  };
   const onShare = ()=>{
     try {
       const result = Share.open({
-        message: `${spotName}の投稿をチェック！！
-        http://syuto.s322.xrea.com/?_gl=1*1ald7wm*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2*_ga*MjAzMzg2MzgzMC4xNzMxOTM2NDM2*_ga_J8YE7Q8ZQD*MTczMTkzNjQzNS4xLjEuMTczMTkzOTgwMy41My4xLjE0NTc0MTEwMw..&_ga=2.194102957.1689046770.1731936436-2033863830.1731936436`,
+        message: generateShareMessage(spotName,spotId)
         });
       console.log(result);
     } catch (error) {

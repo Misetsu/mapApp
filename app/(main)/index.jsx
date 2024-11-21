@@ -63,7 +63,14 @@ export default function TrackUserMapView() {
   const [openedByURL, setOpenedByURL] = useState(false);
   const [url, setURL] = useState(null);
   const [data, setData] = useState(null);
-
+  const setURLmodal = (spotId) => {
+    setSpotId(spotId);
+    setspotName(spotId);
+    setPostImage(false);
+    handleVisitState(spotId);
+    fetchPostData(spotId);
+    setModalVisible(true);
+  }
   const setmodal = (marker) => {
     try {
       const distance = calculateDistance(
@@ -92,29 +99,24 @@ export default function TrackUserMapView() {
   };
 
   useEffect(() => {
-    // アプリが初回起動時に渡されたURLを取得
-    Linking.getInitialURL().then((initialURL) => {
-      console.log(initialURL)
-      if (initialURL) {
-        setOpenedByURL(true);
-        setURL(initialURL);
-      }
-    })
+    // 初回起動時にURLを取得
+      const subscription = Linking.addEventListener('url', (event) => {
+        console.log("A")
+        handleOpenURL(event.url);
+      });
+  
+      return () => subscription.remove();
+    }, []);
 
-        // アプリがバックグラウンドからURLで開かれたときのリスナー
-        const handleURL = (event) => {
-          console.log(event)
-          if (event.url) {
-            setOpenedByURL(true);
-            setURL(event.url);
-          }
-        };
-    
-        const listener = Linking.addEventListener('url', handleURL);
-    
-        // クリーンアップ
-        return () => listener.remove();
-  },[])
+  const handleOpenURL = (url) => {
+    // URLを解析してクエリパラメータを取得
+    const queryParams = new URLSearchParams(url.split('?')[1]);
+    const spotIdFromUrl = queryParams.get('spotId');
+    console.log(spotIdFromUrl)
+    if(spotIdFromUrl != null){
+    setURLmodal(parseInt(spotIdFromUrl))
+    }
+  };
   function toRadians(degrees) {
     try {
       return (degrees * Math.PI) / 180;
@@ -144,8 +146,10 @@ export default function TrackUserMapView() {
   }
 
   const fetchPostData = async (spotId) => {
+   
     setLoading(true);
     if (chosenUser == null) {
+
       try {
         const postArray = [];
         const friendList = [];
@@ -153,6 +157,7 @@ export default function TrackUserMapView() {
         setEmptyPost(true);
 
         if (auth.currentUser != null) {
+          
           friendList.push(auth.currentUser.uid);
 
           const queryFollow = await firestore()
@@ -161,6 +166,7 @@ export default function TrackUserMapView() {
             .get();
 
           if (!queryFollow.empty) {
+  
             let cnt = 0;
             while (cnt < queryFollow.size) {
               const followSnapshot = queryFollow.docs[cnt];
@@ -177,8 +183,9 @@ export default function TrackUserMapView() {
           .orderBy("timeStamp", "desc")
           .limit(5)
           .get();
-
+          console.log(querySnapshot.empty)
         if (!querySnapshot.empty) {
+
           const size = querySnapshot.size;
           let cnt = 0;
           const firstKey = "userId";
@@ -396,7 +403,9 @@ export default function TrackUserMapView() {
           }
           setPostData(postArray);
           setLoading(false);
+
         } else {
+
           setLoading(false);
         }
       } catch (error) {
@@ -689,6 +698,7 @@ export default function TrackUserMapView() {
   };
 
   const handleVisitState = async (spotId) => {
+
     if (auth.currentUser != null) {
       const querySnapshot = await firestore()
         .collection("users")
