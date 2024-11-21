@@ -59,6 +59,7 @@ export default function TrackUserMapView() {
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
   const [allTag, setAllTag] = useState([]);
+  const [selectedTag, setSelectedTag] = useState(false);
 
   const setmodal = (marker) => {
     try {
@@ -702,6 +703,43 @@ export default function TrackUserMapView() {
     setChosenUser(userId);
   };
 
+  const handleTagChoose = async (tagId) => {
+    const tempList = [];
+    const tagSnapshot = await firestore()
+      .collection("tagPost")
+      .where("tagId", "==", parseInt(tagId))
+      .get();
+
+    if (!tagSnapshot.empty) {
+      tagSnapshot.forEach((doc) => {
+        const item = doc.data();
+        tempList.push(item.spotId);
+      });
+    }
+
+    const spotIdList = [...new Set(tempList)];
+
+    const fetchResult = [];
+    const querySpot = await firestore()
+      .collection("spot")
+      .where("id", "in", spotIdList)
+      .get();
+
+    if (!querySpot.empty) {
+      querySpot.forEach((docs) => {
+        const item = docs.data();
+        fetchResult.push(item);
+      });
+      setMarkerCords(fetchResult);
+    }
+    setSelectedTag(true);
+  };
+
+  const handleCancelTag = () => {
+    setSelectedTag(false);
+    fetchAllMarkerCord();
+  };
+
   const handleChangeIndex = () => {
     let status = "";
     if (indexStatus == "follow") {
@@ -961,13 +999,23 @@ export default function TrackUserMapView() {
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => {
             return (
-              <TouchableOpacity style={styles.tag}>
+              <TouchableOpacity
+                style={styles.tag}
+                onPress={() => handleTagChoose(item.tagId)}
+              >
                 <Icon name="tag" size={18} />
                 <Text>{item.tagName}</Text>
               </TouchableOpacity>
             );
           }}
         />
+        {selectedTag ? (
+          <TouchableOpacity onPress={handleCancelTag}>
+            <Icon name="times-circle" size={20} />
+          </TouchableOpacity>
+        ) : (
+          <></>
+        )}
       </SafeAreaView>
 
       <MyModal
