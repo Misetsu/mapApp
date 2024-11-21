@@ -18,7 +18,6 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -56,7 +55,7 @@ export default function TrackUserMapView() {
   const [markerCords, setMarkerCords] = useState([]);
   const [indexStatus, setIndexStatus] = useState("follow");
   const [userList, setUserList] = useState([]);
-  const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
+  const [iconName, setIconName] = useState("users"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
 
   const setmodal = (marker) => {
@@ -643,11 +642,17 @@ export default function TrackUserMapView() {
     setUserList(tempList);
   };
 
+  // アイコンマップを定義
+  const handleicons = {
+    users: require("./../image/Users.png"),
+    star: require("./../image/BorderStar.png"), // 他のアイコンを追加
+  };
+
   const handleIconPress = () => {
     if (iconName === "times") {
       fetchAllMarkerCord();
       if (indexStatus == "follow") {
-        setIconName("user-friends"); // アイコン名を "times" に変更
+        setIconName("users"); // アイコン名を "times" に変更
       } else {
         setIconName("star");
       }
@@ -656,7 +661,7 @@ export default function TrackUserMapView() {
       setIconName("star"); // アイコン名を "times" に変更
     } else {
       handleChangeIndex();
-      setIconName("user-friends");
+      setIconName("users");
     }
   };
 
@@ -849,7 +854,10 @@ export default function TrackUserMapView() {
       {initialRegion && (
         <MapView
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          style={StyleSheet.absoluteFillObject}
+          style={[
+            StyleSheet.absoluteFillObject,
+            { marginTop: 85, marginBottom: 70 },
+          ]}
           customMapStyle={customMapStyle}
           initialRegion={initialRegion}
           region={Region}
@@ -897,17 +905,8 @@ export default function TrackUserMapView() {
       )}
       {/* タスクバーアイコン */}
       <SafeAreaView style={styles.indexContainer}>
-        <TouchableOpacity
-          style={styles.listProfileIndexButton}
-          onPress={() => {
-            router.push({
-              pathname: "/search",
-            });
-          }}
-        >
-          <Icon name="search" size={30} color="#000"></Icon>
-        </TouchableOpacity>
         <FlatList
+          style={{ marginLeft: 15 }}
           horizontal={true}
           data={userList}
           keyExtractor={(item) => item.userId}
@@ -931,7 +930,7 @@ export default function TrackUserMapView() {
           style={styles.listProfileIndexButton}
           onPress={handleIconPress} // 変更した関数を呼び出す
         >
-          <Icon name={iconName} size={30} color="#000"></Icon>
+          <Image source={handleicons[iconName]} style={styles.footerImage} />
         </TouchableOpacity>
       </SafeAreaView>
 
@@ -945,91 +944,34 @@ export default function TrackUserMapView() {
         onClose={() => setModalVisible(false)}
       />
 
-      {user ? (
-        <Pressable
-          style={{
-            position: "absolute",
-            alignSelf: "center",
-            justifyContent: "center", // ボタン内のテキストを中央に配置
-            alignItems: "center",
-            bottom: 30,
-            width: 70,
-            height: 70,
-            backgroundColor: "rgba(255, 255, 255, 0.75)",
-            borderRadius: 35,
-            display: postButtonVisible ? "flex" : "none",
-          }}
-          onPress={handlePost}
-        >
-          <Icon name="camera" size={30} color="#000" />
-        </Pressable>
-      ) : (
-        <Pressable
-          style={{
-            position: "absolute",
-            alignSelf: "center",
-            justifyContent: "center", // ボタン内のテキストを中央に配置
-            alignItems: "center",
-            bottom: 30,
-            width: 70,
-            height: 70,
-            backgroundColor: "rgba(255, 255, 255, 0.75)",
-            borderRadius: 35,
-            display: postButtonVisible ? "flex" : "none",
-          }}
-          onPress={() => {
-            router.push({ pathname: "/loginForm" });
-          }}
-        >
-          <Icon name="camera" size={30} color="#000" />
-        </Pressable>
-      )}
-
-      {user ? (
-        <View style={styles.loignBtnContainer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              router.push("/myPage");
-            }}
-          >
-            <Icon name="user-alt" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.loignBtnContainer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              router.push("/loginForm");
-            }}
-          >
-            <Icon name="user-alt" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-      )}
       {mapfixed ? (
         <View style={styles.mapfixed}>
           <TouchableOpacity
-            style={styles.button}
+            style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
-            <Icon name="arrows-alt" size={24} color="#28b6b8" />
+            <Image
+              source={require("./../image/MapFixed.png")}
+              style={styles.footerImage}
+            />
           </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.mapfixed}>
           <TouchableOpacity
-            style={styles.button}
+            style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
-            <Icon name="arrows-alt" size={24} color="#000" />
+            <Image
+              source={require("./../image/MapUnFixed.png")}
+              style={styles.footerImage}
+            />
           </TouchableOpacity>
         </View>
       )}
       <View style={styles.defaultlocation}>
         <TouchableOpacity
-          style={styles.button}
+          style={styles.mapbutton}
           onPress={() =>
             defaultlocation(
               position.latitude,
@@ -1039,16 +981,99 @@ export default function TrackUserMapView() {
             )
           }
         >
-          <Icon name="crosshairs" size={24} color="#3333ff" />
+          <Image
+            source={require("./../image/Location.png")}
+            style={styles.footerImage}
+          />
         </TouchableOpacity>
       </View>
-      <View style={styles.settingButton}>
-        <TouchableOpacity
-          onPress={() => router.push("/setting")}
-          style={styles.button}
-        >
-          <Icon name="cog" size={24} color="#000" />
-        </TouchableOpacity>
+
+      <View style={styles.footer}>
+        {user ? (
+          <View style={styles.postbutton}>
+            <Pressable style={styles.footerbutton} onPress={handlePost}>
+              <Image
+                source={require("./../image/NewPost.png")}
+                style={styles.footerImage}
+              />
+              <Text style={styles.listProfileNameText}>投稿</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View>
+            <Pressable
+              style={styles.footerbutton}
+              onPress={() => {
+                router.push({ pathname: "/loginForm" });
+              }}
+            >
+              <Image
+                source={require("./../image/NewPost.png")}
+                style={styles.footerImage}
+              />
+              <Text style={styles.listProfileNameText}>投稿</Text>
+            </Pressable>
+          </View>
+        )}
+        <View style={styles.searchButton}>
+          <TouchableOpacity
+            style={styles.footerbutton}
+            onPress={() => {
+              router.push({
+                pathname: "/search",
+              });
+            }}
+          >
+            <Image
+              source={require("./../image/Search.png")}
+              style={styles.footerImage}
+            />
+            <Text style={styles.listProfileNameText}>検索</Text>
+          </TouchableOpacity>
+        </View>
+        {user ? (
+          <View style={styles.loignBtnContainer}>
+            <TouchableOpacity
+              style={styles.footerbutton}
+              onPress={() => {
+                router.push("/myPage");
+              }}
+            >
+              <Image
+                source={require("./../image/User.png")}
+                style={styles.footerImage}
+              />
+              <Text style={styles.listProfileNameText}>マイページ</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.loignBtnContainer}>
+            <TouchableOpacity
+              style={styles.footerbutton}
+              onPress={() => {
+                router.push("/loginForm");
+              }}
+            >
+              <Image
+                source={require("./../image/Search.png")}
+                style={styles.footerImage}
+              />
+              <Text style={styles.listProfileNameText}>ログイン</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.settingButton}>
+          <TouchableOpacity
+            onPress={() => router.push("/setting")}
+            style={styles.footerbutton}
+          >
+            <Image
+              source={require("./../image/Setting.png")}
+              style={styles.footerImage}
+            />
+            <Text style={styles.listProfileNameText}>設定</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
