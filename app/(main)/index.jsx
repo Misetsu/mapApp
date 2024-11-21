@@ -62,6 +62,8 @@ export default function TrackUserMapView() {
   const [userList, setUserList] = useState([]);
   const [iconName, setIconName] = useState("users"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
+  const [allTag, setAllTag] = useState([]);
+  const [selectedTag, setSelectedTag] = useState(false);
   const [mapflag, setmapflag] = useState(true);
 
   const setURLmodal = (spotId) => {
@@ -757,6 +759,52 @@ export default function TrackUserMapView() {
     setChosenUser(userId);
   };
 
+  const handleTagChoose = async (tagId) => {
+    const tempList = [];
+    const tagSnapshot = await firestore()
+      .collection("tagPost")
+      .where("tagId", "==", parseInt(tagId))
+      .get();
+
+    if (!tagSnapshot.empty) {
+      tagSnapshot.forEach((doc) => {
+        const item = doc.data();
+        tempList.push(item.spotId);
+      });
+
+      const spotIdList = [...new Set(tempList)];
+
+      const fetchResult = [];
+      const querySpot = await firestore()
+        .collection("spot")
+        .where("id", "in", spotIdList)
+        .get();
+
+      if (!querySpot.empty) {
+        querySpot.forEach((docs) => {
+          const item = docs.data();
+          fetchResult.push(item);
+          setmapflag(false);
+          setsaveregions(regions);
+          setregions(null);
+        });
+        setMarkerCords(fetchResult);
+      }
+    } else {
+      setmapflag(true);
+      setMarkerCords([]);
+    }
+
+    setSelectedTag(true);
+  };
+
+  const handleCancelTag = () => {
+    setmapflag(true);
+    setregions(saveregion);
+    setSelectedTag(false);
+    fetchAllMarkerCord();
+  };
+
   const handleChangeIndex = () => {
     let status = "";
     if (indexStatus == "follow") {
@@ -841,6 +889,21 @@ export default function TrackUserMapView() {
     });
   };
 
+  const fetchAllTag = async () => {
+    const fetchResult = [];
+    const tagSnapshot = await firestore()
+      .collection("tag")
+      .orderBy("tagId")
+      .get();
+    if (!tagSnapshot.empty) {
+      tagSnapshot.forEach((doc) => {
+        const item = doc.data();
+        fetchResult.push(item);
+      });
+    }
+    setAllTag(fetchResult);
+  };
+
   useEffect(() => {
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
@@ -893,6 +956,7 @@ export default function TrackUserMapView() {
   useEffect(() => {
     setUser(auth.currentUser);
     fetchIndexBar(indexStatus);
+    fetchAllTag();
   }, []);
 
   useEffect(() => {
@@ -990,6 +1054,33 @@ export default function TrackUserMapView() {
         >
           <Image source={handleicons[iconName]} style={styles.footerImage} />
         </TouchableOpacity>
+      </SafeAreaView>
+
+      <SafeAreaView style={styles.tagContainer}>
+        <FlatList
+          horizontal={true}
+          data={allTag}
+          keyExtractor={(item) => item.tagId}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity
+                style={styles.tag}
+                onPress={() => handleTagChoose(item.tagId)}
+              >
+                <Icon name="tag" size={18} color={"#239D60"} />
+                <Text>{item.tagName}</Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
+        {selectedTag ? (
+          <TouchableOpacity onPress={handleCancelTag}>
+            <Icon name="times-circle" size={30} />
+          </TouchableOpacity>
+        ) : (
+          <></>
+        )}
       </SafeAreaView>
 
       <MyModal

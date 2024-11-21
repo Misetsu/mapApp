@@ -111,7 +111,7 @@ export default function CameraScreen() {
           longitude: longitude,
           spotId: spotId,
           point: parseInt(point),
-          spotNo: spotNo,
+          spotNo: parseInt(spotNo),
         },
       });
     } catch (error) {

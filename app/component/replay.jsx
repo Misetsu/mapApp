@@ -5,7 +5,6 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  Alert,
   Image,
   ActivityIndicator,
   TouchableOpacity,
@@ -18,6 +17,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
+import { Alert } from "react-native";
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -270,6 +270,74 @@ const ReplyScreen = () => {
     setIsLiked(true);
   };
 
+  const handleDelete = async () => {
+    Alert.alert("確認", "投稿を削除しますか？", [
+      {
+        text: "キャンセル",
+        style: "cancel",
+      },
+      {
+        text: "削除",
+        onPress: async () => {
+          let batch = firestore().batch();
+
+          await firestore()
+            .collection("post")
+            .where("id", "==", parseInt(postId))
+            .get()
+            .then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+              });
+            });
+
+          await firestore()
+            .collection("photo")
+            .where("postId", "==", parseInt(postId))
+            .get()
+            .then((snapshot) => {
+              snapshot.docs.forEach(async (doc) => {
+                // await storage().ref(doc.data().imagePath).delete();
+                batch.delete(doc.ref);
+              });
+            });
+
+          await firestore()
+            .collection("like")
+            .where("postId", "==", parseInt(postId))
+            .get()
+            .then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+              });
+            });
+
+          await firestore()
+            .collection("replies")
+            .where("postId", "==", parseInt(postId))
+            .get()
+            .then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+              });
+            });
+
+          await firestore()
+            .collection("tagPost")
+            .where("postId", "==", parseInt(postId))
+            .get()
+            .then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+              });
+            });
+
+          await batch.commit();
+        },
+      },
+    ]);
+  };
+
   return (
     <View>
       {/* <ScrollView style={styles.container}> */}
@@ -332,7 +400,7 @@ const ReplyScreen = () => {
                     </View>
                   )}
 
-                  <View>
+                  <View style={styles.rowSpaceView}>
                     {isLiked ? (
                       <TouchableOpacity
                         style={styles.actionButton}
@@ -389,6 +457,25 @@ const ReplyScreen = () => {
                             : selectedPost.likeCount}
                         </Text>
                       </TouchableOpacity>
+                    )}
+                    {selectedPost.userDetails.uid == auth.currentUser.uid ? (
+                      <View style={styles.rowView}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            router.push({
+                              pathname: "/editPost",
+                              params: { postId },
+                            });
+                          }}
+                        >
+                          <Icon name="pen" size={25} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleDelete}>
+                          <Icon name="trash" size={25} />
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <></>
                     )}
                   </View>
                   <View style={styles.postDetails}>
@@ -571,6 +658,14 @@ const styles = StyleSheet.create({
   likeNum: {
     marginLeft: 10,
     fontSize: 16,
+  },
+  rowView: {
+    flexDirection: "row",
+    gap: 15,
+  },
+  rowSpaceView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
 
