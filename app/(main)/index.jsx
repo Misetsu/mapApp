@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -18,6 +19,8 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
+import Icon from "react-native-vector-icons/FontAwesome5";
+import queryString from "query-string";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -41,11 +44,12 @@ export default function TrackUserMapView() {
 
   const [error, setError] = useState(null); //位置情報取得時に発生するエラーを管理する
   const [initialRegion, setInitialRegion] = useState(null); //地図の初期表示範囲を保持します。
-  const [regions,setregions] = useState(null);
-  const [saveregion,setsaveregions] = useState(null);
+  const [regions, setregions] = useState(null);
+  const [saveregion, setsaveregions] = useState(null);
   const [Region, setRegion] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [spotId, setSpotId] = useState(0);
+  const [spotName, setspotName] = useState(null);
   const [postImage, setPostImage] = useState(false);
   const [user, setUser] = useState(null);
   const [mapfixed, setmapfixed] = useState(false);
@@ -58,10 +62,17 @@ export default function TrackUserMapView() {
   const [userList, setUserList] = useState([]);
   const [iconName, setIconName] = useState("users"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
-  const [mapflag,setmapflag] = useState(true)
+  const [mapflag, setmapflag] = useState(true);
 
+  const setURLmodal = (spotId) => {
+    setSpotId(spotId);
+    setspotName(spotId);
+    setPostImage(false);
+    handleVisitState(spotId);
+    fetchPostData(spotId);
+    setModalVisible(true);
+  };
   const setmodal = (marker) => {
-
     try {
       const distance = calculateDistance(
         position.latitude,
@@ -70,15 +81,17 @@ export default function TrackUserMapView() {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
-        setmapflag(true)
+        setmapflag(true);
         setSpotId(marker.id);
+        setspotName(marker.name);
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
         fetchPostData(marker.id);
       } else {
-        setmapflag(false)
+        setmapflag(false);
         setSpotId(marker.id);
+        setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
         fetchPostData(marker.id);
@@ -88,6 +101,25 @@ export default function TrackUserMapView() {
     }
   };
 
+  useEffect(() => {
+    // 初回起動時にURLを取得
+    const subscription = Linking.addEventListener("url", (event) => {
+      console.log("A");
+      handleOpenURL(event.url);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  const handleOpenURL = (url) => {
+    // URLを解析してクエリパラメータを取得
+    const queryParams = new URLSearchParams(url.split("?")[1]);
+    const spotIdFromUrl = queryParams.get("spotId");
+    console.log(spotIdFromUrl);
+    if (spotIdFromUrl != null) {
+      setURLmodal(parseInt(spotIdFromUrl));
+    }
+  };
   function toRadians(degrees) {
     try {
       return (degrees * Math.PI) / 180;
@@ -150,7 +182,7 @@ export default function TrackUserMapView() {
           .orderBy("timeStamp", "desc")
           .limit(5)
           .get();
-
+        console.log(querySnapshot.empty);
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
@@ -462,7 +494,6 @@ export default function TrackUserMapView() {
           latitudeDelta: LATITUDE_DELTA,
           longitudeDelta: LONGITUDE_DELTA,
         });
-
       } else {
         setRegion({
           latitude: latitude,
@@ -477,7 +508,6 @@ export default function TrackUserMapView() {
           latitudeDelta: LATITUDE_DELTA,
           longitudeDelta: LONGITUDE_DELTA,
         });
-
       }
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -485,71 +515,74 @@ export default function TrackUserMapView() {
   };
 
   const fetchAllMarkerCord = async () => {
-    if(!modalVisible){
-    let vivstedSpot = {};
+    if (!modalVisible) {
+      let vivstedSpot = {};
 
-    if (auth.currentUser != null) {
-      const querySnapshot = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .collection("spot")
-        .orderBy("spotId", "asc")
-        .get();
+      if (auth.currentUser != null) {
+        const querySnapshot = await firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .collection("spot")
+          .orderBy("spotId", "asc")
+          .get();
 
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((docs) => {
-          const item = docs.data();
-          vivstedSpot[item.spotId] = item.timeStamp;
-        });
-      }
-    }
-
-    const fetchResult = [];
-
-    try {
-      const querySnapshot = await firestore()
-        .collection("spot")
-        .orderBy("id")
-        .get();
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((docs) => {
-          const item = docs.data();
-          if (item.id in vivstedSpot) {
-            item.visited = vivstedSpot[item.id];
-          } else {
-            item.visited = "";
-          }
-          if(regions != null){
-          if(
-          item.mapLatitude >= regions.latitude - regions.latitudeDelta / 2 &&
-          item.mapLatitude <= regions.latitude + regions.latitudeDelta / 2 &&
-          item.mapLongitude >= regions.longitude - regions.longitudeDelta / 2 &&
-          item.mapLongitude <= regions.longitude + regions.longitudeDelta / 2
-          ){
-          fetchResult.push(item);
-          }
-        }
-        });
-        if(regions != null && mapflag){
-          
-          setMarkerCords(fetchResult);
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((docs) => {
+            const item = docs.data();
+            vivstedSpot[item.spotId] = item.timeStamp;
+          });
         }
       }
-    } catch (error) {
-      console.error("Error fetching documentssss: ", error);
-    } finally {
-      setChosenUser(null);
-      setLoading(false);
+
+      const fetchResult = [];
+
+      try {
+        const querySnapshot = await firestore()
+          .collection("spot")
+          .orderBy("id")
+          .get();
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((docs) => {
+            const item = docs.data();
+            if (item.id in vivstedSpot) {
+              item.visited = vivstedSpot[item.id];
+            } else {
+              item.visited = "";
+            }
+            if (regions != null) {
+              if (
+                item.mapLatitude >=
+                  regions.latitude - regions.latitudeDelta / 2 &&
+                item.mapLatitude <=
+                  regions.latitude + regions.latitudeDelta / 2 &&
+                item.mapLongitude >=
+                  regions.longitude - regions.longitudeDelta / 2 &&
+                item.mapLongitude <=
+                  regions.longitude + regions.longitudeDelta / 2
+              ) {
+                fetchResult.push(item);
+              }
+            }
+          });
+          if (regions != null && mapflag) {
+            setMarkerCords(fetchResult);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching documentssss: ", error);
+      } finally {
+        setChosenUser(null);
+        setLoading(false);
+      }
     }
-  }
-};
+  };
   const onRegionChangeComplete = (newRegion) => {
-    if(mapflag){
-    setregions(newRegion);  // 新しい表示領域を状態に設定
+    if (mapflag) {
+      setregions(newRegion); // 新しい表示領域を状態に設定
     }
-    setsaveregions(newRegion)
+    setsaveregions(newRegion);
     // 現在の表示領域をコンソールに出力
-    fetchAllMarkerCord()
+    fetchAllMarkerCord();
   };
 
   const fetchIndexBar = async (status) => {
@@ -662,8 +695,8 @@ export default function TrackUserMapView() {
 
   const handleIconPress = () => {
     if (iconName === "times") {
-      setmapflag(true)
-      setregions(saveregion)
+      setmapflag(true);
+      setregions(saveregion);
       fetchAllMarkerCord();
       if (indexStatus == "follow") {
         setIconName("users"); // アイコン名を "times" に変更
@@ -712,14 +745,13 @@ export default function TrackUserMapView() {
       querySpot.forEach((docs) => {
         const item = docs.data();
         fetchResult.push(item);
-        setmapflag(false)
-        setsaveregions(regions)
-        setregions(null)
+        setmapflag(false);
+        setsaveregions(regions);
+        setregions(null);
       });
       setMarkerCords(fetchResult);
-    }
-    else{
-      setmapflag(true)
+    } else {
+      setmapflag(true);
     }
     setIconName("times");
     setChosenUser(userId);
@@ -810,7 +842,6 @@ export default function TrackUserMapView() {
   };
 
   useEffect(() => {
-
     //リアルタイムでユーザーの位置情報を監視し、更新
     const watchId = Geolocation.watchPosition(
       (position) => {
@@ -836,9 +867,9 @@ export default function TrackUserMapView() {
               longitude: position.coords.longitude,
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
-            })
+            });
             setPostButtonVisible(true);
-            fetchAllMarkerCord()
+            fetchAllMarkerCord();
           } else {
             setError("Position or coords is undefined");
           }
@@ -865,7 +896,7 @@ export default function TrackUserMapView() {
   }, []);
 
   useEffect(() => {
-    fetchAllMarkerCord()
+    fetchAllMarkerCord();
   }, [regions]);
 
   return (
@@ -969,6 +1000,7 @@ export default function TrackUserMapView() {
         spotId={spotId}
         loading={loading}
         onClose={() => setModalVisible(false)}
+        spotName={spotName}
       />
 
       {mapfixed ? (
@@ -1018,7 +1050,14 @@ export default function TrackUserMapView() {
       <View style={styles.footer}>
         {user ? (
           <View style={styles.postbutton}>
-            <Pressable style={styles.footerbutton} onPress={handlePost}>
+            <Pressable
+              style={styles.footerbutton}
+              onPress={() => {
+                if (postButtonVisible) {
+                  handlePost();
+                }
+              }}
+            >
               <Image
                 source={require("./../image/NewPost.png")}
                 style={styles.footerImage}
