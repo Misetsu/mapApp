@@ -60,9 +60,6 @@ export default function TrackUserMapView() {
   const [userList, setUserList] = useState([]);
   const [iconName, setIconName] = useState("user-friends"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
-  const [openedByURL, setOpenedByURL] = useState(false);
-  const [url, setURL] = useState(null);
-  const [data, setData] = useState(null);
   const setURLmodal = (spotId) => {
     setSpotId(spotId);
     setspotName(spotId);
