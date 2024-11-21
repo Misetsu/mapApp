@@ -262,7 +262,7 @@ const ReplyScreen = () => {
                         : "詳細がありません"}
                     </Text>
                   </View>
-
+                <View style={styles.sky}>
                   <FlatList
                     data={replies}
                     renderItem={({ item }) => (
@@ -282,10 +282,10 @@ const ReplyScreen = () => {
                         まだ返信がありません。
                       </Text>
                     }
-                   
                     onScroll={handleScroll} // スクロールイベントを監視
                     scrollEventThrottle={16} // イベントの感度調整
                   />
+                  </View>
                 </View>
               </>
             )}
@@ -455,7 +455,9 @@ const styles = StyleSheet.create({
     height: ((height * 0.3) / 4) * 3,
     flex: 1, // 画面全体を使う
   },
-
+  sky:{
+    height:300
+  }
 });
 
 export default ReplyScreen;

@@ -15,7 +15,6 @@ import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const RepliesList = ({ replies, navigateProfile, postId }) => {
   const router = useRouter();
@@ -131,8 +130,11 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
         <Text style={styles.noRepliesText}>まだ返信がありません。</Text>
       }
     />
-    </View>
+  </View>
+    
+    
   );
+  
 };
 
 const styles = StyleSheet.create({
@@ -141,7 +143,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
-    justifyContent: "flex-end", // 下から配置
+    
     
   },
   indentedReplyContainer: {
@@ -183,6 +185,7 @@ const styles = StyleSheet.create({
     
   },
   repliesList: {
+    marginTop: 10,
   },
   replyButton: {
     color: "blue",
@@ -225,7 +228,7 @@ const styles = StyleSheet.create({
     marginBottom:"auto",
     flex: 1, // 画面全体を使う
   },
-  
+  sky:{height:600}
 });
 
 export default RepliesList;
