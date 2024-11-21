@@ -191,7 +191,12 @@ export default function myPage() {
         text: "キャンセル",
         style: "cancel",
       },
-      { text: "削除", onPress: handleDelete() },
+      {
+        text: "削除",
+        onPress: () => {
+          handleDelete();
+        },
+      },
     ]);
   };
 

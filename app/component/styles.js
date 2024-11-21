@@ -130,10 +130,12 @@ export const styles = StyleSheet.create({
   tagContainer: {
     position: "absolute",
     top: 85,
-    width: "100%" - 70,
+    width: "100%",
     paddingTop: 5,
-    paddingHorizontal: 5,
+    paddingLeft: 5,
+    paddingRight: 75,
     justifyContent: "space-between",
+    flexDirection: "row",
   },
   tag: {
     paddingVertical: 5,

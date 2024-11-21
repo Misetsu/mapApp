@@ -715,23 +715,26 @@ export default function TrackUserMapView() {
         const item = doc.data();
         tempList.push(item.spotId);
       });
+
+      const spotIdList = [...new Set(tempList)];
+
+      const fetchResult = [];
+      const querySpot = await firestore()
+        .collection("spot")
+        .where("id", "in", spotIdList)
+        .get();
+
+      if (!querySpot.empty) {
+        querySpot.forEach((docs) => {
+          const item = docs.data();
+          fetchResult.push(item);
+        });
+        setMarkerCords(fetchResult);
+      }
+    } else {
+      setMarkerCords([]);
     }
 
-    const spotIdList = [...new Set(tempList)];
-
-    const fetchResult = [];
-    const querySpot = await firestore()
-      .collection("spot")
-      .where("id", "in", spotIdList)
-      .get();
-
-    if (!querySpot.empty) {
-      querySpot.forEach((docs) => {
-        const item = docs.data();
-        fetchResult.push(item);
-      });
-      setMarkerCords(fetchResult);
-    }
     setSelectedTag(true);
   };
 
@@ -1011,7 +1014,7 @@ export default function TrackUserMapView() {
         />
         {selectedTag ? (
           <TouchableOpacity onPress={handleCancelTag}>
-            <Icon name="times-circle" size={20} />
+            <Icon name="times-circle" size={30} />
           </TouchableOpacity>
         ) : (
           <></>

@@ -145,28 +145,28 @@ const EditPostScreen = () => {
   };
 
   const handleSave = async () => {
-    const tagPostRef = firestore()
-      .collection("tagPost")
-      .where("postId", "==", parseInt(postId));
     let batch = firestore().batch();
 
-    tagPostRef.get().then((snapshot) => {
-      snapshot.docs.forEach((doc) => {
-        batch.delete(doc.ref);
+    await firestore()
+      .collection("tagPost")
+      .where("postId", "==", parseInt(postId))
+      .get()
+      .then((snapshot) => {
+        snapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        return batch.commit();
       });
-      return batch.commit();
-    });
 
-    selectedTag.forEach(async (tagId) => {
-      console.log(tagId);
+    for (const tag of selectedTag) {
       await firestore()
         .collection("tagPost")
         .add({
+          tagId: parseInt(tag),
           postId: parseInt(postId),
-          tagId: parseInt(tagId),
           spotId: parseInt(selectedPost.postDetails.spotId),
         });
-    });
+    }
     router.back();
   };
 
@@ -222,43 +222,53 @@ const EditPostScreen = () => {
                       {selectedTag.length == 0 ? (
                         <Text>追加されたタグがありません</Text>
                       ) : (
-                        <View style={styles.selectedTagContainer}>
-                          {selectedTag.map((tag) => {
+                        <FlatList
+                          horizontal={true}
+                          data={selectedTag}
+                          keyExtractor={(item) => item}
+                          showsHorizontalScrollIndicator={false}
+                          renderItem={({ item }) => {
                             return (
                               <TouchableOpacity
-                                style={styles.tagView}
-                                key={tag}
+                                style={styles.selectedTagView}
                                 onPress={() => {
-                                  deleteTag(tag);
+                                  deleteTag(item);
                                 }}
                               >
                                 <Text>
-                                  {allTag.find((o) => o.tagId == tag).tagName}
+                                  {allTag.find((o) => o.tagId == item).tagName}
                                 </Text>
                                 <Icon name="times-circle" size={16} />
                               </TouchableOpacity>
                             );
-                          })}
-                        </View>
+                          }}
+                        />
                       )}
                     </View>
                     <View style={styles.tagBorder}></View>
-                    <View style={styles.tagContainer}>
-                      {allTag.map((tag) => {
+                    <FlatList
+                      style={styles.allTagContainer}
+                      horizontal={false}
+                      data={allTag}
+                      keyExtractor={(item) => item.tagId}
+                      numColumns={2}
+                      columnWrapperStyle={{
+                        justifyContent: "flex-start",
+                        gap: 10,
+                        marginBottom: 5,
+                      }}
+                      renderItem={({ item }) => {
                         return (
                           <TouchableOpacity
                             style={styles.tagView}
-                            key={tag.tagId}
-                            onPress={() => {
-                              addTag(tag.tagId);
-                            }}
+                            onPress={() => addTag(item.tagId)}
                           >
                             <Icon name="tag" size={16} />
-                            <Text>{tag.tagName}</Text>
+                            <Text>{item.tagName}</Text>
                           </TouchableOpacity>
                         );
-                      })}
-                    </View>
+                      }}
+                    />
                   </View>
                 </View>
                 <TouchableOpacity style={styles.submit} onPress={handleSave}>
@@ -414,6 +424,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   tagView: {
+    width: width / 3,
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderWidth: 2,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+  },
+  selectedTagView: {
+    marginHorizontal: 2,
     width: width / 3.5,
     borderRadius: 20,
     paddingVertical: 5,
@@ -431,14 +453,13 @@ const styles = StyleSheet.create({
   selectedTag: {
     marginTop: 10,
   },
-  selectedTagContainer: {
-    flexDirection: "row",
-    gap: 10,
-  },
   tagBorder: {
     width: "100%",
     borderBottomWidth: 2,
-    marginVertical: 5,
+    marginVertical: 10,
+  },
+  allTagContainer: {
+    height: height * 0.2,
   },
   submit: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える

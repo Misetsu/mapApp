@@ -297,7 +297,7 @@ const ReplyScreen = () => {
             .get()
             .then((snapshot) => {
               snapshot.docs.forEach(async (doc) => {
-                await storage().ref(doc.data().imagePath).delete();
+                // await storage().ref(doc.data().imagePath).delete();
                 batch.delete(doc.ref);
               });
             });
