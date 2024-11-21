@@ -129,7 +129,31 @@ export default function SignupScreen() {
             style={styles.checkbox} // サイズ変更用のスタイル
           />
           <Text style={styles.noamllabel}>
-            利用規約、プライバシーポリシー{"\n"}をすべて読み、同意します
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/userPolicy");
+              }}
+            >
+              <Text
+                style={[styles.plainlabel, { textDecorationLine: "underline" }]}
+              >
+                利用規約
+              </Text>
+            </TouchableOpacity>
+            、
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/privacyPolicy");
+              }}
+            >
+              <Text
+                style={[styles.plainlabel, { textDecorationLine: "underline" }]}
+              >
+                プライバシーポリシー
+              </Text>
+            </TouchableOpacity>
+            {"\n"}
+            をすべて読み、同意します
           </Text>
         </View>
         <TouchableOpacity
@@ -175,18 +199,19 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   displayName: {
-    fontSize: 15,
-    marginTop: 10,
+    fontSize: 18,
+    marginTop: 15,
     marginLeft: 10,
     textAlign: "left",
     alignItems: "flex-start",
-    fontWeight: "300",
+    fontWeight: "600",
+    color: "#239D60",
   },
   textInput: {
     margin: 5,
     marginTop: 0,
     marginBottom: 0,
-    fontSize: 20,
+    fontSize: 16,
     height: 40,
     borderBottomWidth: 3,
     borderColor: "#239D60",
@@ -196,8 +221,12 @@ const styles = StyleSheet.create({
   },
   noamllabel: {
     fontSize: 15,
-    margin: 10,
-    textAlign: "center",
+    margin: 5,
+    fontWeight: "600",
+    color: "#239D60",
+  },
+  plainlabel: {
+    fontSize: 15,
     fontWeight: "600",
     color: "#239D60",
   },

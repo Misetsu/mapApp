@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+  Image,
+  Modal,
+  Text,
+} from "react-native";
 import {
   Stack,
   useFocusEffect,
@@ -34,17 +42,22 @@ import Icon from "react-native-vector-icons/Entypo";
 
 const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
+const wholeHeight = Dimensions.get("window").height;
 const height = (width / 3) * 4;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
   const cameraRef = useRef(null);
-  // const device = useCameraDevice("back");
   const [cameraPosition, setCameraPosition] = useState("back");
   const device = useCameraDevice(cameraPosition);
-
+  const [isModalVisible, setIsModalVisible] = useState(false); //modalの制御
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [currentStyle, setCurrentStyle] = useState("left");
+
+  const [topLeftDisplay, setTopLeftDisplay] = useState(true);
+  const [bottomLeftDisplay, setBottomLeftDisplay] = useState(true);
+  const [topRightDisplay, setTopRightDisplay] = useState(false);
+  const [bottomRightDisplay, setBottomRightDisplay] = useState(false);
+
   const [isCrosshair, setIsCrosshair] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [showSlider, setShowSlider] = useState(false); // スライダーの表示状態を管理するステート
@@ -57,17 +70,18 @@ export default function CameraScreen() {
   const exposureSlider = useSharedValue(0);
 
   const zoomOffset = useSharedValue(0);
+  const [focusPoint, setFocusPoint] = useState(null);
   const pinchGesture = Gesture.Pinch()
     .onBegin(() => {
-      zoomOffset.value = zoom.value;
+      zoomOffset.value = zoom.value; // 現在のズーム値を保持
     })
     .onUpdate((event) => {
-      const z = zoomOffset.value * event.scale;
+      const newZoom = zoomOffset.value * event.scale;
       zoom.value = interpolate(
-        z,
-        [1, 10],
+        newZoom,
+        [1, 5], // ここでズーム範囲を設定。1を最低、5を最大に調整するなど。
         [device.minZoom, device.maxZoom],
-        Extrapolation.CLAMP
+        Extrapolation.CLAMP // デバイスの最小・最大ズーム値を超えないようにする
       );
     });
 
@@ -83,6 +97,8 @@ export default function CameraScreen() {
     const c = cameraRef.current;
     if (c == null) return;
     c.focus(point);
+    setFocusPoint(point); // タップ位置を状態に保存
+    setTimeout(() => setFocusPoint(null), 1000); // 1秒後にフォーカスポイントを消す
   }, []);
 
   const tapGesture = Gesture.Tap().onEnd(({ x, y }) => {
@@ -105,6 +121,7 @@ export default function CameraScreen() {
   }, [hasPermission]);
 
   const onTakePicturePressed = async () => {
+    console.log("aaa");
     try {
       if (cameraRef.current == null) {
         console.log("null");
@@ -119,7 +136,10 @@ export default function CameraScreen() {
           longitude: longitude,
           spotId: spotId,
           Composition: encodeURIComponent(photoUri),
-          direction: currentStyle,
+          topRightdirection: topRightDisplay,
+          topLeftdirection: topLeftDisplay,
+          bottomRightdirection: bottomRightDisplay,
+          bottomLeftdirection: bottomLeftDisplay,
         },
       });
     } catch (error) {
@@ -159,23 +179,51 @@ export default function CameraScreen() {
     );
   }, [exposureSlider, device]);
 
-  // 左側のボタンを押した時の処理
-  const handleLeftPress = () => {
-    setCurrentStyle("left");
-  };
-
-  // 右側のボタンを押した時の処理
-  const handleRightPress = () => {
-    setCurrentStyle("right");
+  const toggleDisplay = (position) => {
+    switch (position) {
+      case "topLeft":
+        setTopLeftDisplay(!topLeftDisplay);
+        break;
+      case "bottomLeft":
+        setBottomLeftDisplay(!bottomLeftDisplay);
+        break;
+      case "topRight":
+        setTopRightDisplay(!topRightDisplay);
+        break;
+      case "bottomRight":
+        setBottomRightDisplay(!bottomRightDisplay);
+        break;
+      default:
+        break;
+    }
   };
   // 左側のボタンを押した時の処理
   const handleTopPress = () => {
-    setCurrentStyle("top");
+    setTopLeftDisplay(true);
+    setTopRightDisplay(true);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
   };
 
-  // 右側のボタンを押した時の処理
   const handleBottomPress = () => {
-    setCurrentStyle("bottom");
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(true);
+    setBottomRightDisplay(true);
+  };
+
+  const handleLeftPress = () => {
+    setTopLeftDisplay(true);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(true);
+    setBottomRightDisplay(false);
+  };
+
+  const handleRightPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(true);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(true);
   };
 
   const toggleGrid = () => {
@@ -184,6 +232,10 @@ export default function CameraScreen() {
 
   const toggleCamera = () => {
     setCameraPosition((prev) => (prev === "back" ? "front" : "back"));
+  };
+
+  const toggleModalVisibility = () => {
+    setIsModalVisible((prev) => !prev); //modalの表示状況の制御
   };
 
   return (
@@ -203,30 +255,40 @@ export default function CameraScreen() {
               animatedProps={animatedProps}
             />
           </GestureDetector>
-          <View
-            style={
-              currentStyle === "left"
-                ? styles.LeftHarfDisplayContainer
-                : currentStyle === "right"
-                ? styles.RightHarfDisplayContainer
-                : currentStyle === "top"
-                ? styles.TopHarfDisplayContainer
-                : styles.BottomHarfDisplayContainer
-            }
-          >
-            <Image
-              source={{ uri: photoUri }}
-              style={
-                currentStyle === "left"
-                  ? styles.LeftHarfDisplay
-                  : currentStyle === "right"
-                  ? styles.RightHarfDisplay
-                  : currentStyle === "top"
-                  ? styles.TopHarfDisplay
-                  : styles.BottomHarfDisplay
-              }
-            />
-          </View>
+          {/* 左上 */}
+          {topLeftDisplay && (
+            <View style={styles.modalButtonTopLeft}>
+              <Image source={{ uri: photoUri }} style={styles.topLeftDisplay} />
+            </View>
+          )}
+          {/* 左下 */}
+          {bottomLeftDisplay && (
+            <View style={styles.modalButtonBottomLeft}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.bottomLeftDisplay}
+              />
+            </View>
+          )}
+          {/* 右上 */}
+          {topRightDisplay && (
+            <View style={styles.modalButtonTopRight}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.topRightDisplay}
+              />
+            </View>
+          )}
+          {/* 右下 */}
+          {bottomRightDisplay && (
+            <View style={styles.modalButtonBottomRight}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.bottomRightDisplay}
+              />
+            </View>
+          )}
+
           {/* 十字線または3x3グリッド */}
           <View style={styles.crosshairContainer}>
             {isCrosshair ? (
@@ -246,18 +308,34 @@ export default function CameraScreen() {
             )}
           </View>
           {showSlider && (
-            <View style={styles.sliderContainer}>
+            <View style={styles.verticalSliderContainer}>
+              <Text style={styles.sliderLabelText}>-</Text>
               <Slider
-                style={styles.slider}
+                style={styles.verticalSlider}
                 minimumValue={-10}
                 maximumValue={10}
                 minimumTrackTintColor="white"
                 maximumTrackTintColor="#ababab"
-                thumbTintColor="white"
+                thumbTintColor="yellow"
                 value={exposureSlider.value}
                 onValueChange={(value) => (exposureSlider.value = value)}
               />
+              <Text style={styles.sliderLabelText}>+</Text>
             </View>
+          )}
+          {focusPoint && (
+            <View
+              style={{
+                position: "absolute",
+                left: focusPoint.x - 25,
+                top: focusPoint.y - 25,
+                width: 50,
+                height: 50,
+                borderWidth: 2,
+                borderColor: "white",
+                borderRadius: 25,
+              }}
+            />
           )}
         </View>
 
@@ -285,6 +363,14 @@ export default function CameraScreen() {
             style={styles.chooseRightHarfDisplay}
           >
             <FontAwesome5 name="angle-double-right" size={30} color="#FFF" />
+          </TouchableOpacity>
+
+          {/* 詳細選択ボタンの追加 */}
+          <TouchableOpacity
+            onPress={toggleModalVisibility}
+            style={styles.colonButton}
+          >
+            <FontAwesome5 name="ellipsis-v" size={30} color="#FFF" />
           </TouchableOpacity>
         </View>
 
@@ -316,6 +402,44 @@ export default function CameraScreen() {
           <Icon name="light-up" size={24} color="#FFF" />
         </Pressable>
       </View>
+      <Modal animationType="fade" transparent={true} visible={isModalVisible}>
+        <View style={styles.modalOverlay}>
+          {/* カメラコンテナ */}
+          <View style={styles.modalCameraContainer}>
+            {/* 十字線 */}
+            <View style={styles.crosshairContainer}>
+              <View style={styles.verticalLine} />
+              <View style={styles.horizontalLine} />
+            </View>
+
+            {/* 左上、左下、右上、右下のボタン */}
+            <TouchableOpacity
+              style={[styles.modalButtonTopLeft]}
+              onPress={() => toggleDisplay("topLeft")}
+            />
+            <TouchableOpacity
+              style={[styles.modalButtonTopRight]}
+              onPress={() => toggleDisplay("topRight")}
+            />
+            <TouchableOpacity
+              style={[styles.modalButtonBottomLeft]}
+              onPress={() => toggleDisplay("bottomLeft")}
+            />
+            <TouchableOpacity
+              style={[styles.modalButtonBottomRight]}
+              onPress={() => toggleDisplay("bottomRight")}
+            />
+          </View>
+
+          {/* モーダルの右上に「:」アイコン */}
+          <TouchableOpacity
+            onPress={toggleModalVisibility}
+            style={styles.modalColonButton}
+          >
+            <FontAwesome5 name="times" size={30} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </GestureHandlerRootView>
   );
 }
@@ -338,19 +462,37 @@ const styles = StyleSheet.create({
     // flex: 0.75,
     aspectRatio: 3 / 4,
   },
-  sliderContainer: {
-    position: "absolute",
-    bottom: 10,
-    left: 20,
-    right: 20,
-    alignItems: "stretch",
-    backgroundColor: "rgba(0,0,0,0.4)",
-    padding: 5,
-    borderRadius: 15,
-  },
-  slider: {
+  //スライダー関連
+  sliderLabels: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     width: "100%",
-    height: 20,
+    paddingHorizontal: 15, // スライダーの左右に余白を追加
+  },
+  sliderLabelText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    transform: [{ rotate: "-90deg" }],
+  },
+  verticalSliderContainer: {
+    backgroundColor: "rgba(0,0,0,0.4)",
+    position: "absolute",
+    right: "-25%", // 画面の右端に配置
+    top: "47.5%", // 縦方向の中央付近に配置
+    width: height * 0.5, // 高さを調整
+    height: 30,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    transform: [{ rotate: "-90deg" }], // 縦に回転させる
+  },
+  verticalSlider: {
+    width: "90%",
+    height: 100,
     color: "white",
   },
   captureButton: {
@@ -378,13 +520,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   chooseHarfDisplayContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    position: "absolute",
     paddingTop: 5,
     paddingHorizontal: 10,
-    marginTop: 10,
     flexDirection: "row",
     justifyContent: "space-around",
     height: 50,
+    bottom: wholeHeight * 0.22,
     width: "50%",
     borderRadius: 30,
   },
@@ -415,54 +558,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 40,
     width: 40,
-  },
-  TopHarfDisplayContainer: {
-    position: "absolute",
-    backgroundColor: "black",
-    width: width,
-    height: "50%",
-    overflow: "hidden",
-  },
-  TopHarfDisplay: {
-    width: "100%",
-    height: height,
-  },
-  BottomHarfDisplayContainer: {
-    position: "absolute",
-    backgroundColor: "black",
-    width: width,
-    height: "50%",
-    overflow: "hidden",
-    top: "50%",
-  },
-  BottomHarfDisplay: {
-    width: "100%",
-    height: height,
-    transform: [{ translateY: -height / 2 }],
-  },
-  LeftHarfDisplayContainer: {
-    position: "absolute",
-    backgroundColor: "black",
-    width: "50%",
-    height: height,
-    overflow: "hidden",
-  },
-  LeftHarfDisplay: {
-    width: width,
-    height: "100%",
-  },
-  RightHarfDisplayContainer: {
-    position: "absolute",
-    backgroundColor: "black",
-    width: "50%",
-    height: height,
-    overflow: "hidden",
-    left: "50%",
-  },
-  RightHarfDisplay: {
-    width: width,
-    height: "100%",
-    transform: [{ translateX: -width / 2 }],
   },
   crosshairContainer: {
     position: "absolute",
@@ -519,7 +614,6 @@ const styles = StyleSheet.create({
     left: 60,
     width: 50,
     height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 25,
   },
   switchCameraButton: {
@@ -528,7 +622,84 @@ const styles = StyleSheet.create({
     right: 50,
     width: 50,
     height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 25,
+  },
+  colonButton: {
+    // chooseHarfDisplayContainer内の「:」ボタンのスタイル
+    justifyContent: "center",
+    alignItems: "center",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    paddingTop: 80,
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.4)", // モーダル全体の背景を暗くする
+  },
+  modalCameraContainer: {
+    width: "100%", // カメラコンテナと同じ幅
+    height: height, // カメラコンテナと同じ高さ
+    marginLeft: "auto",
+    marginRight: "auto",
+  },
+  modalColonButton: {
+    position: "absolute",
+    top: 20, // colonButtonと同じ位置に合わせる
+    right: 20, // colonButtonと同じ位置に合わせる
+    justifyContent: "center",
+    alignItems: "center",
+    width: 40,
+    height: 40,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 20,
+  },
+  modalButtonTopLeft: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+  },
+  modalButtonTopRight: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+    left: "50%",
+  },
+  modalButtonBottomLeft: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+    top: "50%",
+  },
+  modalButtonBottomRight: {
+    position: "absolute",
+    width: "50%",
+    height: "50%",
+    overflow: "hidden",
+    top: "50%",
+    left: "50%",
+  },
+  topLeftDisplay: {
+    width: width,
+    height: height,
+  },
+  topRightDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateX: -width / 2 }],
+  },
+  bottomLeftDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateY: -height / 2 }],
+  },
+  bottomRightDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateX: -width / 2 }, { translateY: -height / 2 }],
   },
 });
