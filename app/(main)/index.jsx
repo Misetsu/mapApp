@@ -614,6 +614,7 @@ export default function TrackUserMapView() {
 const handleicons = {
   users: require('./../image/Users.png'),
   star: require('./../image/BorderStar.png'), // 他のアイコンを追加
+  close: require('./../image/Close.png'), // 他のアイコンを追加
 };
 
 const handleIconPress = () => {
@@ -669,7 +670,7 @@ const handleIconPress = () => {
       });
       setMarkerCords(fetchResult);
     }
-    setIconName("times");
+    setIconName("close");
     setChosenUser(userId);
   };
 
