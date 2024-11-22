@@ -35,6 +35,8 @@ const ReplyScreen = () => {
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [allTag, setAllTag] = useState([]);
+  const [selectedTag, setSelectedTag] = useState([]);
 
   const handleScroll = (event) => {
     const { contentOffset } = event.nativeEvent;
@@ -116,6 +118,20 @@ const ReplyScreen = () => {
             likeFlag = false;
           }
 
+          const fetchResult = [];
+
+          const tagSnapshot = await firestore()
+            .collection("tagPost")
+            .where("postId", "==", parseInt(postId))
+            .get();
+          if (!tagSnapshot.empty) {
+            tagSnapshot.forEach(async (docs) => {
+              const item = docs.data();
+              fetchResult.push(item.tagId);
+            });
+          }
+          setSelectedTag(fetchResult);
+
           setIsLiked(likeFlag);
           setSelectedPost({
             ...photoDoc,
@@ -159,13 +175,31 @@ const ReplyScreen = () => {
     }
   };
 
+  const fetchAllTag = async () => {
+    try {
+      const tagSnapshot = await firestore()
+        .collection("tag")
+        .orderBy("tagId", "asc")
+        .get();
+      const fetchResult = [];
+      if (!tagSnapshot.empty) {
+        tagSnapshot.forEach((docs) => {
+          const item = docs.data();
+          fetchResult.push(item);
+        });
+      }
+      setAllTag(fetchResult);
+    } catch (error) {
+      console.error("データ取得中にエラーが発生しました: ", error);
+    }
+  };
+
   useEffect(() => {
+    fetchAllTag();
     fetchData();
   }, [postId]);
 
-  useEffect(() => {
-    console.log("Replies Data:", replies);
-  }, [replies]);
+  useEffect(() => {}, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -309,7 +343,6 @@ const ReplyScreen = () => {
             .get()
             .then((snapshot) => {
               snapshot.docs.forEach(async (doc) => {
-                // await storage().ref(doc.data().imagePath).delete();
                 batch.delete(doc.ref);
               });
             });
@@ -345,6 +378,7 @@ const ReplyScreen = () => {
             });
 
           await batch.commit();
+          await storage().ref(selectedPost.photoDoc.imagePath).delete();
         },
       },
     ]);
@@ -497,6 +531,30 @@ const ReplyScreen = () => {
                       : "詳細がありません"}
                   </Text>
                 </View>
+                <View style={styles.postDetails}>
+                  <View style={styles.selectedTag}>
+                    {selectedTag.length == 0 ? (
+                      <Text>追加されたタグがありません</Text>
+                    ) : (
+                      <FlatList
+                        horizontal={true}
+                        data={selectedTag}
+                        keyExtractor={(item) => item}
+                        showsHorizontalScrollIndicator={false}
+                        renderItem={({ item }) => {
+                          return (
+                            <View style={styles.selectedTagView}>
+                              <Icon name="tag" size={16} />
+                              <Text>
+                                {allTag.find((o) => o.tagId == item).tagName}
+                              </Text>
+                            </View>
+                          );
+                        }}
+                      />
+                    )}
+                  </View>
+                </View>
                 <View style={styles.sky}>
                   <FlatList
                     data={replies}
@@ -596,11 +654,12 @@ const styles = StyleSheet.create({
     borderColor: "#ffffff",
   },
   postDetails: {
-    padding: 10,
+    paddingHorizontal: 10,
   },
   spotText: {
     fontSize: 16,
     color: "#333",
+    marginVertical: 5,
   },
   input: {
     height: 50,
@@ -705,6 +764,21 @@ const styles = StyleSheet.create({
   },
   sky: {
     height: 300,
+  },
+  selectedTagView: {
+    marginHorizontal: 2,
+    width: width / 3.5,
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderWidth: 2,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+  },
+  selectedTag: {
+    marginTop: 10,
   },
 });
 

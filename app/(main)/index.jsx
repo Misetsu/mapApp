@@ -106,7 +106,6 @@ export default function TrackUserMapView() {
   useEffect(() => {
     // 初回起動時にURLを取得
     const subscription = Linking.addEventListener("url", (event) => {
-      console.log("A");
       handleOpenURL(event.url);
     });
 
@@ -117,7 +116,6 @@ export default function TrackUserMapView() {
     // URLを解析してクエリパラメータを取得
     const queryParams = new URLSearchParams(url.split("?")[1]);
     const spotIdFromUrl = queryParams.get("spotId");
-    console.log(spotIdFromUrl);
     if (spotIdFromUrl != null) {
       setURLmodal(parseInt(spotIdFromUrl));
     }
@@ -184,7 +182,6 @@ export default function TrackUserMapView() {
           .orderBy("timeStamp", "desc")
           .limit(5)
           .get();
-        console.log(querySnapshot.empty);
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
