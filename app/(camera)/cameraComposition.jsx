@@ -42,6 +42,7 @@ import Icon from "react-native-vector-icons/Entypo";
 
 const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
+const wholeHeight = Dimensions.get("window").height;
 const height = (width / 3) * 4;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
@@ -307,21 +308,19 @@ export default function CameraScreen() {
             )}
           </View>
           {showSlider && (
-            <View style={styles.sliderContainer}>
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabelText}>-</Text>
-                <Slider
-                  style={styles.slider}
-                  minimumValue={-10}
-                  maximumValue={10}
-                  minimumTrackTintColor="white"
-                  maximumTrackTintColor="#ababab"
-                  thumbTintColor="yellow" // アイコン代わりに色を指定
-                  value={exposureSlider.value}
-                  onValueChange={(value) => (exposureSlider.value = value)}
-                />
-                <Text style={styles.sliderLabelText}>+</Text>
-              </View>
+            <View style={styles.verticalSliderContainer}>
+              <Text style={styles.sliderLabelText}>-</Text>
+              <Slider
+                style={styles.verticalSlider}
+                minimumValue={-10}
+                maximumValue={10}
+                minimumTrackTintColor="white"
+                maximumTrackTintColor="#ababab"
+                thumbTintColor="yellow"
+                value={exposureSlider.value}
+                onValueChange={(value) => (exposureSlider.value = value)}
+              />
+              <Text style={styles.sliderLabelText}>+</Text>
             </View>
           )}
           {focusPoint && (
@@ -464,21 +463,6 @@ const styles = StyleSheet.create({
     aspectRatio: 3 / 4,
   },
   //スライダー関連
-  sliderContainer: {
-    position: "absolute",
-    bottom: 10,
-    left: 20,
-    right: 20,
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
-    padding: 5,
-    borderRadius: 20,
-  },
-  slider: {
-    width: "90%",
-    height: 20,
-    color: "white",
-  },
   sliderLabels: {
     flexDirection: "row",
     alignItems: "center",
@@ -488,8 +472,28 @@ const styles = StyleSheet.create({
   },
   sliderLabelText: {
     color: "white",
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
+    transform: [{ rotate: "-90deg" }],
+  },
+  verticalSliderContainer: {
+    backgroundColor: "rgba(0,0,0,0.4)",
+    position: "absolute",
+    right: "-25%", // 画面の右端に配置
+    top: "47.5%", // 縦方向の中央付近に配置
+    width: height * 0.5, // 高さを調整
+    height: 30,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    transform: [{ rotate: "-90deg" }], // 縦に回転させる
+  },
+  verticalSlider: {
+    width: "90%",
+    height: 100,
+    color: "white",
   },
   captureButton: {
     position: "absolute",
@@ -516,13 +520,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   chooseHarfDisplayContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    position: "absolute",
     paddingTop: 5,
     paddingHorizontal: 10,
-    marginTop: 10,
     flexDirection: "row",
     justifyContent: "space-around",
     height: 50,
+    bottom: wholeHeight * 0.22,
     width: "50%",
     borderRadius: 30,
   },
@@ -609,7 +614,6 @@ const styles = StyleSheet.create({
     left: 60,
     width: 50,
     height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 25,
   },
   switchCameraButton: {
@@ -618,7 +622,6 @@ const styles = StyleSheet.create({
     right: 50,
     width: 50,
     height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 25,
   },
   colonButton: {

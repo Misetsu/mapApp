@@ -27,6 +27,7 @@ import Icon from "react-native-vector-icons/Entypo";
 import { TouchableOpacity } from "react-native";
 
 const width = Dimensions.get("window").width;
+const wholeHeight = Dimensions.get("window").height;
 const height = (width / 3) * 4;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
@@ -110,7 +111,7 @@ export default function CameraScreen() {
           longitude: longitude,
           spotId: spotId,
           point: parseInt(point),
-          spotNo: spotNo,
+          spotNo: parseInt(spotNo),
         },
       });
     } catch (error) {
@@ -193,23 +194,22 @@ export default function CameraScreen() {
             )}
           </View>
           {showSlider && (
-            <View style={styles.sliderContainer}>
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabelText}>-</Text>
-                <Slider
-                  style={styles.slider}
-                  minimumValue={-10}
-                  maximumValue={10}
-                  minimumTrackTintColor="white"
-                  maximumTrackTintColor="#ababab"
-                  thumbTintColor="yellow" // アイコン代わりに色を指定
-                  value={exposureSlider.value}
-                  onValueChange={(value) => (exposureSlider.value = value)}
-                />
-                <Text style={styles.sliderLabelText}>+</Text>
-              </View>
+            <View style={styles.verticalSliderContainer}>
+              <Text style={styles.sliderLabelText}>-</Text>
+              <Slider
+                style={styles.verticalSlider}
+                minimumValue={-10}
+                maximumValue={10}
+                minimumTrackTintColor="white"
+                maximumTrackTintColor="#ababab"
+                thumbTintColor="yellow"
+                value={exposureSlider.value}
+                onValueChange={(value) => (exposureSlider.value = value)}
+              />
+              <Text style={styles.sliderLabelText}>+</Text>
             </View>
           )}
+
           {focusPoint && (
             <View
               style={{
@@ -261,7 +261,7 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 100,
+    paddingTop: wholeHeight * 0.12,
     alignItems: "center",
     backgroundColor: "black",
   },
@@ -277,21 +277,6 @@ const styles = StyleSheet.create({
     aspectRatio: 3 / 4,
   },
   //スライダー関連
-  sliderContainer: {
-    position: "absolute",
-    bottom: 10,
-    left: 20,
-    right: 20,
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
-    padding: 5,
-    borderRadius: 20,
-  },
-  slider: {
-    width: "90%",
-    height: 20,
-    color: "white",
-  },
   sliderLabels: {
     flexDirection: "row",
     alignItems: "center",
@@ -301,9 +286,30 @@ const styles = StyleSheet.create({
   },
   sliderLabelText: {
     color: "white",
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
+    transform: [{ rotate: "-90deg" }],
   },
+  verticalSliderContainer: {
+    backgroundColor: "rgba(0,0,0,0.4)",
+    position: "absolute",
+    right: "-25%", // 画面の右端に配置
+    top: "47.5%", // 縦方向の中央付近に配置
+    width: height * 0.5, // 高さを調整
+    height: 30,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    transform: [{ rotate: "-90deg" }], // 縦に回転させる
+  },
+  verticalSlider: {
+    width: "90%",
+    height: 100,
+    color: "white",
+  },
+
   captureButton: {
     position: "absolute",
     alignSelf: "center",
@@ -315,7 +321,7 @@ const styles = StyleSheet.create({
   },
   exposureButton: {
     position: "absolute",
-    top: 30,
+    top: 20,
     right: 20,
     width: 50,
     height: 40,
@@ -383,7 +389,6 @@ const styles = StyleSheet.create({
     left: 60,
     width: 70,
     height: 70,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 35,
   },
   switchCameraButton: {
@@ -392,7 +397,6 @@ const styles = StyleSheet.create({
     right: 25,
     width: 70,
     height: 70,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 35,
   },
 });
