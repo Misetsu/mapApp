@@ -83,7 +83,8 @@ export default function TrackUserMapView() {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
-        setmapflag(true);
+        setPostData([])
+        setLoading(true)
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -91,7 +92,8 @@ export default function TrackUserMapView() {
         handleVisitState(marker.id);
         fetchPostData(marker.id);
       } else {
-        setmapflag(false);
+        setPostData([]);
+        setLoading(true)
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -570,16 +572,16 @@ export default function TrackUserMapView() {
       } catch (error) {
         console.error("Error fetching documentssss: ", error);
       } finally {
-        setChosenUser(null);
-        setLoading(false);
       }
     }
   };
   const onRegionChangeComplete = (newRegion) => {
+    setLoading(true)
     if (mapflag) {
       setregions(newRegion); // 新しい表示領域を状態に設定
     }
     setsaveregions(newRegion);
+    
     // 現在の表示領域をコンソールに出力
     fetchAllMarkerCord();
   };
@@ -695,6 +697,7 @@ const handleicons = {
 
   const handleIconPress = () => {
     if (iconName === "times") {
+      setChosenUser(null)
       setmapflag(true);
       setregions(saveregion);
       fetchAllMarkerCord();
@@ -789,7 +792,7 @@ const handleicons = {
         setMarkerCords(fetchResult);
       }
     } else {
-      setmapflag(true);
+      setmapflag(false);
       setMarkerCords([]);
     }
 
