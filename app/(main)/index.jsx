@@ -688,11 +688,12 @@ export default function TrackUserMapView() {
     setUserList(tempList);
   };
 
-  // アイコンマップを定義
-  const handleicons = {
-    users: require("./../image/Users.png"),
-    star: require("./../image/BorderStar.png"), // 他のアイコンを追加
-  };
+// アイコンマップを定義
+const handleicons = {
+  users: require('./../image/Users.png'),
+  star: require('./../image/BorderStar.png'), // 他のアイコンを追加
+  close: require('./../image/Close.png'), // 他のアイコンを追加
+};
 
   const handleIconPress = () => {
     if (iconName === "times") {
@@ -755,7 +756,7 @@ export default function TrackUserMapView() {
     } else {
       setmapflag(true);
     }
-    setIconName("times");
+    setIconName("close");
     setChosenUser(userId);
   };
 

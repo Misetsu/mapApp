@@ -232,7 +232,6 @@ export default function myPage() {
       });
 
       await batch.commit();
-      console.log(`Subcollection '${subcollectionName}' deleted successfully!`);
     } catch (error) {
       console.error("Error deleting subcollection:", error);
     }

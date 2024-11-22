@@ -81,7 +81,6 @@ export default function MyModal({
         .collection("like")
         .where("postId", "==", postId)
         .get();
-      console.log(tempObj2[postId]);
       const queryId = querylike.docs[0].ref._documentPath._parts[1];
       await firestore()
         .collection("like")
