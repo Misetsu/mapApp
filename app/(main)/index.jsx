@@ -85,7 +85,6 @@ export default function TrackUserMapView() {
       if (distance < marker.areaRadius) {
         setPostData([])
         setLoading(true)
-        setmapflag(true);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -95,7 +94,6 @@ export default function TrackUserMapView() {
       } else {
         setPostData([]);
         setLoading(true)
-        setmapflag(false);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -574,7 +572,6 @@ export default function TrackUserMapView() {
       } catch (error) {
         console.error("Error fetching documentssss: ", error);
       } finally {
-        setChosenUser(null);
       }
     }
   };
@@ -699,6 +696,7 @@ export default function TrackUserMapView() {
 
   const handleIconPress = () => {
     if (iconName === "times") {
+      setChosenUser(null)
       setmapflag(true);
       setregions(saveregion);
       fetchAllMarkerCord();
