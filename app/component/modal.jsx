@@ -51,7 +51,6 @@ export default function MyModal({
   });
 
   const generateShareMessage = (spotName, spotId) => {
-    console.log(spotId);
     const baseURL = "http://syuto.s322.xrea.com/";
     const queryParams = new URLSearchParams({
       _gl: "1*1edlls4*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
@@ -68,7 +67,6 @@ export default function MyModal({
       const result = Share.open({
         message: generateShareMessage(spotName, spotId),
       });
-      console.log(result);
     } catch (warning) {}
   };
 
@@ -82,7 +80,6 @@ export default function MyModal({
         .collection("like")
         .where("postId", "==", postId)
         .get();
-      console.log(tempObj2[postId]);
       const queryId = querylike.docs[0].ref._documentPath._parts[1];
       await firestore()
         .collection("like")

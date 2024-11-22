@@ -121,10 +121,8 @@ export default function CameraScreen() {
   }, [hasPermission]);
 
   const onTakePicturePressed = async () => {
-    console.log("aaa");
     try {
       if (cameraRef.current == null) {
-        console.log("null");
         return;
       }
       const photo = await cameraRef.current.takePhoto();

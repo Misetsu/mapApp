@@ -12,7 +12,6 @@ import {
   FlatList, // ScrollViewからFlatListに変更
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { formatInTimeZone } from "date-fns-tz";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
@@ -131,7 +130,9 @@ const EditPostScreen = () => {
     if (selectedTag.includes(tagId)) {
       deleteTag(tagId);
     } else {
-      setSelectedTag((tag) => [...tag, tagId]);
+      if (selectedTag.length <= 4) {
+        setSelectedTag((tag) => [...tag, tagId]);
+      }
     }
   };
 
@@ -196,7 +197,10 @@ const EditPostScreen = () => {
                   <Text style={styles.spotName}>投稿編集</Text>
                   <TouchableOpacity
                     style={styles.iconButton}
-                  ></TouchableOpacity>
+                    onPress={handleSave}
+                  >
+                    <Icon name="save" size={24} color="#239D60" />
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.contentContainer}>
                   <View style={styles.imageContainer}>
@@ -246,6 +250,9 @@ const EditPostScreen = () => {
                       )}
                     </View>
                     <View style={styles.tagBorder}></View>
+                    <Text style={{ fontSize: 12, marginBottom: 10 }}>
+                      タグを4つまで選択できます
+                    </Text>
                     <FlatList
                       style={styles.allTagContainer}
                       horizontal={false}

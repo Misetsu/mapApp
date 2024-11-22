@@ -277,7 +277,9 @@ export default function edit() {
     if (selectedTag.includes(tagId)) {
       deleteTag(tagId);
     } else {
-      setSelectedTag((tag) => [...tag, tagId]);
+      if (selectedTag.length <= 4) {
+        setSelectedTag((tag) => [...tag, tagId]);
+      }
     }
   };
 
@@ -364,6 +366,9 @@ export default function edit() {
               />
             )}
             <View style={styles.tagBorder}></View>
+            <Text style={{ fontSize: 12, marginBottom: 10 }}>
+              タグを4つまで選択できます
+            </Text>
             <FlatList
               style={styles.allTagContainer}
               horizontal={false}
