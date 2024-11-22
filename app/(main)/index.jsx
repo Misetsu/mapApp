@@ -791,7 +791,7 @@ export default function TrackUserMapView() {
         setMarkerCords(fetchResult);
       }
     } else {
-      setmapflag(true);
+      setmapflag(false);
       setMarkerCords([]);
     }
 
