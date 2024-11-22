@@ -11,6 +11,7 @@ import {
   Platform,
   Text,
   Keyboard,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
@@ -23,6 +24,55 @@ const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
 export default function edit() {
+  const [showAlert, setShowAlert] = useState(false);
+
+  useEffect(() => {
+    // ローカルストレージから設定を確認
+    const checkAlertSetting = async () => {
+      const alertSetting = await AsyncStorage.getItem("showWarning");
+      if (alertSetting === null || alertSetting === "true") {
+        setShowAlert(true);
+      }
+    };
+    checkAlertSetting();
+  }, []);
+
+  const handleAlert = async () => {
+    // アラート表示
+    Alert.alert(
+      "投稿に関する注意事項",
+      `- 投稿は自己責任で行ってください。\n
+      - 他人が不快になる内容や、法令・権利を侵害する内容は禁止です。\n
+      - 人物が映る写真は、事前に本人の了承を得てください。\n
+      - 投稿内容は管理者確認後に掲載される場合があります。\n
+      管理者が不適切と判断した場合、投稿は掲載されない場合があります。`,
+      [
+        {
+          text: "今後表示しない",
+          onPress: async () => {
+            await AsyncStorage.setItem("showWarning", "false");
+            setShowAlert(false);
+          },
+        },
+        {
+          text: "OK",
+          onPress: async () => {
+            await AsyncStorage.setItem("showWarning", "true");
+            setShowAlert(false);
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  useEffect(() => {
+    if (showAlert) {
+      handleAlert();
+    }
+  }, [showAlert]);
+
+  
   const [text, setText] = useState("");
   const [post, setPost] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
