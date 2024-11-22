@@ -696,7 +696,7 @@ const handleicons = {
 };
 
   const handleIconPress = () => {
-    if (iconName === "times") {
+    if (iconName === "close") {
       setChosenUser(null)
       setmapflag(true);
       setregions(saveregion);
