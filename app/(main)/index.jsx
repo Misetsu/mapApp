@@ -99,9 +99,9 @@ export default function TrackUserMapView() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -617,22 +617,22 @@ const handleicons = {
   close: require('./../image/Close.png'), // 他のアイコンを追加
 };
 
-const handleIconPress = () => {
+  const handleIconPress = () => {
     if (iconName === "times") {
-    fetchAllMarkerCord();
-    if (indexStatus == "follow") {
+      fetchAllMarkerCord();
+      if (indexStatus == "follow") {
         setIconName("users"); // アイコン名を "times" に変更
       } else {
-      setIconName("star");
-    }
-  } else if (indexStatus == "follow") {
-    handleChangeIndex();
+        setIconName("star");
+      }
+    } else if (indexStatus == "follow") {
+      handleChangeIndex();
       setIconName("star"); // アイコン名を "times" に変更
-  } else {
-    handleChangeIndex();
+    } else {
+      handleChangeIndex();
       setIconName("users");
-  }
-};
+    }
+  };
 
   const handleUserChoose = async (userId) => {
     const queryPost = await firestore()
@@ -819,7 +819,10 @@ const handleIconPress = () => {
       {initialRegion && (
         <MapView
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          style={[StyleSheet.absoluteFillObject, { marginTop: 85, marginBottom: 70, }]}
+          style={[
+            StyleSheet.absoluteFillObject,
+            { marginTop: 85, marginBottom: 70 },
+          ]}
           customMapStyle={customMapStyle}
           initialRegion={initialRegion}
           region={Region}
@@ -890,10 +893,8 @@ const handleIconPress = () => {
           style={styles.listProfileIndexButton}
           onPress={handleIconPress} // 変更した関数を呼び出す
         >
-        <Image
-          source={handleicons[iconName]}
-          style={styles.footerImage}
-        /></TouchableOpacity>
+          <Image source={handleicons[iconName]} style={styles.footerImage} />
+        </TouchableOpacity>
       </SafeAreaView>
 
       <MyModal
@@ -906,18 +907,16 @@ const handleIconPress = () => {
         onClose={() => setModalVisible(false)}
       />
 
-
-
       {mapfixed ? (
         <View style={styles.mapfixed}>
           <TouchableOpacity
             style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
-          <Image
-            source={require( "./../image/MapFixed.png" )}
-            style={styles.footerImage}
-          />
+            <Image
+              source={require("./../image/MapFixed.png")}
+              style={styles.footerImage}
+            />
           </TouchableOpacity>
         </View>
       ) : (
@@ -926,10 +925,10 @@ const handleIconPress = () => {
             style={styles.mapbutton}
             onPress={() => setmapfixeds()}
           >
-          <Image
-            source={require( "./../image/MapUnFixed.png" )}
-            style={styles.footerImage}
-          />
+            <Image
+              source={require("./../image/MapUnFixed.png")}
+              style={styles.footerImage}
+            />
           </TouchableOpacity>
         </View>
       )}
@@ -944,23 +943,20 @@ const handleIconPress = () => {
               LONGITUDE_DELTA
             )
           }
-        ><Image
-        source={require( "./../image/Location.png" )}
-        style={styles.footerImage}
-      />
+        >
+          <Image
+            source={require("./../image/Location.png")}
+            style={styles.footerImage}
+          />
         </TouchableOpacity>
       </View>
-
 
       <View style={styles.footer}>
         {user ? (
           <View style={styles.postbutton}>
-            <Pressable
-              style={styles.footerbutton}
-              onPress={handlePost}
-            >
+            <Pressable style={styles.footerbutton} onPress={handlePost}>
               <Image
-                source={require( "./../image/NewPost.png" )}
+                source={require("./../image/NewPost.png")}
                 style={styles.footerImage}
               />
               <Text style={styles.listProfileNameText}>投稿</Text>
@@ -975,8 +971,9 @@ const handleIconPress = () => {
               }}
             >
               <Image
-                source={require( "./../image/NewPost.png" )}
-                style={styles.footerImage} />
+                source={require("./../image/NewPost.png")}
+                style={styles.footerImage}
+              />
               <Text style={styles.listProfileNameText}>投稿</Text>
             </Pressable>
           </View>
@@ -990,10 +987,10 @@ const handleIconPress = () => {
               });
             }}
           >
-          <Image
-            source={require( "./../image/Search.png" )}
-            style={styles.footerImage}
-          />
+            <Image
+              source={require("./../image/Search.png")}
+              style={styles.footerImage}
+            />
             <Text style={styles.listProfileNameText}>検索</Text>
           </TouchableOpacity>
         </View>
@@ -1005,10 +1002,10 @@ const handleIconPress = () => {
                 router.push("/myPage");
               }}
             >
-            <Image
-              source={require( "./../image/User.png" )}
-              style={styles.footerImage}
-            />
+              <Image
+                source={require("./../image/User.png")}
+                style={styles.footerImage}
+              />
               <Text style={styles.listProfileNameText}>マイページ</Text>
             </TouchableOpacity>
           </View>
@@ -1020,10 +1017,10 @@ const handleIconPress = () => {
                 router.push("/loginForm");
               }}
             >
-            <Image
-              source={require( "./../image/Search.png" )}
-              style={styles.footerImage}
-            />
+              <Image
+                source={require("./../image/Search.png")}
+                style={styles.footerImage}
+              />
               <Text style={styles.listProfileNameText}>ログイン</Text>
             </TouchableOpacity>
           </View>
@@ -1033,10 +1030,10 @@ const handleIconPress = () => {
             onPress={() => router.push("/setting")}
             style={styles.footerbutton}
           >
-          <Image
-            source={require( "./../image/Setting.png" )}
-            style={styles.footerImage}
-          />
+            <Image
+              source={require("./../image/Setting.png")}
+              style={styles.footerImage}
+            />
             <Text style={styles.listProfileNameText}>設定</Text>
           </TouchableOpacity>
         </View>

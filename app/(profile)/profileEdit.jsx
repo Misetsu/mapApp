@@ -28,7 +28,6 @@ export default function myPage() {
   const [googleProvider, setGoogleProvider] = useState(false);
   const [editable, setEditable] = useState(true);
 
-
   const handleBackPress = () => {
     if (router) {
       router.back();
@@ -136,9 +135,7 @@ export default function myPage() {
             )}
           </TouchableOpacity>
         </View>
-        <Text style={styles.noamllabel}>
-          アイコンをタップして画像を変更
-        </Text>
+        <Text style={styles.noamllabel}>アイコンをタップして画像を変更</Text>
 
         {/* ユーザーネームを表示し、テキストボックスに入力でユーザーネーム変更*/}
         <Text style={styles.displayName}>ユーザー名</Text>
