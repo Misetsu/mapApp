@@ -29,6 +29,7 @@ export default function MyModal({
   loading,
   onClose,
   spotName,
+  marker,
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
@@ -50,14 +51,15 @@ export default function MyModal({
     }
   });
 
-  console.log("loading=",loading)
   const generateShareMessage = (spotName, spotId) => {
     const baseURL = "http://syuto.s322.xrea.com/";
     const queryParams = new URLSearchParams({
-      _gl: "1*1edlls4*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
+      _gl: "1*siyzma*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
       _ga: "MjAzMzg2MzgzMC4xNzMxOTM2NDM2",
-      _ga_J8YE7Q8ZQD: "MTczMjA3NzA0Mi40LjEuMTczMjA3NzA2Ni4zNi4xLjQyOTA0MTgz",
+      _ga_J8YE7Q8ZQD: "MTczMjUwMTUyOS42LjEuMTczMjUwMzEzMC41OS4xLjcwODEwODkzOA",
       spotId: spotId,
+      latitude: marker.mapLatitude,
+      longitude: marker.mapLongitude,
     }).toString();
 
     return `${spotName}の投稿をチェック！！\n${baseURL}?${queryParams}`;

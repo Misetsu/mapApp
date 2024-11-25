@@ -66,6 +66,7 @@ export default function TrackUserMapView() {
   const [selectedTag, setSelectedTag] = useState(false);
   const [mapflag, setmapflag] = useState(true);
   const [enableHighAccuracys,setenableHighAccuracy] = useState(false);
+  const [markers, setmarkers] = useState([])
 
   const setURLmodal = (spotId) => {
     setSpotId(spotId);
@@ -92,6 +93,7 @@ export default function TrackUserMapView() {
         setPostImage(true);
         handleVisitState(marker.id);
         fetchPostData(marker.id);
+        setmarkers(marker)
       } else {
         setPostData([]);
         setLoading(true)
@@ -100,6 +102,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(false);
         fetchPostData(marker.id);
+        setmarkers(marker)
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -119,8 +122,15 @@ export default function TrackUserMapView() {
     // URLを解析してクエリパラメータを取得
     const queryParams = new URLSearchParams(url.split("?")[1]);
     const spotIdFromUrl = queryParams.get("spotId");
-    if (spotIdFromUrl != null) {
-      setURLmodal(parseInt(spotIdFromUrl));
+    const latitude = parseFloat(queryParams.get("latitude"));
+    const longitude = parseFloat(queryParams.get("longitude"));
+    if (latitude != null && longitude != null) {
+      setRegion({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      });
     }
   };
   function toRadians(degrees) {
@@ -1095,6 +1105,7 @@ const handleicons = {
         loading={loading}
         onClose={() => setModalVisible(false)}
         spotName={spotName}
+        marker={markers}
       />
 
       {mapfixed ? (
