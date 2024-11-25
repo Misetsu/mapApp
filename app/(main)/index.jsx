@@ -65,6 +65,7 @@ export default function TrackUserMapView() {
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState(false);
   const [mapflag, setmapflag] = useState(true);
+  const [enableHighAccuracys,setenableHighAccuracy] = useState(false);
 
   const setURLmodal = (spotId) => {
     setSpotId(spotId);
@@ -945,12 +946,13 @@ const handleicons = {
         setError(err.message);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: enableHighAccuracys,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
       }
     );
+    setenableHighAccuracy(true);
     return () => Geolocation.clearWatch(watchId);
   }, [initialRegion]);
 
