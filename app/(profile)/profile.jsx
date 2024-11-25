@@ -337,7 +337,7 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followList.map((follow) => {
                   return (
                     <TouchableOpacity
@@ -380,7 +380,7 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followerList.map((follower) => {
                   return (
                     <TouchableOpacity
@@ -536,8 +536,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
+    maxHeight: "80%",
     padding: 20,
-    paddingTop: 15,
     backgroundColor: "#F2F5C2",
     borderRadius: 10,
   },

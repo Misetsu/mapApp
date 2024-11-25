@@ -50,7 +50,7 @@ export default function MyModal({
     }
   });
 
-  console.log("loading=",loading)
+  console.log("loading=", loading);
   const generateShareMessage = (spotName, spotId) => {
     const baseURL = "http://syuto.s322.xrea.com/";
     const queryParams = new URLSearchParams({
@@ -307,41 +307,55 @@ export default function MyModal({
                         <Icon name="comment" size={25} color={"#000"} />
                         <Text> {post.replyCount}</Text>
                       </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => {
-                          router.push({
-                            pathname: "/cameraComposition",
-                            params: {
-                              latitude: 0,
-                              longitude: 0,
-                              spotId: spotId,
-                              photoUri: encodeURIComponent(post.photoUri),
-                            },
-                          });
-                        }}
-                      >
-                        <Icon name="images" size={25} color={"#000"} />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => {
-                          router.push({
-                            pathname: "/camera",
-                            params: {
-                              latitude: 0,
-                              longitude: 0,
-                              spotId: spotId,
-                              point: 0,
-                              spotNo: 0,
-                            },
-                          });
-                        }}
-                      >
-                        <Icon name="map-marked-alt" size={25} color={"#000"} />
-                      </TouchableOpacity>
+                      {postImage ? (
+                        <TouchableOpacity
+                          style={styles.actionButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/cameraComposition",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                                photoUri: encodeURIComponent(post.photoUri),
+                              },
+                            });
+                          }}
+                        >
+                          <Icon name="images" size={25} color={"#000"} />
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.actionButton}
+                        ></TouchableOpacity>
+                      )}
+                      {postImage ? (
+                        <TouchableOpacity
+                          style={styles.actionButton}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/camera",
+                              params: {
+                                latitude: 0,
+                                longitude: 0,
+                                spotId: spotId,
+                                point: 0,
+                                spotNo: 0,
+                              },
+                            });
+                          }}
+                        >
+                          <Icon
+                            name="map-marked-alt"
+                            size={25}
+                            color={"#000"}
+                          />
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.actionButton}
+                        ></TouchableOpacity>
+                      )}
                     </View>
                     <View style={styles.postText}>
                       <Text>{post.postText}</Text>
