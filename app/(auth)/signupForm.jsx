@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -31,43 +32,60 @@ export default function SignupScreen() {
     router.push("/loginForm");
   };
 
+  const validateEmail = (email) => {
+    return email.match(
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+  };
+
+  const validatePassword = (password) => {
+    return password.match(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/);
+  };
+
   const signUpWithEmail = async () => {
-    try {
-      await auth.createUserWithEmailAndPassword(userEmail, userPassword);
+    if (validateEmail(userEmail) && validatePassword(userPassword)) {
+      try {
+        await auth.createUserWithEmailAndPassword(userEmail, userPassword);
 
-      const credential = await auth.signInWithEmailAndPassword(
-        userEmail,
-        userPassword
+        const credential = await auth.signInWithEmailAndPassword(
+          userEmail,
+          userPassword
+        );
+
+        const update = {
+          displayName: userName,
+        };
+
+        await auth.currentUser.updateProfile(update);
+
+        firestore()
+          .collection("users")
+          .doc(auth.currentUser.uid)
+          .set({
+            uid: auth.currentUser.uid,
+            displayName: auth.currentUser.displayName,
+            email: auth.currentUser.email,
+            lastPostAt: "0", // TODO
+            publicStatus: 0, // TODO
+            spotCreate: 0,
+            spotPoint: 0,
+            photoURL:
+              "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
+          })
+          .then()
+          .catch((error) => console.log(error));
+
+        firestore().collection("star").doc(auth.currentUser.uid).set({});
+
+        router.replace({ pathname: "/" });
+      } catch (error) {
+        console.error("Error signing up:", error);
+      }
+    } else {
+      Alert.alert(
+        "警告",
+        "メールアドレスとパスワードを正しく入力してください。"
       );
-
-      const update = {
-        displayName: userName,
-      };
-
-      await auth.currentUser.updateProfile(update);
-
-      firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .set({
-          uid: auth.currentUser.uid,
-          displayName: auth.currentUser.displayName,
-          email: auth.currentUser.email,
-          lastPostAt: "0", // TODO
-          publicStatus: 0, // TODO
-          spotCreate: 0,
-          spotPoint: 0,
-          photoURL:
-            "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
-        })
-        .then()
-        .catch((error) => console.log(error));
-
-      firestore().collection("star").doc(auth.currentUser.uid).set({});
-
-      router.replace({ pathname: "/" });
-    } catch (error) {
-      console.error("Error signing up:", error);
     }
   };
 
@@ -93,6 +111,7 @@ export default function SignupScreen() {
           style={styles.textInput}
           value={userName}
           onChangeText={setUserName}
+          maxLength={16}
           placeholder="ユーザー名"
         />
         <Text style={styles.noamllabel}>
@@ -107,7 +126,7 @@ export default function SignupScreen() {
           placeholder="パスワード"
         />
         <Text style={styles.noamllabel}>
-          半角英数8文字以上で入力してください
+          8文字以上、半角英大文字、半角英小文字（a~z）、半角数字（0~9）を含むパスワードを入力してください
         </Text>
         <Text style={styles.displayName}>確認用パスワード</Text>
         <TextInput

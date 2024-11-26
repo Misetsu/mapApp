@@ -140,6 +140,7 @@ export default function myPage() {
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
+          maxLength={16}
           style={styles.textInput}
           editable={true}
         />
