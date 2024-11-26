@@ -251,6 +251,7 @@ export default function CameraScreen() {
               format={format}
               isActive={isActive}
               animatedProps={animatedProps}
+              outputOrientation={"preview"}
             />
           </GestureDetector>
           {/* 左上 */}

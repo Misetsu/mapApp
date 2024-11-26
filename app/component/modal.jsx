@@ -50,7 +50,6 @@ export default function MyModal({
     }
   });
 
-  console.log("loading=", loading);
   const generateShareMessage = (spotName, spotId) => {
     const baseURL = "http://syuto.s322.xrea.com/";
     const queryParams = new URLSearchParams({
