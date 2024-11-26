@@ -353,6 +353,7 @@ export default function edit() {
       ) : (
         <View
           style={styles.container}>
+          <Text style={styles.pagetitle}>場所名</Text>
           <Image source={{ uri: imageUri }} style={styles.imageContainer} />
           {spotId == 0 && focusedInput !== "post" ? (
             <View>
@@ -418,8 +419,8 @@ export default function edit() {
             )}
             <View style={styles.tagBorder}></View>
             <Text style={styles.noamllabel}>
-                タグを４つまで選択できます
-              </Text>
+              タグを４つまで選択できます
+            </Text>
             <FlatList
               style={styles.allTagContainer}
               horizontal={false}
@@ -446,7 +447,7 @@ export default function edit() {
           </View>
           <Pressable onPress={uploadPost} style={styles.submit}>
             <Text style={styles.submitText}>
-              Upload
+              アップロード
             </Text>
           </Pressable>
 
@@ -467,11 +468,19 @@ const styles = StyleSheet.create({
     padding: 20,
     flex: 1,
   },
+  pagetitle: {
+    fontSize: 30,
+    height: 50,
+    marginTop: 0,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#000000",
+  },
   imageContainer: {
     width: imageWidth,
     height: imageHeight,
     alignSelf: "center",
-    marginTop: 20,
+    marginTop: 5,
   },
   displayName: {
     fontSize: 15,
