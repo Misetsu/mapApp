@@ -179,6 +179,7 @@ export default function SearchScreen() {
             .collection("users")
             .where("uid", "==", uid)
             .get();
+          
           return userSnapshot.docs[0]?.data(); // ユーザーのデータを取得
         })
       );
@@ -199,9 +200,13 @@ export default function SearchScreen() {
         .where("displayName", "<=", text + "\uf8ff") // 検索条件を設定
         .get()
         .then((result) => {
-          setSearchResult(result.docs); // 検索結果をステートに設定
+          console.log(result.docs[0].data().email)
+          if(result.docs[0].data().email != undefined){
+            setSearchResult(result.docs); // 検索結果をステートに設定
+          }
         })
         .catch((error) => console.error("Error searching users:", error));
+        setSearchResult([]); // テキストが空の場合、検索結果をクリア
     } else {
       setSearchResult([]); // テキストが空の場合、検索結果をクリア
     }

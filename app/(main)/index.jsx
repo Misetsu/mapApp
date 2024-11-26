@@ -86,7 +86,6 @@ export default function TrackUserMapView() {
       );
       if (distance < marker.areaRadius) {
         setPostData([])
-        setLoading(true)
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -96,7 +95,6 @@ export default function TrackUserMapView() {
         setmarkers(marker)
       } else {
         setPostData([]);
-        setLoading(true)
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -446,6 +444,7 @@ export default function TrackUserMapView() {
         console.error("Error fetching documents: ", error);
       }
     }
+    setLoading(false)
   };
 
   const getPinColor = (marker) => {
@@ -587,7 +586,6 @@ export default function TrackUserMapView() {
     }
   };
   const onRegionChangeComplete = (newRegion) => {
-    setLoading(true)
     if (mapflag) {
       setregions(newRegion); // 新しい表示領域を状態に設定
     }
