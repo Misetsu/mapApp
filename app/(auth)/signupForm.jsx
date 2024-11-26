@@ -39,7 +39,15 @@ export default function SignupScreen() {
   };
 
   const validatePassword = (password) => {
-    return password.match(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/);
+    if (password.match(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/)) {
+      if (password == userPasswordVal) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   };
 
   const signUpWithEmail = async () => {
@@ -126,7 +134,7 @@ export default function SignupScreen() {
           placeholder="パスワード"
         />
         <Text style={styles.noamllabel}>
-          8文字以上、半角英大文字、半角英小文字（a~z）、半角数字（0~9）を含むパスワードを入力してください
+          8文字以上、半角英大文字、半角英小文字、半角数字を含むパスワードを入力してください
         </Text>
         <Text style={styles.displayName}>確認用パスワード</Text>
         <TextInput
