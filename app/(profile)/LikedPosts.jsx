@@ -14,6 +14,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ImageResizer from 'react-native-image-resizer';
 
 const auth = FirebaseAuth();
 
@@ -60,10 +61,20 @@ export default function UserLikedPosts() {
 
               // 画像パスが存在する場合、URL を取得
               if (photoData.imagePath) {
-                photoUri = await storage()
+                originalUri = await storage()
                   .ref(photoData.imagePath)
                   .getDownloadURL();
               }
+
+              const resizedImage = await ImageResizer.createResizedImage(
+                originalUri, // 元の画像URL
+                400,
+                300,
+                "JPEG",      // フォーマット (JPEG / PNG)
+                50,          // 品質 (0 - 100)
+                0            // 回転角度
+              );
+              photoUri = resizedImage.uri;
 
               return {
                 postId: photoData.postId,
