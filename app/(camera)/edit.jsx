@@ -6,7 +6,7 @@ import {
   Pressable,
   Dimensions,
   TextInput,
-  ScrollView,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  Modal,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
@@ -79,6 +80,7 @@ export default function edit() {
   const [isLoading, setIsoading] = useState(false);
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState([]);
+  const [isTagModalVisible, setIsTagModalVisible] = useState(false);
 
   const reference = storage();
   const router = useRouter();
@@ -336,6 +338,16 @@ export default function edit() {
     setSelectedTag((tag) => tag.filter((item) => item !== tagId));
   };
 
+  const handleAddTagPress = () => {
+    // Followerテキストが押されたときにフォロワーモーダルを表示
+    setIsTagModalVisible(true);
+  };
+
+  const handleCloseTagModal = () => {
+    // フォローモーダルを閉じる
+    setIsTagModalVisible(false);
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -343,17 +355,14 @@ export default function edit() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       {isLoading ? (
-        <View
-          style={styles.container}
-        >
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color="#239D60" />
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
             アップロード中...
           </Text>
         </View>
       ) : (
-        <View
-          style={styles.container}>
-          <Text style={styles.pagetitle}>場所名</Text>
+        <View style={styles.container}>
           <Image source={{ uri: imageUri }} style={styles.imageContainer} />
           {spotId == 0 && focusedInput !== "post" ? (
             <View>
@@ -388,10 +397,21 @@ export default function edit() {
               </Text>
             </View>
           ) : null}
-          <View style={styles.tagContainer}>
+          <View>
             <Text style={styles.displayName}>タグ</Text>
+            <TouchableOpacity
+              style={styles.tagView}
+              onPress={handleAddTagPress}
+            >
+              <Text>+</Text>
+            </TouchableOpacity>
             {selectedTag.length == 0 ? (
-              <Text style={[styles.selectedTagContainer, { paddingTop: 10, paddingBottom: 4, }]}>
+              <Text
+                style={[
+                  styles.selectedTagContainer,
+                  { paddingTop: 10, paddingBottom: 4 },
+                ]}
+              >
                 追加されたタグがありません
               </Text>
             ) : (
@@ -403,12 +423,7 @@ export default function edit() {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => {
                   return (
-                    <TouchableOpacity
-                      style={styles.tagView}
-                      onPress={() => {
-                        deleteTag(item);
-                      }}
-                    >
+                    <TouchableOpacity style={styles.tagView}>
                       <Icon name="tag" size={16} color={"#239D60"} />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
                       <Icon name="times-circle" size={16} />
@@ -418,9 +433,7 @@ export default function edit() {
               />
             )}
             <View style={styles.tagBorder}></View>
-            <Text style={styles.noamllabel}>
-              タグを４つまで選択できます
-            </Text>
+            {/* <Text style={styles.noamllabel}>タグを４つまで選択できます</Text>
             <FlatList
               style={styles.allTagContainer}
               horizontal={false}
@@ -443,19 +456,99 @@ export default function edit() {
                   </TouchableOpacity>
                 );
               }}
-            />
+            /> */}
           </View>
           <Pressable onPress={uploadPost} style={styles.submit}>
-            <Text style={styles.submitText}>
-              アップロード
-            </Text>
+            <Text style={styles.submitText}>アップロード</Text>
           </Pressable>
 
           <View style={styles.Back}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}
+            >
               <Icon name="angle-left" size={24} color="#000" />
             </TouchableOpacity>
           </View>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={isTagModalVisible}
+            onRequestClose={handleCloseTagModal}
+          >
+            <View style={styles.overlayModal}>
+              <View style={styles.modalContainer}>
+                <Text>タグ</Text>
+                {selectedTag.length == 0 ? (
+                  <Text
+                    style={[
+                      styles.selectedTagContainer,
+                      { paddingTop: 10, paddingBottom: 4 },
+                    ]}
+                  >
+                    追加されたタグがありません
+                  </Text>
+                ) : (
+                  <FlatList
+                    style={styles.selectedTagContainer}
+                    horizontal={true}
+                    data={selectedTag}
+                    keyExtractor={(item) => item}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => {
+                      return (
+                        <TouchableOpacity
+                          style={styles.tagView}
+                          onPress={() => {
+                            deleteTag(item);
+                          }}
+                        >
+                          <Icon name="tag" size={16} color={"#239D60"} />
+                          <Text>
+                            {allTag.find((o) => o.tagId == item).tagName}
+                          </Text>
+                          <Icon name="times-circle" size={16} />
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+                )}
+                <View style={styles.tagBorder}></View>
+                <Text style={styles.noamllabel}>
+                  タグを４つまで選択できます
+                </Text>
+                <FlatList
+                  style={styles.allTagContainer}
+                  horizontal={false}
+                  data={allTag}
+                  keyExtractor={(item) => item.tagId}
+                  numColumns={2}
+                  columnWrapperStyle={{
+                    justifyContent: "flex-start",
+                    gap: 5,
+                    margin: 5,
+                  }}
+                  renderItem={({ item }) => {
+                    return (
+                      <TouchableOpacity
+                        style={styles.tagView}
+                        onPress={() => addTag(item.tagId)}
+                      >
+                        <Icon name="tag" size={16} color={"#239D60"} />
+                        <Text>{item.tagName}</Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={handleCloseTagModal}
+                >
+                  <Text style={styles.buttonText}>閉じる</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </View>
       )}
     </KeyboardAvoidingView>
@@ -467,6 +560,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     padding: 20,
     flex: 1,
+    justifyContent: "center",
   },
   pagetitle: {
     fontSize: 30,
@@ -571,5 +665,29 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
+  },
+  overlayModal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+  },
+  modalContainer: {
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "#F2F5C8",
+    padding: 15,
+  },
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#A3DE83",
+    height: 50,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "#000000",
+    textAlign: "center",
+    fontWeight: "300",
   },
 });
