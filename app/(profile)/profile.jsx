@@ -352,7 +352,7 @@ export default function profile() {
                         style={styles.listProfileImage}
                       />
                       <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>
+                        <Text style={styles.listUsername} numberOfLines={1}>
                           {follow.displayName}
                         </Text>
                       </View>
@@ -395,7 +395,7 @@ export default function profile() {
                         style={styles.listProfileImage}
                       />
                       <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>
+                        <Text style={styles.listUsername} numberOfLines={1}>
                           {follower.displayName}
                         </Text>
                       </View>

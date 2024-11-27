@@ -83,8 +83,8 @@ export default function TrackUserMapView() {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
-        setPostData([])
-        setLoading(true)
+        setPostData([]);
+        setLoading(true);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -93,7 +93,7 @@ export default function TrackUserMapView() {
         fetchPostData(marker.id);
       } else {
         setPostData([]);
-        setLoading(true)
+        setLoading(true);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -576,12 +576,12 @@ export default function TrackUserMapView() {
     }
   };
   const onRegionChangeComplete = (newRegion) => {
-    setLoading(true)
+    setLoading(true);
     if (mapflag) {
       setregions(newRegion); // 新しい表示領域を状態に設定
     }
     setsaveregions(newRegion);
-    
+
     // 現在の表示領域をコンソールに出力
     fetchAllMarkerCord();
   };
@@ -688,16 +688,16 @@ export default function TrackUserMapView() {
     setUserList(tempList);
   };
 
-// アイコンマップを定義
-const handleicons = {
-  users: require('./../image/Users.png'),
-  star: require('./../image/BorderStar.png'), // 他のアイコンを追加
-  close: require('./../image/Close.png'), // 他のアイコンを追加
-};
+  // アイコンマップを定義
+  const handleicons = {
+    users: require("./../image/Users.png"),
+    star: require("./../image/BorderStar.png"), // 他のアイコンを追加
+    close: require("./../image/Close.png"), // 他のアイコンを追加
+  };
 
   const handleIconPress = () => {
     if (iconName === "close") {
-      setChosenUser(null)
+      setChosenUser(null);
       setmapflag(true);
       setregions(saveregion);
       fetchAllMarkerCord();
@@ -1044,7 +1044,9 @@ const handleicons = {
                   source={{ uri: item.userIcon }}
                   style={styles.listProfileImage}
                 />
-                <Text style={styles.listProfileNameText}>{item.username}</Text>
+                <Text style={styles.listProfileNameText} numberOfLines={1}>
+                  {item.username}
+                </Text>
               </TouchableOpacity>
             );
           }}
