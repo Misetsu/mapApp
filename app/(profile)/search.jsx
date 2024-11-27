@@ -407,7 +407,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   resultText: {
+    width: "100%",
     fontSize: 16,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   followButton: {
     backgroundColor: "#007bff",

@@ -171,8 +171,11 @@ export const styles = StyleSheet.create({
   },
   //インデックスバーアイコンの幅
   listProfileNameText: {
+    width: "100%",
     fontSize: 12,
     textAlign: "center",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   listProfileSize: {
     margin: 5,

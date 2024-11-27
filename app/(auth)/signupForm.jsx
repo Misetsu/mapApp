@@ -51,49 +51,50 @@ export default function SignupScreen() {
   };
 
   const signUpWithEmail = async () => {
-    if (validateEmail(userEmail) && validatePassword(userPassword)) {
-      try {
-        await auth.createUserWithEmailAndPassword(userEmail, userPassword);
+    if (validateEmail(userEmail)) {
+      if (validatePassword(userPassword)) {
+        try {
+          await auth.createUserWithEmailAndPassword(userEmail, userPassword);
 
-        const credential = await auth.signInWithEmailAndPassword(
-          userEmail,
-          userPassword
-        );
+          const credential = await auth.signInWithEmailAndPassword(
+            userEmail,
+            userPassword
+          );
 
-        const update = {
-          displayName: userName,
-        };
+          const update = {
+            displayName: userName,
+          };
 
-        await auth.currentUser.updateProfile(update);
+          await auth.currentUser.updateProfile(update);
 
-        firestore()
-          .collection("users")
-          .doc(auth.currentUser.uid)
-          .set({
-            uid: auth.currentUser.uid,
-            displayName: auth.currentUser.displayName,
-            email: auth.currentUser.email,
-            lastPostAt: "0", // TODO
-            publicStatus: 0, // TODO
-            spotCreate: 0,
-            spotPoint: 0,
-            photoURL:
-              "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
-          })
-          .then()
-          .catch((error) => console.log(error));
+          firestore()
+            .collection("users")
+            .doc(auth.currentUser.uid)
+            .set({
+              uid: auth.currentUser.uid,
+              displayName: auth.currentUser.displayName,
+              email: auth.currentUser.email,
+              lastPostAt: "0", // TODO
+              publicStatus: 0, // TODO
+              spotCreate: 0,
+              spotPoint: 0,
+              photoURL:
+                "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
+            })
+            .then()
+            .catch((error) => console.log(error));
 
-        firestore().collection("star").doc(auth.currentUser.uid).set({});
+          firestore().collection("star").doc(auth.currentUser.uid).set({});
 
-        router.replace({ pathname: "/" });
-      } catch (error) {
-        console.error("Error signing up:", error);
+          router.replace({ pathname: "/" });
+        } catch (error) {
+          console.error("Error signing up:", error);
+        }
+      } else {
+        Alert.alert("", "パスワードを正しく入力してください。");
       }
     } else {
-      Alert.alert(
-        "警告",
-        "メールアドレスとパスワードを正しく入力してください。"
-      );
+      Alert.alert("", "メールアドレスを正しく入力してください。");
     }
   };
 
@@ -124,6 +125,7 @@ export default function SignupScreen() {
         />
         <Text style={styles.noamllabel}>
           ユーザー名{"(名前)"}を入力してください
+          半角英文字、半角数字、全角文字しか含まれられません
         </Text>
         <Text style={styles.displayName}>パスワード</Text>
         <TextInput
