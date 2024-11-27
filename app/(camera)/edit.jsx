@@ -24,7 +24,7 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
-const imageWidth = width * 0.6;
+const imageWidth = width * 0.5;
 const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
@@ -401,7 +401,7 @@ export default function edit() {
             <View style={styles.rowContainer}>
               <Text style={styles.displayName}>タグ</Text>
               <TouchableOpacity
-                style={[styles.tagView, { width: "10%" }]}
+                style={[styles.addTag]}
                 onPress={handleAddTagPress}
               >
                 <Text>+</Text>
@@ -667,7 +667,16 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   rowContainer: {
-    flexDirection: "row",
     justifyContent: "flex-start",
+    gap: 5,
+  },
+  addTag: {
+    width: "10%",
+    borderWidth: 2,
+    borderRadius: 15,
+    borderColor: "#239D60",
+    backgroundColor: "#f2f5c8",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
