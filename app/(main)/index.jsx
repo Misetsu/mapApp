@@ -67,6 +67,7 @@ export default function TrackUserMapView() {
   const [mapflag, setmapflag] = useState(true);
   const [enableHighAccuracys,setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([])
+  const [regionflag,setregionflag] = useState(0)
 
   const setURLmodal = (spotId) => {
     setSpotId(spotId);
@@ -478,8 +479,12 @@ export default function TrackUserMapView() {
 
   const setmapfixeds = () => {
     if (mapfixed == true) {
+      console.log("A")
+      setregionflag(0)
       setmapfixed(false);
-    } else {
+    } else if(mapfixed == false){
+      console.log("B")
+      setregionflag(1)
       setmapfixed(true);
     }
   };
@@ -928,24 +933,27 @@ const handleicons = {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
-            setRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-              flag: 0,
-            });
-            setregions({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            });
+
             setPostButtonVisible(true);
             fetchAllMarkerCord();
           } else {
             setError("Position or coords is undefined");
           }
+          console.log(regionflag)
+          if(regionflag == 0){
+          setRegion({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA,
+          });
+          setregions({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA,
+          });
+        }
         } catch (error) {
           setError(`Error updating position: ${error.message}`);
         }
@@ -956,13 +964,13 @@ const handleicons = {
       {
         enableHighAccuracy: enableHighAccuracys,
         timeout: 20000,
-        distanceFilter: 5,
+        distanceFilter: 0.1,
         maximumAge: 1000,
       }
     );
     setenableHighAccuracy(true);
     return () => Geolocation.clearWatch(watchId);
-  }, [initialRegion]);
+  }, [position]);
 
   useEffect(() => {
     setUser(auth.currentUser);
