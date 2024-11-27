@@ -24,7 +24,7 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
-const imageWidth = width * 0.4;
+const imageWidth = width * 0.6;
 const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
@@ -398,13 +398,15 @@ export default function edit() {
             </View>
           ) : null}
           <View>
-            <Text style={styles.displayName}>タグ</Text>
-            <TouchableOpacity
-              style={styles.tagView}
-              onPress={handleAddTagPress}
-            >
-              <Text>+</Text>
-            </TouchableOpacity>
+            <View style={styles.rowContainer}>
+              <Text style={styles.displayName}>タグ</Text>
+              <TouchableOpacity
+                style={[styles.tagView, { width: "10%" }]}
+                onPress={handleAddTagPress}
+              >
+                <Text>+</Text>
+              </TouchableOpacity>
+            </View>
             {selectedTag.length == 0 ? (
               <Text
                 style={[
@@ -426,37 +428,12 @@ export default function edit() {
                     <TouchableOpacity style={styles.tagView}>
                       <Icon name="tag" size={16} color={"#239D60"} />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
-                      <Icon name="times-circle" size={16} />
                     </TouchableOpacity>
                   );
                 }}
               />
             )}
             <View style={styles.tagBorder}></View>
-            {/* <Text style={styles.noamllabel}>タグを４つまで選択できます</Text>
-            <FlatList
-              style={styles.allTagContainer}
-              horizontal={false}
-              data={allTag}
-              keyExtractor={(item) => item.tagId}
-              numColumns={2}
-              columnWrapperStyle={{
-                justifyContent: "flex-start",
-                gap: 5,
-                margin: 5,
-              }}
-              renderItem={({ item }) => {
-                return (
-                  <TouchableOpacity
-                    style={styles.tagView}
-                    onPress={() => addTag(item.tagId)}
-                  >
-                    <Icon name="tag" size={16} color={"#239D60"} />
-                    <Text>{item.tagName}</Text>
-                  </TouchableOpacity>
-                );
-              }}
-            /> */}
           </View>
           <Pressable onPress={uploadPost} style={styles.submit}>
             <Text style={styles.submitText}>アップロード</Text>
@@ -560,7 +537,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     padding: 20,
     flex: 1,
-    justifyContent: "center",
   },
   pagetitle: {
     fontSize: 30,
@@ -689,5 +665,9 @@ const styles = StyleSheet.create({
     color: "#000000",
     textAlign: "center",
     fontWeight: "300",
+  },
+  rowContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
   },
 });
