@@ -933,7 +933,12 @@ const handleicons = {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
-
+            setregions({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            });
             setPostButtonVisible(true);
             fetchAllMarkerCord();
           } else {
@@ -947,12 +952,7 @@ const handleicons = {
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA,
           });
-          setregions({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          });
+
         }
         } catch (error) {
           setError(`Error updating position: ${error.message}`);
@@ -964,7 +964,7 @@ const handleicons = {
       {
         enableHighAccuracy: enableHighAccuracys,
         timeout: 20000,
-        distanceFilter: 0.1,
+        distanceFilter: 5,
         maximumAge: 1000,
       }
     );
