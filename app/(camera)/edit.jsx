@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   allTagContainer: {
-    height: height * 0.2,
+    // height: height * 0.4,
   },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
