@@ -355,7 +355,14 @@ export default function edit() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       {isLoading ? (
-        <View style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#F2F5C8",
+          }}
+        >
           <ActivityIndicator size="large" color="#239D60" />
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
             アップロード中...
