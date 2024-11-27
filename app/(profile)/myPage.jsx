@@ -514,13 +514,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0)", // 背景を半透明に
+    backgroundColor: "rgba(0, 0, 0, 0.4)", // 背景を半透明に
   },
   modalContent: {
     width: "90%",
     maxHeight: "80%",
     padding: 20,
-    backgroundColor: "#F2F5A0",
+    backgroundColor: "#F2F5C8",
     borderRadius: 10,
   },
   listUsernamecontainer: {
