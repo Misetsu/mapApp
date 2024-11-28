@@ -459,9 +459,9 @@ export default function TrackUserMapView() {
       }
     } else {
       if (marker.visited < marker.lastUpdateAt) {
-        return require("../image/VisitedPin_New.png");
+        return require("../image/UnvisitedPin_New.png");
       } else {
-        return require("../image/VisitedPin.png");
+        return require("../image/UnvisitedPin.png");
       }
     }
   };
