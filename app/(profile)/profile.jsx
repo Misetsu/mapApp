@@ -48,7 +48,7 @@ export default function profile() {
         setPhotoUri(profileData.photoURL);
 
         if (profileData.email == undefined) {
-          router.push({ pathname: "/notFoundUser", params: { uid: uid } }); // TODO
+          router.replace({ pathname: "/notFoundUser", params: { uid: uid } }); // TODO
         }
 
         if (profileData.publicStatus == 0) {

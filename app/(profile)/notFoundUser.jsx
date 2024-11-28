@@ -9,7 +9,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { useRouter, useLocalSearchParams, useNavigation } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -19,7 +19,6 @@ const auth = FirebaseAuth();
 export default function profile() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const navigation = useNavigation();
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
@@ -29,14 +28,6 @@ export default function profile() {
 
   useEffect(() => {
     const { uid } = params;
-
-    navigation.addListener("beforeRemove", (e) => {
-      if (e.data.action.type === "GO_BACK") {
-        e.preventDefault();
-        handleBackPress();
-      }
-      navigation.dispatch(e.data.action);
-    });
 
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
