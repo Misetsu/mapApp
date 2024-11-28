@@ -9,6 +9,7 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -131,7 +132,7 @@ export default function SelectSpot() {
             <ActivityIndicator size="large" color="#0000ff" />
           </View>
         ) : (
-          <View>
+          <ScrollView>
             <View style={styles.listContainer}>
               <Text style={styles.subtitle}>
                 現在地に新しいピンを立てて投稿
@@ -210,7 +211,7 @@ export default function SelectSpot() {
                 </Text>
               }
             />
-          </View>
+          </ScrollView>
         )}
       </View>
       <View style={styles.Back}>

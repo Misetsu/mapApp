@@ -336,7 +336,9 @@ const UserItem = ({ user, isFollowing, onProfilePress, onFollowToggle }) => (
   <View style={styles.resultBar}>
     <TouchableOpacity onPress={onProfilePress} style={styles.userInfo}>
       <Image source={{ uri: user.photoURL }} style={styles.listProfileImage} />
-      <Text style={styles.resultText}>{user.displayName}</Text>
+      <Text style={styles.resultText} numberOfLines={1}>
+        {user.displayName}
+      </Text>
     </TouchableOpacity>
     <TouchableOpacity
       onPress={onFollowToggle}
@@ -407,6 +409,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   resultText: {
+    width: "60%",
     fontSize: 16,
   },
   followButton: {
