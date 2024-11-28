@@ -325,6 +325,7 @@ const ReplyScreen = () => {
       {
         text: "削除",
         onPress: async () => {
+          setLoading(true);
           let batch = firestore().batch();
 
           await firestore()
@@ -378,7 +379,8 @@ const ReplyScreen = () => {
             });
 
           await batch.commit();
-          await storage().ref(selectedPost.photoDoc.imagePath).delete();
+          // await storage().ref(selectedPost.photoDoc.imagePath).delete();
+          setLoading(false);
         },
       },
     ]);
