@@ -386,6 +386,7 @@ const styles = StyleSheet.create({
   },
   resultsContainer: {
     marginTop: 20,
+    justifyContent: "center",
   },
   sectionTitle: {
     fontSize: 18,
@@ -393,6 +394,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   resultBar: {
+    width: "95%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
