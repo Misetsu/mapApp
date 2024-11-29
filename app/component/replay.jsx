@@ -399,7 +399,6 @@ const ReplyScreen = () => {
           {selectedPost && (
             <>
               <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
-              <View style={styles.contentContainer}>
                 <View style={styles.postUserBar}>
                   <TouchableOpacity
                     style={styles.postUser}
@@ -573,8 +572,7 @@ const ReplyScreen = () => {
                     onScroll={handleScroll} // スクロールイベントを監視
                     scrollEventThrottle={16} // イベントの感度調整
                   />
-                </View>
-              </View><View style={styles.Back}>
+                </View><View style={styles.Back}>
                 <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
                   <Icon name="angle-left" size={24} color="#000" />
                 </TouchableOpacity>
@@ -596,7 +594,7 @@ const ReplyScreen = () => {
             multiline
           />
           <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
-            <Text style={styles.replyBtnText}>送信</Text>
+            <Text>送信</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -755,10 +753,6 @@ const styles = StyleSheet.create({
   likeNum: {
     marginLeft: 10,
     fontSize: 16,
-  },
-  rowSpaceView: {
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
   test: {
     backgroundColor: "white",
