@@ -389,6 +389,7 @@ const ReplyScreen = () => {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // iOSの場合はオフセット調整
+      enabled={true}
     >
       {loading ? (
         <View style={styles.centerContainer}>
@@ -573,7 +574,6 @@ const ReplyScreen = () => {
                         まだ返信がありません。
                       </Text>
                     }
-                    onScroll={handleScroll} // スクロールイベントを監視
                     scrollEventThrottle={16} // イベントの感度調整
                   />
                 </View>
@@ -589,7 +589,7 @@ const ReplyScreen = () => {
         <View style={styles.sendReply}>
           <TextInput
             style={styles.input}
-            placeholder="返信を入力..."
+            placeholder="コメントを入力..."
             value={replyText}
             onChangeText={setReplyText}
             multiline
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
     flex: 1, // 画面全体を使う
   },
   sky: {
-    height: 300,
+    height: height*0.3,
   },
   selectedTagView: {
     marginHorizontal: 2,

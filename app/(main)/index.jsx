@@ -69,14 +69,6 @@ export default function TrackUserMapView() {
   const [markers, setmarkers] = useState([])
   const [regionflag,setregionflag] = useState(0)
 
-  const setURLmodal = (spotId) => {
-    setSpotId(spotId);
-    setspotName(spotId);
-    setPostImage(false);
-    handleVisitState(spotId);
-    fetchPostData(spotId);
-    setModalVisible(true);
-  };
   const setmodal = (marker) => {
     try {
       const distance = calculateDistance(
@@ -479,11 +471,9 @@ export default function TrackUserMapView() {
 
   const setmapfixeds = () => {
     if (mapfixed == true) {
-      console.log("A")
       setregionflag(0)
       setmapfixed(false);
     } else if(mapfixed == false){
-      console.log("B")
       setregionflag(1)
       setmapfixed(true);
     }
@@ -944,7 +934,6 @@ const handleicons = {
           } else {
             setError("Position or coords is undefined");
           }
-          console.log(regionflag)
           if(regionflag == 0){
           setRegion({
             latitude: position.coords.latitude,

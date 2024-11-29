@@ -200,7 +200,6 @@ export default function SearchScreen() {
         .where("displayName", "<=", text + "\uf8ff") // 検索条件を設定
         .get()
         .then((result) => {
-          console.log(result.docs[0].data().email)
           if(result.docs[0].data().email != undefined){
             setSearchResult(result.docs); // 検索結果をステートに設定
           }
