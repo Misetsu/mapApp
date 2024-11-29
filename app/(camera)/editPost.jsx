@@ -195,20 +195,20 @@ const EditPostScreen = () => {
                   </View>
 
                   <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>
+                    <Text style={styles.displayName}>
                       投稿スポット：{selectedPost.spotName}
                     </Text>
                   </View>
 
                   <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>
+                    <Text style={styles.displayName}>
                       {selectedPost.postDetails.postTxt != ""
                         ? selectedPost.postDetails.postTxt
                         : "詳細がありません"}
                     </Text>
                   </View>
                   <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>タグ</Text>
+                    <Text style={styles.displayName}>タグ</Text>
                     <View style={styles.selectedTag}>
                       {selectedTag.length == 0 ? (
                         <Text>追加されたタグがありません</Text>
@@ -320,12 +320,16 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: "#ffffff",
   },
+  displayName: {
+    fontSize: 15,
+    marginTop: 10,
+    marginLeft: 10,
+    textAlign: "left",
+    alignItems: "flex-start",
+    fontWeight: "300",
+  },
   postDetails: {
     padding: 10,
-  },
-  spotText: {
-    fontSize: 16,
-    color: "#333",
   },
   input: {
     height: 50,
