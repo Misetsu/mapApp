@@ -187,21 +187,8 @@ const EditPostScreen = () => {
           <>
             {selectedPost && (
               <>
-                <View style={styles.header}>
-                  <TouchableOpacity
-                    onPress={handleBackPress}
-                    style={styles.iconButton}
-                  >
-                    <Icon name="angle-left" size={24} color="#000" />
-                  </TouchableOpacity>
-                  <Text style={styles.spotName}>投稿編集</Text>
-                  <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={handleSave}
-                  >
-                    <Icon name="save" size={24} color="#239D60" />
-                  </TouchableOpacity>
-                </View>
+                <Text style={styles.pagetitle}>投稿編集</Text>
+
                 <View style={styles.contentContainer}>
                   <View style={styles.imageContainer}>
                     <Image source={{ uri: photoUri }} style={styles.image} />
@@ -221,7 +208,7 @@ const EditPostScreen = () => {
                     </Text>
                   </View>
                   <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>タグ：</Text>
+                    <Text style={styles.spotText}>タグ</Text>
                     <View style={styles.selectedTag}>
                       {selectedTag.length == 0 ? (
                         <Text>追加されたタグがありません</Text>
@@ -239,6 +226,8 @@ const EditPostScreen = () => {
                                   deleteTag(item);
                                 }}
                               >
+                              <Icon name="tag" size={16} color={"#239D60"}/>
+                              
                                 <Text>
                                   {allTag.find((o) => o.tagId == item).tagName}
                                 </Text>
@@ -270,7 +259,7 @@ const EditPostScreen = () => {
                             style={styles.tagView}
                             onPress={() => addTag(item.tagId)}
                           >
-                            <Icon name="tag" size={16} />
+                            <Icon name="tag" size={16} color={"#239D60"}/>
                             <Text>{item.tagName}</Text>
                           </TouchableOpacity>
                         );
@@ -285,6 +274,11 @@ const EditPostScreen = () => {
             )}
           </>
         )}
+        <View style={styles.Back}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Icon name="angle-left" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -292,39 +286,28 @@ const EditPostScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
+    padding: 20,
     height: height,
     backgroundColor: "#F2F5C8",
   },
+  pagetitle: {
+    fontSize: 30,
+    marginBottom: 15,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#000000",
+  },
   centerContainer: {
-    width: "100%",
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F2F5C8",
   },
   contentContainer: {
-    paddingHorizontal: 20,
     paddingTop: 10,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  iconButton: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  spotName: {
-    fontSize: 20,
-    fontWeight: "bold",
   },
   imageContainer: {
     width: ((height * 0.3) / 4) * 3,
     height: height * 0.3,
-    marginBottom: 10,
     overflow: "hidden",
     alignSelf: "center",
   },
@@ -431,26 +414,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   tagView: {
-    width: width / 3,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 10,
   },
   selectedTagView: {
-    marginHorizontal: 2,
-    width: width / 3.5,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 10,
   },
   tagContainer: {
@@ -462,8 +446,9 @@ const styles = StyleSheet.create({
   },
   tagBorder: {
     width: "100%",
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
     marginVertical: 10,
+    borderBlockColor: "#239D60",
   },
   allTagContainer: {
     height: height * 0.2,
@@ -480,6 +465,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#f2f2f2",
     textAlign: "center",
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
 });
 
