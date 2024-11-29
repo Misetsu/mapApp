@@ -209,38 +209,44 @@ const EditPostScreen = () => {
                   </View>
                   <View style={styles.postDetails}>
                     <Text style={styles.displayName}>タグ</Text>
-                    <View style={styles.selectedTag}>
-                      {selectedTag.length == 0 ? (
-                        <Text>追加されたタグがありません</Text>
-                      ) : (
-                        <FlatList
-                          horizontal={true}
-                          data={selectedTag}
-                          keyExtractor={(item) => item}
-                          showsHorizontalScrollIndicator={false}
-                          renderItem={({ item }) => {
-                            return (
-                              <TouchableOpacity
-                                style={styles.selectedTagView}
-                                onPress={() => {
-                                  deleteTag(item);
-                                }}
-                              >
-                              <Icon name="tag" size={16} color={"#239D60"}/>
-                              
-                                <Text>
-                                  {allTag.find((o) => o.tagId == item).tagName}
-                                </Text>
-                                <Icon name="times-circle" size={16} />
-                              </TouchableOpacity>
-                            );
-                          }}
-                        />
-                      )}
-                    </View>
+                    {selectedTag.length == 0 ? (
+                      <Text
+                        style={[
+                          styles.selectedTagContainer,
+                          { paddingTop: 10, paddingBottom: 4 },
+                        ]}
+                      >
+                        追加されたタグがありません
+                      </Text>
+                    ) : (
+                      <FlatList
+                        style={styles.selectedTagContainer}
+                        horizontal={true}
+                        data={selectedTag}
+                        keyExtractor={(item) => item}
+                        showsHorizontalScrollIndicator={false}
+                        renderItem={({ item }) => {
+                          return (
+                            <TouchableOpacity
+                              style={styles.selectedTagView}
+                              onPress={() => {
+                                deleteTag(item);
+                              }}
+                            >
+                              <Icon name="tag" size={16} color={"#239D60"} />
+
+                              <Text>
+                                {allTag.find((o) => o.tagId == item).tagName}
+                              </Text>
+                              <Icon name="times-circle" size={16} />
+                            </TouchableOpacity>
+                          );
+                        }}
+                      />
+                    )}
                     <View style={styles.tagBorder}></View>
-                    <Text style={{ fontSize: 12, marginBottom: 10 }}>
-                      タグを4つまで選択できます
+                    <Text style={styles.noamllabel}>
+                      タグを４つまで選択できます
                     </Text>
                     <FlatList
                       style={styles.allTagContainer}
@@ -259,7 +265,7 @@ const EditPostScreen = () => {
                             style={styles.tagView}
                             onPress={() => addTag(item.tagId)}
                           >
-                            <Icon name="tag" size={16} color={"#239D60"}/>
+                            <Icon name="tag" size={16} color={"#239D60"} />
                             <Text>{item.tagName}</Text>
                           </TouchableOpacity>
                         );
@@ -297,6 +303,13 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     color: "#000000",
   },
+  noamllabel: {
+    fontSize: 15,
+    margin: 5,
+    fontWeight: "600",
+    color: "#239D60",
+    textAlign: "center",
+  },
   centerContainer: {
     justifyContent: "center",
     alignItems: "center",
@@ -328,94 +341,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     fontWeight: "300",
   },
-  postDetails: {
-    padding: 10,
-  },
-  input: {
-    height: 50,
-    backgroundColor: "#FAFAFA",
-    borderColor: "gray",
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 5,
-    width: "100%",
-    flex: 1,
-  },
-  replyBtn: {
-    height: 50,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    justifyContent: "center",
-    backgroundColor: "#A3DE83",
-  },
-  repliesList: {},
-  replyContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "lightgray",
-  },
-  replyText: {
-    fontSize: 14,
-    paddingHorizontal: 10,
-  },
-  replyTimestamp: {
-    fontSize: 12,
-    color: "gray",
-  },
-  noRepliesText: {
-    textAlign: "center",
-    color: "gray",
-    marginTop: 10,
-  },
-  sendReply: {
-    width: "100%",
-    backgroundColor: "#F2F5C8",
-    flexDirection: "row",
-    paddingHorizontal: 10,
-    paddingBottom: 10,
-    gap: 10,
-  },
-  postUserBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-  postUser: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 10,
-    height: "100%",
-  },
-  postIconImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-  postDate: {
-    fontSize: 12,
-    color: "gray",
-  },
-  actionButton: {
-    width: 40,
-    height: 40,
-    padding: 5,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center", // ボタン内のテキストを中央に配置
-    alignItems: "center",
-  },
-  likeNum: {
-    marginLeft: 10,
-    fontSize: 16,
-  },
-  rowView: {
-    flexDirection: "row",
-    gap: 15,
-  },
-  rowSpaceView: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  selectedTagContainer: {
+    margin: 5,
   },
   tagView: {
     paddingVertical: 5,
@@ -441,20 +368,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#f2f5c8",
     gap: 10,
   },
-  tagContainer: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  selectedTag: {
-    marginTop: 10,
-  },
   tagBorder: {
-    width: "100%",
+    margin: 5,
+    marginTop: 0,
+    marginBottom: 0,
     borderBottomWidth: 3,
-    marginVertical: 10,
-    borderBlockColor: "#239D60",
+    borderColor: "#239D60",
+    marginVertical: 16,
   },
   allTagContainer: {
+    marginTop: 5,
     height: height * 0.2,
   },
   submit: {
