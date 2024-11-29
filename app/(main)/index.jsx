@@ -10,6 +10,7 @@ import {
   Dimensions,
   StyleSheet,
   Linking,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -20,7 +21,6 @@ import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import queryString from "query-string";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -65,6 +65,7 @@ export default function TrackUserMapView() {
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState(false);
   const [mapflag, setmapflag] = useState(true);
+  const [indexLoading, setIndexLoading] = useState(true);
 
   const setURLmodal = (spotId) => {
     setSpotId(spotId);
@@ -686,6 +687,7 @@ export default function TrackUserMapView() {
     });
 
     setUserList(tempList);
+    setIndexLoading(false);
   };
 
   // アイコンマップを定義
@@ -707,9 +709,11 @@ export default function TrackUserMapView() {
         setIconName("star");
       }
     } else if (indexStatus == "follow") {
+      setIndexLoading(true);
       handleChangeIndex();
       setIconName("star"); // アイコン名を "times" に変更
     } else {
+      setIndexLoading(true);
       handleChangeIndex();
       setIconName("users");
     }
@@ -1051,12 +1055,18 @@ export default function TrackUserMapView() {
             );
           }}
         />
-        <TouchableOpacity
-          style={styles.listProfileIndexButton}
-          onPress={handleIconPress} // 変更した関数を呼び出す
-        >
-          <Image source={handleicons[iconName]} style={styles.footerImage} />
-        </TouchableOpacity>
+        {indexLoading ? (
+          <View style={styles.listProfileIndexButton}>
+            <ActivityIndicator size="large" color="#239D60" />
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.listProfileIndexButton}
+            onPress={handleIconPress} // 変更した関数を呼び出す
+          >
+            <Image source={handleicons[iconName]} style={styles.footerImage} />
+          </TouchableOpacity>
+        )}
       </SafeAreaView>
 
       <SafeAreaView style={styles.tagContainer}>
@@ -1179,9 +1189,13 @@ export default function TrackUserMapView() {
           <TouchableOpacity
             style={styles.footerbutton}
             onPress={() => {
-              router.push({
-                pathname: "/search",
-              });
+              user
+                ? router.push({
+                    pathname: "/search",
+                  })
+                : router.push({
+                    pathname: "/loginForm",
+                  });
             }}
           >
             <Image
@@ -1215,7 +1229,7 @@ export default function TrackUserMapView() {
               }}
             >
               <Image
-                source={require("./../image/Search.png")}
+                source={require("./../image/User.png")}
                 style={styles.footerImage}
               />
               <Text style={styles.listProfileNameText}>ログイン</Text>

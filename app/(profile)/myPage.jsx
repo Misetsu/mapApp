@@ -277,7 +277,7 @@ export default function myPage() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followList.map((follow) => {
                   return (
                     <TouchableOpacity
@@ -320,7 +320,7 @@ export default function myPage() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followerList.map((follower) => {
                   return (
                     <TouchableOpacity
@@ -511,18 +511,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
   },
   modalOverlay: {
-    flex: 0.6,
-    marginTop: "auto",
-    marginBottom: "auto",
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0)", // 背景を半透明に
+    backgroundColor: "rgba(0, 0, 0, 0.4)", // 背景を半透明に
   },
   modalContent: {
     width: "90%",
+    maxHeight: "80%",
     padding: 20,
-    paddingTop: 15,
-    backgroundColor: "#F2F5A0",
+    backgroundColor: "#F2F5C8",
     borderRadius: 10,
   },
   listUsernamecontainer: {
