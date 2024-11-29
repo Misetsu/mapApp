@@ -409,7 +409,7 @@ const UserItem = ({ user, isFollowing, followingMe, onProfilePress, onFollowTogg
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9", // 背景色をライトグレーに
+    backgroundColor: "#e6e6b3", // 背景色をライトグレーに
     paddingHorizontal: 20,
   },
   header: {
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffe0",
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
@@ -478,17 +478,14 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 15,
+    backgroundColor:"#dbdbdb",
   },
   resultText: {
     fontSize: 16,
     fontWeight: "500",
     color: "#333",
   },
-  followingMeText: { // 新規追加
-    fontSize: 12, // 小さい文字サイズ
-    color: "#888", // 薄いグレーの色
-    marginBottom: 4, // 名前との間隔
-  },
+
   followButton: {
     paddingVertical: 8,
     paddingHorizontal: 20,
@@ -497,13 +494,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   followedButton: {
-    backgroundColor: "#e0e0e0", // フォロー中ボタンの色
+    backgroundColor: "#91db9b", // フォロー中ボタンの色
   },
   unfollowedButton: {
-    backgroundColor: "#007bff", // フォローボタンの色
+    backgroundColor: "#65996c", // フォローボタンの色
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 14,  
     color: "#fff",
   },
   Back: {
