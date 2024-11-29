@@ -528,7 +528,6 @@ const ReplyScreen = () => {
 
                 </View>
                 <View style={styles.postDetails}>
-                  <Text style={styles.displayName}>コメント</Text>
                   <View style={styles.selectedTag}>
                     {selectedTag.length == 0 ? (
                       <></>
@@ -541,7 +540,7 @@ const ReplyScreen = () => {
                         renderItem={({ item }) => {
                           return (
                             <View style={styles.selectedTagView}>
-                              <Icon name="tag" size={16} />
+                              <Icon name="tag" size={16} color={"#239D60"}/>
                               <Text>
                                 {allTag.find((o) => o.tagId == item).tagName}
                               </Text>
@@ -551,6 +550,7 @@ const ReplyScreen = () => {
                       />
                     )}
                   </View>
+                  <Text style={styles.displayName}>コメント</Text>
                 </View>
                 <View style={styles.sky}>
                   <FlatList
@@ -771,15 +771,15 @@ const styles = StyleSheet.create({
     height: 300,
   },
   selectedTagView: {
-    marginHorizontal: 2,
-    width: width / 3.5,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 10,
   },
   selectedTag: {
