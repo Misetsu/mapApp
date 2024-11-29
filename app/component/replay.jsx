@@ -199,7 +199,7 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
-  useEffect(() => {}, [replies]);
+  useEffect(() => { }, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -398,16 +398,7 @@ const ReplyScreen = () => {
         <>
           {selectedPost && (
             <>
-              <View style={styles.header}>
-                <TouchableOpacity
-                  onPress={handleBackPress}
-                  style={styles.iconButton}
-                >
-                  <Icon name="angle-left" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.spotName}>{selectedPost.spotName}</Text>
-                <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
-              </View>
+              <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
               <View style={styles.contentContainer}>
                 <View style={styles.postUserBar}>
                   <TouchableOpacity
@@ -420,17 +411,32 @@ const ReplyScreen = () => {
                       source={{ uri: selectedPost.userDetails.photoURL }}
                       style={styles.postIconImage}
                     />
-                    <Text style={{ fontSize: 16 }}>
+                    <Text style={styles.userName}>
                       {selectedPost.userDetails.displayName}
                     </Text>
                   </TouchableOpacity>
-                  <Text style={styles.postDate}>
-                    {formatInTimeZone(
-                      new Date(selectedPost.postDetails.timeStamp),
-                      "Asia/Tokyo",
-                      "yyyy年MM月dd日 HH:mm"
-                    )}
-                  </Text>
+                  {selectedPost.userDetails.uid == auth.currentUser.uid ? (
+                    <View style={styles.EditTrashRow}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          router.push({
+                            pathname: "/editPost",
+                            params: { postId },
+                          });
+                        }}
+                        style={styles.actionButton}
+                      >
+                        <Icon name="pen" size={25} />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity onPress={handleDelete} style={styles.actionButton}
+                      >
+                        <Icon name="trash" size={25} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <></>
+                  )}
                 </View>
                 {showImage == "true" ? (
                   <View style={styles.imageContainer}>
@@ -446,16 +452,17 @@ const ReplyScreen = () => {
                   </View>
                 )}
 
-                <View style={styles.rowSpaceView}>
+
+                <View style={styles.LikeCommentRow}>
                   {isLiked ? (
                     <TouchableOpacity
-                      style={styles.actionButton}
+                      style={[styles.actionButton, { marginLeft: 20, }]}
                       onPress={
                         auth.currentUser
                           ? () => handleUnlike(postId)
                           : () => {
-                              router.push("/loginForm");
-                            }
+                            router.push("/loginForm");
+                          }
                       }
                     >
                       <Icon
@@ -476,13 +483,13 @@ const ReplyScreen = () => {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
-                      style={styles.actionButton}
+                      style={[styles.actionButton, { marginLeft: 20, }]}
                       onPress={
                         auth.currentUser
                           ? () => handleLike(postId)
                           : () => {
-                              router.push("/loginForm");
-                            }
+                            router.push("/loginForm");
+                          }
                       }
                     >
                       <Icon
@@ -504,25 +511,6 @@ const ReplyScreen = () => {
                       </Text>
                     </TouchableOpacity>
                   )}
-                  {selectedPost.userDetails.uid == auth.currentUser.uid ? (
-                    <View style={styles.rowView}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          router.push({
-                            pathname: "/editPost",
-                            params: { postId },
-                          });
-                        }}
-                      >
-                        <Icon name="pen" size={25} />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={handleDelete}>
-                        <Icon name="trash" size={25} />
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <></>
-                  )}
                 </View>
                 <View style={styles.postDetails}>
                   <Text style={styles.spotText}>
@@ -530,11 +518,20 @@ const ReplyScreen = () => {
                       ? selectedPost.postDetails.postTxt
                       : "詳細がありません"}
                   </Text>
+                  <Text style={styles.postDate}>
+                    {formatInTimeZone(
+                      new Date(selectedPost.postDetails.timeStamp),
+                      "Asia/Tokyo",
+                      "yyyy年MM月dd日 HH:mm"
+                    )}
+                  </Text>
+
                 </View>
                 <View style={styles.postDetails}>
+                  <Text style={styles.displayName}>コメント</Text>
                   <View style={styles.selectedTag}>
                     {selectedTag.length == 0 ? (
-                      <Text>追加されたタグがありません</Text>
+                      <></>
                     ) : (
                       <FlatList
                         horizontal={true}
@@ -570,13 +567,17 @@ const ReplyScreen = () => {
                     style={styles.repliesList}
                     ListEmptyComponent={
                       <Text style={styles.noRepliesText}>
-                        まだ返信がありません。
+                        まだコメントがありません。
                       </Text>
                     }
                     onScroll={handleScroll} // スクロールイベントを監視
                     scrollEventThrottle={16} // イベントの感度調整
                   />
                 </View>
+              </View><View style={styles.Back}>
+                <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+                  <Icon name="angle-left" size={24} color="#000" />
+                </TouchableOpacity>
               </View>
             </>
           )}
@@ -605,42 +606,47 @@ const ReplyScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: height - 60,
+    padding: 20,
     backgroundColor: "#F2F5C8",
     flex: 1,
-    marginBottom: "auto",
   },
   centerContainer: {
     width: "100%",
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F2F5C8",
     flex: 1,
   },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
-  iconButton: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
+  pagetitle: {
+    fontSize: 30,
+    marginBottom: 15,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#000000",
   },
-  spotName: {
-    fontSize: 20,
-    fontWeight: "bold",
+  displayName: {
+    fontSize: 15,
+    marginTop: 10,
+    textAlign: "left",
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
   imageContainer: {
     width: ((height * 0.3) / 4) * 3,
     height: height * 0.3,
-    marginBottom: 10,
     overflow: "hidden",
     alignSelf: "center",
   },
@@ -679,22 +685,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#A3DE83",
   },
-  repliesList: {},
-  replyContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "lightgray",
-    marginBottom: "auto",
-    backgroundColor: "white",
-  },
-  replyText: {
-    fontSize: 14,
-    paddingHorizontal: 10,
-  },
-  replyTimestamp: {
-    fontSize: 12,
-    color: "gray",
-  },
   noRepliesText: {
     textAlign: "center",
     color: "gray",
@@ -721,18 +711,31 @@ const styles = StyleSheet.create({
   },
   postUser: {
     flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    padding: 5,
+  },
+  userName: {
+    fontSize: 18,
+    color: "#000000",
     justifyContent: "center",
-    gap: 10,
-    height: "100%",
+    fontWeight: "300",
   },
   postIconImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
   },
   postDate: {
     fontSize: 12,
     color: "gray",
+  },
+  LikeCommentRow: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    margin: 5,
   },
   actionButton: {
     width: 40,
@@ -743,13 +746,15 @@ const styles = StyleSheet.create({
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
   },
+  EditTrashRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    marginBottom: 10,
+  },
   likeNum: {
     marginLeft: 10,
     fontSize: 16,
-  },
-  rowView: {
-    flexDirection: "row",
-    gap: 15,
   },
   rowSpaceView: {
     flexDirection: "row",
