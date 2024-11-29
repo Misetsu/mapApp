@@ -380,11 +380,11 @@ const ReplyScreen = () => {
               });
 
             await batch.commit();
-            const photoRef = storage().child(
-              selectedPost.photoDoc.imagePath + ".jpg"
-            );
-            console.log(photoRef);
-            await photoRef.delete();
+            // const photoRef = storage().child(
+            //   selectedPost.photoDoc.imagePath + ".jpg"
+            // );
+            // console.log(photoRef);
+            // await photoRef.delete();
           } catch (error) {
           } finally {
             setLoading(false);
