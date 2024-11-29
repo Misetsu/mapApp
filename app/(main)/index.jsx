@@ -477,9 +477,10 @@ export default function TrackUserMapView() {
 
         const querySnapshot = await firestore()
           .collection("post")
-          .where("id", "==", tagPostId)
+          .where("id", "in", tagPostId)
           .orderBy("timeStamp", "desc")
           .get();
+
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
