@@ -111,6 +111,17 @@ export default function edit() {
       })
       .catch((error) => console.log(error));
 
+    for (const tag of selectedTag) {
+      await firestore()
+        .collection("tagPost")
+        .add({
+          tagId: parseInt(tag),
+          postId: maxPostId,
+          spotId: maxId,
+          timeStamp: currentTime,
+        });
+    }
+
     await firestore().collection("users").doc(auth.currentUser.uid).update({
       lastPostAt: currentTime,
     });

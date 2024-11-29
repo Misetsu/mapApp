@@ -162,6 +162,7 @@ export default function edit() {
             tagId: parseInt(tag),
             postId: maxPostId,
             spotId: maxId,
+            timeStamp: currentTime,
           });
       }
 
@@ -232,6 +233,7 @@ export default function edit() {
             tagId: parseInt(tag),
             postId: maxPostId,
             spotId: parseInt(spotId),
+            timeStamp: currentTime,
           });
       }
 
