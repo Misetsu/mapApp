@@ -26,7 +26,6 @@ export default function myPage() {
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [displayEmail, setDisplayEmail] = useState(""); // ユーザーの表示名
   const [googleProvider, setGoogleProvider] = useState(false);
-  const [editable, setEditable] = useState(true);
 
   const handleBackPress = () => {
     if (router) {
@@ -51,13 +50,15 @@ export default function myPage() {
 
   // ユーザーの表示名を保存する関数
   const handleSave = async () => {
-    await uploadPhoto(photoUri); // 画像をアップロードし、URLを取得
+    if (photoUri !== auth.currentUser.photoURL) {
+      await uploadPhoto(photoUri); // 画像をアップロードし、URLを取得
+    }
     if (user) {
       await firestore().collection("users").doc(user.uid).update({
         displayName: displayName,
       });
       await auth.currentUser.updateProfile({ displayName: displayName });
-      setEditable(true); // 編集モードを終了
+      router.back();
     }
   };
 
@@ -167,17 +168,14 @@ export default function myPage() {
           </TouchableOpacity>
         )}
 
-        {editable && (
-          <TouchableOpacity
-            style={styles.submit}
-            onPress={() => {
-              handleSave(); // まず handleSave を実行
-              router.back(); // 次にページ遷移
-            }}
-          >
-            <Text style={styles.submitText}>変更を保存</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.submit}
+          onPress={() => {
+            handleSave(); // まず handleSave を実行
+          }}
+        >
+          <Text style={styles.submitText}>変更を保存</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>

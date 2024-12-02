@@ -248,6 +248,10 @@ export default function edit() {
     setIsTagModalVisible(false);
   };
 
+  const handleBackPress = () => {
+    router.back(); // 前の画面に戻る
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
