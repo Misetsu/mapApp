@@ -325,60 +325,71 @@ const ReplyScreen = () => {
       {
         text: "削除",
         onPress: async () => {
-          let batch = firestore().batch();
+          setLoading(true);
+          try {
+            let batch = firestore().batch();
 
-          await firestore()
-            .collection("post")
-            .where("id", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("post")
+              .where("id", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("photo")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach(async (doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("photo")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach(async (doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("like")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("like")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("replies")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("replies")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("tagPost")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("tagPost")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await batch.commit();
-          await storage().ref(selectedPost.photoDoc.imagePath).delete();
+            await batch.commit();
+            // const photoRef = storage().child(
+            //   selectedPost.photoDoc.imagePath + ".jpg"
+            // );
+            // console.log(photoRef);
+            // await photoRef.delete();
+          } catch (error) {
+          } finally {
+            setLoading(false);
+            router.back();
+          }
         },
       },
     ]);
