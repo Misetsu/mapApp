@@ -83,7 +83,7 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
             source={{ uri: item.userData.photoURL }}
             style={styles.iconImage}
           />
-          <Text>{item.userData.displayName}</Text>
+          <Text style={styles.postUser}>{item.userData.displayName}</Text>
         </TouchableOpacity>
       </View>
       <Text style={styles.replyText}>{item.text}</Text>
@@ -160,8 +160,17 @@ const styles = StyleSheet.create({
   },
   userBar: {
     flexDirection: "row",
-    gap: 8,
     justifyContent: "center",
+  },
+  postUser: {
+    flexDirection: "row",
+    alignItems: "center",
+    fontSize: 14,
+    color: "#000000",
+    fontWeight: "300",
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    padding: 5,
+    paddingLeft: 0,
   },
   iconImage: {
     width: 26,

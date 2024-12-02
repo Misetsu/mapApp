@@ -325,60 +325,71 @@ const ReplyScreen = () => {
       {
         text: "削除",
         onPress: async () => {
-          let batch = firestore().batch();
+          setLoading(true);
+          try {
+            let batch = firestore().batch();
 
-          await firestore()
-            .collection("post")
-            .where("id", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("post")
+              .where("id", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("photo")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach(async (doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("photo")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach(async (doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("like")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("like")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("replies")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("replies")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("tagPost")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("tagPost")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await batch.commit();
-          await storage().ref(selectedPost.photoDoc.imagePath).delete();
+            await batch.commit();
+            // const photoRef = storage().child(
+            //   selectedPost.photoDoc.imagePath + ".jpg"
+            // );
+            // console.log(photoRef);
+            // await photoRef.delete();
+          } catch (error) {
+          } finally {
+            setLoading(false);
+            router.back();
+          }
         },
       },
     ]);
@@ -605,35 +616,41 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     width: "100%",
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F2F5C8",
     flex: 1,
   },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
-  iconButton: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
+  pagetitle: {
+    fontSize: 30,
+    marginBottom: 15,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#000000",
   },
-  spotName: {
-    fontSize: 20,
-    fontWeight: "bold",
+  displayName: {
+    fontSize: 15,
+    marginTop: 10,
+    textAlign: "left",
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
   imageContainer: {
     width: ((height * 0.3) / 4) * 3,
     height: height * 0.3,
-    marginBottom: 10,
     overflow: "hidden",
     alignSelf: "center",
   },
@@ -672,22 +689,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#A3DE83",
   },
-  repliesList: {},
-  replyContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "lightgray",
-    marginBottom: "auto",
-    backgroundColor: "white",
-  },
-  replyText: {
-    fontSize: 14,
-    paddingHorizontal: 10,
-  },
-  replyTimestamp: {
-    fontSize: 12,
-    color: "gray",
-  },
   noRepliesText: {
     textAlign: "center",
     color: "gray",
@@ -714,18 +715,31 @@ const styles = StyleSheet.create({
   },
   postUser: {
     flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    padding: 5,
+  },
+  userName: {
+    fontSize: 18,
+    color: "#000000",
     justifyContent: "center",
-    gap: 10,
-    height: "100%",
+    fontWeight: "300",
   },
   postIconImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
   },
   postDate: {
     fontSize: 12,
     color: "gray",
+  },
+  LikeCommentRow: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    margin: 5,
   },
   actionButton: {
     width: 40,
@@ -758,7 +772,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 20,
     borderColor: "#239D60",
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 5,
     marginHorizontal: 2,
     backgroundColor: "#f2f5c8",
