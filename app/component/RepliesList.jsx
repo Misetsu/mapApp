@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
-import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import ReplieModal from "../component/repliemodal";
 

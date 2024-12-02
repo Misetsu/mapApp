@@ -417,7 +417,7 @@ const ReplyScreen = () => {
                 >
                   <Icon name="angle-left" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.spotName}>{selectedPost.spotName}</Text>
+                <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
                 <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
               </View>
               <View style={styles.contentContainer}>
@@ -609,9 +609,14 @@ const ReplyScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
+    padding: 20,
     height: height,
     backgroundColor: "#F2F5C8",
     flex: 1,
+    justifyContent: "space-between",
+  },
+  header: {
+    flexDirection: "row",
     justifyContent: "space-between",
   },
   centerContainer: {
@@ -635,7 +640,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   pagetitle: {
-    fontSize: 30,
+    fontSize: 20,
     marginBottom: 15,
     textAlign: "center",
     fontWeight: "300",
