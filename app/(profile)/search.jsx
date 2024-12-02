@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#dbdbdb",
   },
   resultText: {
-    width: "60%",
+    width: "100%",
     fontSize: 16,
     fontWeight: "500",
     color: "#333",
