@@ -396,7 +396,7 @@ const ReplyScreen = () => {
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       ) : (
-        <>
+        <View>
           {selectedPost && (
             <>
               <View style={styles.header}>
@@ -425,13 +425,23 @@ const ReplyScreen = () => {
                       {selectedPost.userDetails.displayName}
                     </Text>
                   </TouchableOpacity>
-                  <Text style={styles.postDate}>
-                    {formatInTimeZone(
-                      new Date(selectedPost.postDetails.timeStamp),
-                      "Asia/Tokyo",
-                      "yyyy年MM月dd日 HH:mm"
-                    )}
-                  </Text>
+                  {selectedPost.userDetails.uid == auth.currentUser.uid ? (
+                    <View style={styles.rowView}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          router.push({
+                            pathname: "/editPost",
+                            params: { postId },
+                          });
+                        }}
+                      >
+                        <Icon name="pen" size={25} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handleDelete}>
+                        <Icon name="trash" size={25} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
                 </View>
                 {showImage == "true" ? (
                   <View style={styles.imageContainer}>
@@ -505,31 +515,19 @@ const ReplyScreen = () => {
                       </Text>
                     </TouchableOpacity>
                   )}
-                  {selectedPost.userDetails.uid == auth.currentUser.uid ? (
-                    <View style={styles.rowView}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          router.push({
-                            pathname: "/editPost",
-                            params: { postId },
-                          });
-                        }}
-                      >
-                        <Icon name="pen" size={25} />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={handleDelete}>
-                        <Icon name="trash" size={25} />
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <></>
-                  )}
                 </View>
                 <View style={styles.postDetails}>
                   <Text style={styles.spotText}>
                     {selectedPost.postDetails.postTxt != ""
                       ? selectedPost.postDetails.postTxt
                       : "詳細がありません"}
+                  </Text>
+                  <Text style={styles.postDate}>
+                    {formatInTimeZone(
+                      new Date(selectedPost.postDetails.timeStamp),
+                      "Asia/Tokyo",
+                      "yyyy年MM月dd日 HH:mm"
+                    )}
                   </Text>
                 </View>
                 <View style={styles.postDetails}>
@@ -545,7 +543,7 @@ const ReplyScreen = () => {
                         renderItem={({ item }) => {
                           return (
                             <View style={styles.selectedTagView}>
-                              <Icon name="tag" size={16} />
+                              <Icon name="tag" size={16} color={"#239D60"} />
                               <Text>
                                 {allTag.find((o) => o.tagId == item).tagName}
                               </Text>
@@ -564,7 +562,6 @@ const ReplyScreen = () => {
                         replies={[item]}
                         navigateProfile={navigateProfile}
                         postId={postId}
-                        style={styles.test}
                       />
                     )}
                     keyExtractor={(item, index) => item.id || String(index)} // idが空の場合はインデックスを使用
@@ -580,35 +577,31 @@ const ReplyScreen = () => {
               </View>
             </>
           )}
-        </>
-      )}
-
-      {/* </ScrollView> */}
-      {/* スクロール中で非表示 */}
-      {!isScrolling && (
-        <View style={styles.sendReply}>
-          <TextInput
-            style={styles.input}
-            placeholder="コメントを入力..."
-            value={replyText}
-            onChangeText={setReplyText}
-            multiline
-          />
-          <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
-            <Text style={styles.replyBtnText}>送信</Text>
-          </TouchableOpacity>
         </View>
       )}
+
+      <View style={styles.sendReply}>
+        <TextInput
+          style={styles.input}
+          placeholder="コメントを入力..."
+          value={replyText}
+          onChangeText={setReplyText}
+          multiline
+        />
+        <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
+          <Text>送信</Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: height - 60,
+    height: height,
     backgroundColor: "#F2F5C8",
     flex: 1,
-    marginBottom: "auto",
+    justifyContent: "space-between",
   },
   centerContainer: {
     width: "100%",
@@ -742,6 +735,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
+    marginLeft: 20,
   },
   likeNum: {
     marginLeft: 10,
@@ -755,30 +749,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  test: {
-    backgroundColor: "white",
-    adding: 10,
-    marginBottom: "auto",
-    height: ((height * 0.3) / 4) * 3,
-    flex: 1, // 画面全体を使う
-  },
   sky: {
-    height: height*0.3,
+    height: height * 0.3,
   },
   selectedTagView: {
-    marginHorizontal: 2,
-    width: width / 3.5,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 10,
   },
   selectedTag: {
-    marginTop: 10,
+    marginVertical: 10,
   },
 });
 
