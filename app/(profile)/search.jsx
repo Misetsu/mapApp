@@ -391,7 +391,9 @@ const UserItem = ({
         {followingMe && (
           <Text style={styles.followingMeText}>あなたをフォローしています</Text>
         )}
-        <Text style={styles.resultText}>{user.displayName}</Text>
+        <Text style={styles.resultText} numberOfLines={1}>
+          {user.displayName}
+        </Text>
       </View>
     </TouchableOpacity>
     {user.uid !== currentUserId && (
@@ -454,6 +456,7 @@ const styles = StyleSheet.create({
   },
   resultsContainer: {
     marginTop: 20,
+    justifyContent: "center",
   },
   sectionTitle: {
     fontSize: 18,
@@ -462,6 +465,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   resultBar: {
+    width: "95%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -487,6 +491,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#dbdbdb",
   },
   resultText: {
+    width: "60%",
     fontSize: 16,
     fontWeight: "500",
     color: "#333",

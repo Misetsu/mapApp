@@ -10,6 +10,7 @@ import {
   Dimensions,
   StyleSheet,
   Linking,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -20,7 +21,6 @@ import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import queryString from "query-string";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -65,6 +65,7 @@ export default function TrackUserMapView() {
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState(false);
   const [mapflag, setmapflag] = useState(true);
+  const [indexLoading, setIndexLoading] = useState(true);
 
   const setURLmodal = (spotId) => {
     setSpotId(spotId);
@@ -83,8 +84,8 @@ export default function TrackUserMapView() {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
-        setPostData([])
-        setLoading(true)
+        setPostData([]);
+        setLoading(true);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -93,7 +94,7 @@ export default function TrackUserMapView() {
         fetchPostData(marker.id);
       } else {
         setPostData([]);
-        setLoading(true)
+        setLoading(true);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
@@ -459,9 +460,9 @@ export default function TrackUserMapView() {
       }
     } else {
       if (marker.visited < marker.lastUpdateAt) {
-        return require("../image/VisitedPin_New.png");
+        return require("../image/UnvisitedPin_New.png");
       } else {
-        return require("../image/VisitedPin.png");
+        return require("../image/UnvisitedPin.png");
       }
     }
   };
@@ -576,12 +577,12 @@ export default function TrackUserMapView() {
     }
   };
   const onRegionChangeComplete = (newRegion) => {
-    setLoading(true)
+    setLoading(true);
     if (mapflag) {
       setregions(newRegion); // 新しい表示領域を状態に設定
     }
     setsaveregions(newRegion);
-    
+
     // 現在の表示領域をコンソールに出力
     fetchAllMarkerCord();
   };
@@ -686,18 +687,19 @@ export default function TrackUserMapView() {
     });
 
     setUserList(tempList);
+    setIndexLoading(false);
   };
 
-// アイコンマップを定義
-const handleicons = {
-  users: require('./../image/Users.png'),
-  star: require('./../image/BorderStar.png'), // 他のアイコンを追加
-  close: require('./../image/Close.png'), // 他のアイコンを追加
-};
+  // アイコンマップを定義
+  const handleicons = {
+    users: require("./../image/Users.png"),
+    star: require("./../image/BorderStar.png"), // 他のアイコンを追加
+    close: require("./../image/Close.png"), // 他のアイコンを追加
+  };
 
   const handleIconPress = () => {
     if (iconName === "close") {
-      setChosenUser(null)
+      setChosenUser(null);
       setmapflag(true);
       setregions(saveregion);
       fetchAllMarkerCord();
@@ -707,9 +709,11 @@ const handleicons = {
         setIconName("star");
       }
     } else if (indexStatus == "follow") {
+      setIndexLoading(true);
       handleChangeIndex();
       setIconName("star"); // アイコン名を "times" に変更
     } else {
+      setIndexLoading(true);
       handleChangeIndex();
       setIconName("users");
     }
@@ -1044,17 +1048,25 @@ const handleicons = {
                   source={{ uri: item.userIcon }}
                   style={styles.listProfileImage}
                 />
-                <Text style={styles.listProfileNameText}>{item.username}</Text>
+                <Text style={styles.listProfileNameText} numberOfLines={1}>
+                  {item.username}
+                </Text>
               </TouchableOpacity>
             );
           }}
         />
-        <TouchableOpacity
-          style={styles.listProfileIndexButton}
-          onPress={handleIconPress} // 変更した関数を呼び出す
-        >
-          <Image source={handleicons[iconName]} style={styles.footerImage} />
-        </TouchableOpacity>
+        {indexLoading ? (
+          <View style={styles.listProfileIndexButton}>
+            <ActivityIndicator size="large" color="#239D60" />
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.listProfileIndexButton}
+            onPress={handleIconPress} // 変更した関数を呼び出す
+          >
+            <Image source={handleicons[iconName]} style={styles.footerImage} />
+          </TouchableOpacity>
+        )}
       </SafeAreaView>
 
       <SafeAreaView style={styles.tagContainer}>
@@ -1177,9 +1189,13 @@ const handleicons = {
           <TouchableOpacity
             style={styles.footerbutton}
             onPress={() => {
-              router.push({
-                pathname: "/search",
-              });
+              user
+                ? router.push({
+                    pathname: "/search",
+                  })
+                : router.push({
+                    pathname: "/loginForm",
+                  });
             }}
           >
             <Image
@@ -1213,7 +1229,7 @@ const handleicons = {
               }}
             >
               <Image
-                source={require("./../image/Search.png")}
+                source={require("./../image/User.png")}
                 style={styles.footerImage}
               />
               <Text style={styles.listProfileNameText}>ログイン</Text>

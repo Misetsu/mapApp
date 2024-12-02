@@ -6,13 +6,14 @@ import {
   Pressable,
   Dimensions,
   TextInput,
-  ScrollView,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Text,
   Keyboard,
   FlatList,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -27,7 +28,6 @@ const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
 export default function edit() {
-  const [text, setText] = useState("");
   const [post, setPost] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
@@ -35,6 +35,7 @@ export default function edit() {
   const [compositionuri, setCompositionuri] = useState(null);
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState([]);
+  const [isTagModalVisible, setIsTagModalVisible] = useState(false);
 
   const reference = storage();
   const router = useRouter();
@@ -226,6 +227,20 @@ export default function edit() {
     setCompositionuri(compositionuri); //uriを保存
   };
 
+  const handleAddTagPress = () => {
+    // Followerテキストが押されたときにフォロワーモーダルを表示
+    setIsTagModalVisible(true);
+  };
+
+  const handleCloseTagModal = () => {
+    // フォローモーダルを閉じる
+    setIsTagModalVisible(false);
+  };
+
+  const handleBackPress = () => {
+    router.back(); // 前の画面に戻る
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -234,15 +249,20 @@ export default function edit() {
     >
       {isLoading ? (
         <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#F2F5C8",
+          }}
         >
+          <ActivityIndicator size="large" color="#239D60" />
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
             アップロード中...
           </Text>
         </View>
       ) : (
-        // <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ flex: 1 }}>
+        <View style={styles.container}>
           <ViewShot
             ref={viewRef}
             options={{ format: "jpg", quality: 1 }}
@@ -286,43 +306,39 @@ export default function edit() {
               </View>
             )}
           </ViewShot>
-          {spotId == 0 && focusedInput !== "post" ? (
-            <View>
-              <Text style={styles.displayName}>場所の名前を入力</Text>
-              <TextInput
-                style={
-                  focusedInput === "name" && keyboardStatus
-                    ? styles.focusedTextbox
-                    : styles.textbox
-                }
-                maxLength={30}
-                onFocus={() => handleFocus("name")}
-                onBlur={handleBlur}
-                onChangeText={setText}
-                value={text}
-              />
-            </View>
-          ) : null}
           {focusedInput !== "name" ? (
             <View>
-              <Text style={styles.displayName}>投稿の文章を入力</Text>
+              <Text style={styles.displayName}>投稿のコメント</Text>
               <TextInput
-                style={
-                  focusedInput === "post" && keyboardStatus
-                    ? styles.focusedTextbox
-                    : styles.textbox
-                }
+                style={styles.textInput}
                 onFocus={() => handleFocus("post")}
                 onBlur={handleBlur}
                 onChangeText={setPost}
                 value={post}
+                placeholder="コメント"
               />
+              <Text style={styles.noamllabel}>
+                写真にコメントをつけて投稿できます
+              </Text>
             </View>
           ) : null}
-          <View style={styles.tagContainer}>
-            <Text>タグ：</Text>
+          <View>
+            <View style={styles.rowContainer}>
+              <Text style={styles.displayName}>タグ</Text>
+              <TouchableOpacity
+                style={[styles.addTag]}
+                onPress={handleAddTagPress}
+              >
+                <Text>+</Text>
+              </TouchableOpacity>
+            </View>
             {selectedTag.length == 0 ? (
-              <Text style={styles.selectedTagContainer}>
+              <Text
+                style={[
+                  styles.selectedTagContainer,
+                  { paddingTop: 10, paddingBottom: 4 },
+                ]}
+              >
                 追加されたタグがありません
               </Text>
             ) : (
@@ -334,62 +350,119 @@ export default function edit() {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => {
                   return (
-                    <TouchableOpacity
-                      style={styles.selectedTagView}
-                      onPress={() => {
-                        deleteTag(item);
-                      }}
-                    >
+                    <TouchableOpacity style={styles.tagView}>
+                      <Icon name="tag" size={16} color={"#239D60"} />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
-                      <Icon name="times-circle" size={16} />
                     </TouchableOpacity>
                   );
                 }}
               />
             )}
             <View style={styles.tagBorder}></View>
-            <Text style={{ fontSize: 12, marginBottom: 10 }}>
-              タグを4つまで選択できます
-            </Text>
-            <FlatList
-              style={styles.allTagContainer}
-              horizontal={false}
-              data={allTag}
-              keyExtractor={(item) => item.tagId}
-              numColumns={2}
-              columnWrapperStyle={{
-                justifyContent: "flex-start",
-                gap: 10,
-                marginBottom: 5,
-              }}
-              renderItem={({ item }) => {
-                return (
-                  <TouchableOpacity
-                    style={styles.tagView}
-                    onPress={() => addTag(item.tagId)}
-                  >
-                    <Icon name="tag" size={16} />
-                    <Text>{item.tagName}</Text>
-                  </TouchableOpacity>
-                );
-              }}
-            />
           </View>
-          <Pressable onPress={Getcompositionuri} style={styles.uploadButton}>
-            <Text
-              style={{ color: "white", textAlign: "center", marginTop: 25 }}
-            >
-              Upload
-            </Text>
+          <Pressable onPress={Getcompositionuri} style={styles.submit}>
+            <Text style={styles.submitText}>アップロード</Text>
           </Pressable>
+
+          <View style={styles.Back}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}
+            >
+              <Icon name="angle-left" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={isTagModalVisible}
+            onRequestClose={handleCloseTagModal}
+          >
+            <View style={styles.overlayModal}>
+              <View style={styles.modalContainer}>
+                <Text>タグ</Text>
+                {selectedTag.length == 0 ? (
+                  <Text
+                    style={[
+                      styles.selectedTagContainer,
+                      { paddingTop: 10, paddingBottom: 4 },
+                    ]}
+                  >
+                    追加されたタグがありません
+                  </Text>
+                ) : (
+                  <FlatList
+                    style={styles.selectedTagContainer}
+                    horizontal={true}
+                    data={selectedTag}
+                    keyExtractor={(item) => item}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => {
+                      return (
+                        <TouchableOpacity
+                          style={styles.tagView}
+                          onPress={() => {
+                            deleteTag(item);
+                          }}
+                        >
+                          <Icon name="tag" size={16} color={"#239D60"} />
+                          <Text>
+                            {allTag.find((o) => o.tagId == item).tagName}
+                          </Text>
+                          <Icon name="times-circle" size={16} />
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+                )}
+                <View style={styles.tagBorder}></View>
+                <Text style={styles.noamllabel}>
+                  タグを４つまで選択できます
+                </Text>
+                <FlatList
+                  style={styles.allTagContainer}
+                  horizontal={false}
+                  data={allTag}
+                  keyExtractor={(item) => item.tagId}
+                  numColumns={2}
+                  columnWrapperStyle={{
+                    justifyContent: "flex-start",
+                    gap: 5,
+                    margin: 5,
+                  }}
+                  renderItem={({ item }) => {
+                    return (
+                      <TouchableOpacity
+                        style={styles.tagView}
+                        onPress={() => addTag(item.tagId)}
+                      >
+                        <Icon name="tag" size={16} color={"#239D60"} />
+                        <Text>{item.tagName}</Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={handleCloseTagModal}
+                >
+                  <Text style={styles.buttonText}>閉じる</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </View>
-        // </ScrollView>
       )}
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#F2F5C8",
+    padding: 20,
+    flex: 1,
+  },
   imageContainer: {
     width: imageWidth,
     height: imageHeight,
@@ -402,44 +475,43 @@ const styles = StyleSheet.create({
   },
   displayName: {
     fontSize: 15,
-    marginTop: 20,
-    marginBottom: 5,
-    marginLeft: 25,
+    marginTop: 10,
+    marginLeft: 10,
     textAlign: "left",
     alignItems: "flex-start",
     fontWeight: "300",
   },
-  textbox: {
-    height: 30,
-    borderBottomWidth: 2,
+  textInput: {
+    margin: 5,
+    marginTop: 0,
+    marginBottom: 0,
+    fontSize: 20,
+    height: 40,
+    borderBottomWidth: 3,
+    borderColor: "#239D60",
+    marginVertical: 16,
     color: "black",
     fontWeight: "300",
-    paddingHorizontal: 10,
-    width: "80%",
-    marginHorizontal: 25,
-    backgroundColor: "#fbfbfb",
   },
-  focusedTextbox: {
-    position: "absolute",
-    width: "80%", // 画面幅の90%
-    marginHorizontal: 25,
-    height: 30,
-    borderBottomWidth: 2,
-    color: "black",
-    fontWeight: "300",
-    paddingHorizontal: 10,
-    backgroundColor: "#fbfbfb",
-    zIndex: 10, // 画像の上に表示するためにzIndexを指定
+  submit: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#239D60",
+    height: 50,
+    margin: 10, // ボタン間にスペースを追加
   },
-  uploadButton: {
-    position: "absolute",
-    alignSelf: "center",
-    bottom: 50,
-    right: 20,
-    width: 75,
-    height: 75,
-    backgroundColor: "red",
-    borderRadius: 75,
+  submitText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#f2f2f2",
+    textAlign: "center",
+  },
+  noamllabel: {
+    fontSize: 15,
+    margin: 5,
+    fontWeight: "600",
+    color: "#239D60",
+    textAlign: "center",
   },
   modalButtonTopLeft: {
     position: "absolute",
@@ -492,15 +564,15 @@ const styles = StyleSheet.create({
     ],
   },
   tagView: {
-    width: width / 3,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 10,
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
   },
   selectedTagView: {
     marginHorizontal: 2,
@@ -514,19 +586,68 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-  tagContainer: {
-    paddingHorizontal: 25,
-    marginTop: 20,
-  },
   selectedTagContainer: {
-    marginTop: 10,
+    margin: 5,
   },
   tagBorder: {
-    width: "100%",
-    borderBottomWidth: 2,
-    marginVertical: 10,
+    margin: 5,
+    marginTop: 0,
+    marginBottom: 0,
+    borderBottomWidth: 3,
+    borderColor: "#239D60",
+    marginVertical: 16,
   },
   allTagContainer: {
-    height: height * 0.2,
+    // height: height * 0.4,
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  overlayModal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+  },
+  modalContainer: {
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "#F2F5C8",
+    padding: 15,
+  },
+  button: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#A3DE83",
+    height: 50,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "#000000",
+    textAlign: "center",
+    fontWeight: "300",
+  },
+  rowContainer: {
+    justifyContent: "flex-start",
+    gap: 5,
+  },
+  addTag: {
+    width: "10%",
+    borderWidth: 2,
+    borderRadius: 15,
+    borderColor: "#239D60",
+    backgroundColor: "#f2f5c8",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -178,26 +178,29 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              {followList.map((follow) => {
-                return (
-                  <TouchableOpacity
-                    key={follow.uid}
-                    style={styles.followListuser}
-                    onPress={() => {
-                      handleProfile(follow.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follow.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}></Text>
-                      <Text>{follow.displayName}</Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+              <ScrollView>
+                {followList.map((follow) => {
+                  return (
+                    <TouchableOpacity
+                      key={follow.uid}
+                      style={styles.followListuser}
+                      onPress={() => {
+                        handleProfile(follow.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: follow.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <View style={styles.listUsernamecontainer}>
+                        <Text style={styles.listUsername}>
+                          {follow.displayName}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowModal}
@@ -218,27 +221,29 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
-              {followerList.map((follower) => {
-                return (
-                  <TouchableOpacity
-                    key={follower.uid}
-                    style={styles.followListuser}
-                    onPress={() => {
-                      handleProfile(follower.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: follower.photoURL }}
-                      style={styles.listProfileImage}
-                    />
-                    <View style={styles.listUsernamecontainer}>
-                      <Text style={styles.listUsername}>
-                        {follower.displayName}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+              <ScrollView>
+                {followerList.map((follower) => {
+                  return (
+                    <TouchableOpacity
+                      key={follower.uid}
+                      style={styles.followListuser}
+                      onPress={() => {
+                        handleProfile(follower.uid);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: follower.photoURL }}
+                        style={styles.listProfileImage}
+                      />
+                      <View style={styles.listUsernamecontainer}>
+                        <Text style={styles.listUsername}>
+                          {follower.displayName}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCloseFollowerModal}
@@ -368,9 +373,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
+    maxHeight: "80%",
     padding: 20,
-    paddingTop: 15,
-    backgroundColor: "#F2F5C2",
+    backgroundColor: "#F2F5C8",
     borderRadius: 10,
   },
   listUsernamecontainer: {
