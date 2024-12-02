@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import FirebaseAuth from "@react-native-firebase/auth";
+import { ScrollView } from "react-native";
 
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
@@ -24,9 +25,6 @@ export default function SearchScreen() {
   const [recommendedUsers, setRecommendedUsers] = useState([]); // おすすめユーザーリスト
   const [officialUsers, setOfficialUsers] = useState([]); // 公式ユーザー
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [followingMe, setFollowingMe] = useState(false);
-
   
 
   const handleBackPress = () => {
@@ -50,6 +48,7 @@ export default function SearchScreen() {
       const officialUids = [
         "2tjGBOa6snXpIpxb2drbSvUAmb83",
         "H0zKYLQyeggzzCYgZM6bUddAItU2",
+        "1mfK81yybUe4oCDb2wTJbjOVgEB3",
       ];
 
       const userDetails = await Promise.all(
@@ -74,24 +73,12 @@ export default function SearchScreen() {
         .collection("follow")
         .where("followerId", "==", auth.currentUser.uid)
         .get();
-  
+
       const followData = {};
       for (const doc of followSnapshot.docs) {
-        followData[doc.data().followeeId] = true; // 自分がフォローしているユーザー
+        followData[doc.data().followeeId] = true; // フォローしているユーザーのIDを取得
       }
       setFollowing(followData);
-  
-      // 自分をフォローしているユーザーを取得
-      const followingMeSnapshot = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", auth.currentUser.uid)
-        .get();
-  
-      const followingMeData = {};
-      for (const doc of followingMeSnapshot.docs) {
-        followingMeData[doc.data().followerId] = true; // 自分をフォローしているユーザー
-      }
-      setFollowingMe(followingMeData); // 新しい状態を設定
     } catch (error) {
       console.error("Error fetching following data:", error);
     }
@@ -228,68 +215,54 @@ export default function SearchScreen() {
   };
 
   // ユーザーのフォロー/フォロー解除を切り替え
-  const handleFollowToggle = async (uid) => {
-    if (isProcessing) return; // 処理中なら新たなリクエストを拒否
-    setIsProcessing(true); // ボタンを無効化
-  
-    try {
-      if (following[uid]) {
-        // フォロー解除の確認ダイアログを表示
-        Alert.alert(
-          "確認",
-          "本当にフォローを外しますか？",
-          [
-            {
-              text: "キャンセル",
-              style: "cancel",
-              onPress: () => setIsProcessing(false), // キャンセル時は処理フラグを解除
-            },
-            {
-              text: "フォローを解除",
-              onPress: async () => {
-                try {
-                  const followDoc = await firestore()
-                    .collection("follow")
-                    .where("followerId", "==", auth.currentUser.uid)
-                    .where("followeeId", "==", uid)
-                    .get();
-  
-                  if (!followDoc.empty) {
-                    await followDoc.docs[0].ref.delete();
-                    setFollowing((prev) => ({ ...prev, [uid]: false }));
-                  }
-                } catch (error) {
-                  console.error("フォロー解除エラー:", error);
-                } finally {
-                  setIsProcessing(false); // 処理完了後にフラグ解除
-                }
-              },
-            },
-          ],
-          { cancelable: false } // ダイアログをキャンセル可能にする
-        );
-      } else {
-        // フォロー処理
-        const followSnapshot = await firestore()
-          .collection("follow")
-          .where("followerId", "==", auth.currentUser.uid)
-          .where("followeeId", "==", uid)
-          .get();
-  
-        if (followSnapshot.empty) {
-          await firestore().collection("follow").add({
-            followerId: auth.currentUser.uid,
-            followeeId: uid,
-          });
-          setFollowing((prev) => ({ ...prev, [uid]: true }));
-        }
-      }
-    } catch (error) {
-      console.error("フォロー/フォロー解除エラー:", error);
-    } finally {
-      if (!following[uid]) setIsProcessing(false); // フォロー解除以外はここで処理フラグ解除
+const handleFollowToggle = async (uid) => {
+  try {
+    // 自分自身をフォローすることを防ぐ条件
+    if (uid === auth.currentUser.uid) {
+      Alert.alert("エラー", "自分自身をフォローすることはできません。");
+      return;
     }
-  };
+
+    if (following[uid]) {
+      // フォロー解除の確認ダイアログを表示
+      Alert.alert(
+        "確認", // タイトル
+        "本当にフォローを外しますか？", // メッセージ
+        [
+          {
+            text: "キャンセル", // キャンセルボタン
+            style: "cancel",
+          },
+          {
+            text: "フォローを解除", // 確認ボタン
+            onPress: async () => {
+              // フォロー解除の処理
+              const followDoc = await firestore()
+                .collection("follow")
+                .where("followerId", "==", auth.currentUser.uid)
+                .where("followeeId", "==", uid)
+                .get();
+
+              if (!followDoc.empty) {
+                await followDoc.docs[0].ref.delete(); // フォローデータを削除
+                setFollowing((prevState) => ({ ...prevState, [uid]: false })); // ステートを更新
+              }
+            },
+          },
+        ]
+      );
+    } else {
+      // フォローする処理
+      await firestore().collection("follow").add({
+        followerId: auth.currentUser.uid,
+        followeeId: uid,
+      });
+      setFollowing((prevState) => ({ ...prevState, [uid]: true })); // ステートを更新
+    }
+  } catch (error) {
+    console.error("Error toggling follow state:", error);
+  }
+};
 
   // プロフィール画面に遷移
   const handleProfile = (uid) => {
@@ -339,6 +312,7 @@ export default function SearchScreen() {
       {searchText === "" && recommendedUsers.length > 0 && (
         <View style={styles.recommendedContainer}>
           <Text style={styles.sectionTitle}>おすすめユーザー</Text>
+          <ScrollView>
           {recommendedUsers.map((user) => (
             <UserItem
               key={user.uid}
@@ -349,27 +323,28 @@ export default function SearchScreen() {
               currentUserId={auth.currentUser.uid} // 現在のユーザーIDを渡す
             />
           ))}
+          </ScrollView>
         </View>
       )}
 
       {/* 検索結果の表示 */}
       {searchResult.length > 0 && searchText !== "" && (
         <View style={styles.resultsContainer}>
+          <ScrollView>
           {searchResult.map((result) => {
             const userData = result.data();
             return (
               <UserItem
-                key={user.uid}
-                user={user}
-                isFollowing={following[user.uid]}
-                followingMe={followingMe[user.uid]} // 自分をフォローしているかどうか
-                onProfilePress={() => handleProfile(user.uid)}
-                onFollowToggle={() => handleFollowToggle(user.uid)}
-                currentUserId={currentUserId}
-                isProcessing={isProcessing}
+                key={userData.uid}
+                user={userData}
+                isFollowing={following[userData.uid]}
+                onProfilePress={() => handleProfile(userData.uid)}
+                onFollowToggle={() => handleFollowToggle(userData.uid)}
+                currentUserId={auth.currentUser.uid} // 現在のユーザーIDを渡す
               />
             );
           })}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -377,21 +352,15 @@ export default function SearchScreen() {
 }
 
 // ユーザーアイテムのためのコンポーネントを分離してクリーンなコードを維持
-const UserItem = ({ user, isFollowing, followingMe, onProfilePress, onFollowToggle, currentUserId, isProcessing }) => (
+const UserItem = ({ user, isFollowing, onProfilePress, onFollowToggle, currentUserId }) => (
   <View style={styles.resultBar}>
     <TouchableOpacity onPress={onProfilePress} style={styles.userInfo}>
       <Image source={{ uri: user.photoURL }} style={styles.listProfileImage} />
-      <View>
-        {followingMe && (
-          <Text style={styles.followingMeText}>あなたをフォローしています。</Text>
-        )}
-        <Text style={styles.resultText}>{user.displayName}</Text>
-      </View>
+      <Text style={styles.resultText}>{user.displayName}</Text>
     </TouchableOpacity>
-    {user.uid !== currentUserId && (
+    {user.uid !== currentUserId && ( // 自分自身のユーザーIDと一致する場合はボタンを非表示
       <TouchableOpacity
         onPress={onFollowToggle}
-        disabled={isProcessing}
         style={[
           styles.followButton,
           isFollowing ? styles.followedButton : styles.unfollowedButton,
@@ -407,119 +376,136 @@ const UserItem = ({ user, isFollowing, followingMe, onProfilePress, onFollowTogg
 
 // スタイルの定義
 const styles = StyleSheet.create({
+  // コンテナ全体のスタイル
   container: {
-    flex: 1,
+    flex: 1, // コンテナを全画面に拡張
     backgroundColor: "#e6e6b3", // 背景色をライトグレーに
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // 左右のパディング
   },
+  // ヘッダー部分のスタイル（検索バーや戻るボタンなど）
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
+    flexDirection: "row", // 横並び
+    justifyContent: "space-between", // 左右にスペースを均等に配置
+    alignItems: "center", // アイテムを中央に配置
+    marginTop: 20, // 上の余白
+    marginBottom: 10, // 下の余白
   },
+  // 検索バーのスタイル
   searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 25,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2, // Android用シャドウ
-    flex: 1,
+    flexDirection: "row", // アイコンと入力を横並びに配置
+    alignItems: "center", // アイコンとテキストを縦に中央揃え
+    backgroundColor: "#fff", // 背景色は白
+    borderColor: "#ddd", // 枠線の色
+    borderWidth: 1, // 枠線の太さ
+    borderRadius: 25, // 丸みを帯びた角
+    padding: 10, // 内側の余白
+    shadowColor: "#000", // シャドウの色
+    shadowOffset: { width: 0, height: 1 }, // シャドウの位置
+    shadowOpacity: 0.1, // シャドウの透明度
+    shadowRadius: 5, // シャドウのぼかし具合
+    elevation: 2, // Android用のシャドウ
+    flex: 1, // 検索バーが横幅いっぱいに広がるように
   },
+  // アイコンのスタイル
   icon: {
-    marginRight: 10,
-    color: "#555",
+    marginRight: 10, // 右側の余白
+    color: "#555", // アイコンの色
   },
+  // 入力フィールドのスタイル
   input: {
-    flex: 1,
-    fontSize: 16,
-    color: "#333",
+    flex: 1, // 入力フィールドが横幅いっぱいに広がるように
+    fontSize: 16, // フォントサイズ
+    color: "#333", // テキストの色
   },
+  // おすすめユーザーのコンテナのスタイル
   recommendedContainer: {
-    marginBottom: 20,
+    marginBottom: 0, // 下の余白
   },
+  // 検索結果のコンテナのスタイル
   resultsContainer: {
-    marginTop: 20,
+    marginTop: 20, // 上の余白
   },
+  // セクションタイトルのスタイル
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
+    fontSize: 18, // フォントサイズ
+    fontWeight: "bold", // 太字
+    color: "#333", // 色
+    marginBottom: 10, // 下の余白
   },
+  // 検索結果バーのスタイル
   resultBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#ffffe0",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    flexDirection: "row", // 横並び
+    justifyContent: "space-between", // 左右にスペースを均等に配置
+    alignItems: "center", // アイテムを中央に配置
+    backgroundColor: "#ffffe0", // 背景色（薄い黄色）
+    borderRadius: 10, // 丸みを帯びた角
+    padding: 15, // 内側の余白
+    marginBottom: 10, // 下の余白
+    shadowColor: "#000", // シャドウの色
+    shadowOffset: { width: 0, height: 2 }, // シャドウの位置
+    shadowOpacity: 0.1, // シャドウの透明度
+    shadowRadius: 5, // シャドウのぼかし具合
+    elevation: 2, // Android用のシャドウ
   },
+  // ユーザー情報を表示する部分のスタイル
   userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "row", // 横並び
+    alignItems: "center", // アイテムを中央に配置
   },
+  // プロフィール画像のスタイル
   listProfileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
-    backgroundColor:"#dbdbdb",
+    width: 50, // 幅
+    height: 50, // 高さ
+    borderRadius: 25, // 丸い形にするための半径
+    marginRight: 15, // 右側の余白
+    backgroundColor: "#dbdbdb", // 背景色（デフォルトのグレー）
   },
+  // 結果テキストのスタイル
   resultText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#333",
+    fontSize: 16, // フォントサイズ
+    fontWeight: "500", // 太さ（普通）
+    color: "#333", // 色
   },
 
+  // フォローボタンのスタイル
   followButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: 8, // 上下の余白
+    paddingHorizontal: 20, // 左右の余白
+    borderRadius: 20, // 丸い角
+    alignItems: "center", // アイテムを中央に配置
+    justifyContent: "center", // アイテムを中央に配置
   },
+  // フォロー中ボタンのスタイル
   followedButton: {
     backgroundColor: "#91db9b", // フォロー中ボタンの色
   },
+  // フォローボタンのスタイル
   unfollowedButton: {
     backgroundColor: "#65996c", // フォローボタンの色
   },
+  // ボタンテキストのスタイル
   buttonText: {
-    fontSize: 14,  
-    color: "#fff",
+    fontSize: 14,  // フォントサイズ
+    color: "#fff", // 文字色
   },
+  // 戻るボタンのスタイル（位置）
   Back: {
-    position: "absolute",
-    left: 10,
-    top: 10,
+    position: "absolute", // 絶対位置
+    left: 10, // 左からの位置
+    top: 10, // 上からの位置
   },
+  // 戻るボタンのスタイル（デザイン）
   backButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    justifyContent: "center", // 中央に配置
+    alignItems: "center", // 中央に配置
+    width: 40, // 幅
+    height: 40, // 高さ
+    borderRadius: 20, // 丸い形にする
+    backgroundColor: "#fff", // 背景色（白）
+    shadowColor: "#000", // シャドウの色
+    shadowOffset: { width: 0, height: 2 }, // シャドウの位置
+    shadowOpacity: 0.1, // シャドウの透明度
+    shadowRadius: 5, // シャドウのぼかし具合
+    elevation: 2, // Android用のシャドウ
   },
 });
-
