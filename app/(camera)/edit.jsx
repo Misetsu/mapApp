@@ -90,6 +90,7 @@ export default function edit() {
   const handleBackPress = () => {
     router.back(); // 前の画面に戻る
   };
+
   const uploadPost = async () => {
     setIsoading(true);
 
