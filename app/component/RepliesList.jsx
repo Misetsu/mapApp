@@ -6,68 +6,65 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
-  Button,
-  Alert,
   Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import ReplieModal from "../component/repliemodal";
+
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
+
 const RepliesList = ({ replies, navigateProfile, postId }) => {
   const router = useRouter();
   const [parentReplyId, setParentReplyId] = useState(null); // 親返信ID
-  const [newReplyText, setNewReplyText] = useState(""); // 新しい返信内容
+  const [items, setitems] = useState([]);
+  const [modalVisible, setmodalVisible] = useState(false);
+  const [replie, setReplies] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  const setRepliesModal = (item) => {
+    setitems(item);
+    fetchData(item);
+    setmodalVisible(true);
+  };
+
+  const fetchData = async (item) => {
+    setLoading(true);
+    try {
+      const repliesSnapshot = await firestore()
+        .collection("replies")
+        .where("postId", "==", parseInt(postId))
+        .where("parentReplyId", "==", parseInt(item.parentReplyId))
+        .orderBy("timestamp", "asc")
+        .get();
+
+      const repliesData = await Promise.all(
+        repliesSnapshot.docs.map(async (doc) => {
+          const queryUser = await firestore()
+            .collection("users")
+            .where("uid", "==", doc.data().userId)
+            .get();
+
+          const userData = queryUser.docs[0].data();
+          return {
+            id: doc.id,
+            ...doc.data(),
+            userData,
+          };
+        })
+      );
+      console.log("AAAAAAAAAAAAAAAAAAAAAAAAA", repliesData);
+      setReplies(repliesData);
+    } catch (error) {
+      console.log(error.message);
+    }
+    setLoading(false);
+  };
 
   const handleReplyPress = (replyId) => {
     setParentReplyId(parentReplyId === replyId ? null : parseInt(replyId)); // 親返信をトグル
-  };
-  const auth = FirebaseAuth();
-  const onReplySubmit = async (parentReplyId, newReplyText) => {
-    const currentTime = new Date().toISOString();
-
-    if (newReplyText.trim()) {
-      if (!auth.currentUser) {
-        Alert.alert("エラー", "ログインしてください。");
-        return;
-      }
-      const userId = auth.currentUser.uid;
-
-      try {
-        await firestore()
-          .collection("replies")
-          .add({
-            postId: parseInt(postId),
-            parentReplyId: parentReplyId,
-            userId: userId,
-            text: newReplyText,
-            timestamp: currentTime,
-            hantei: 1,
-          });
-
-        Alert.alert("成功", "返信が送信されました。");
-        router.back();
-      } catch (error) {
-        Alert.alert(
-          "エラー",
-          `返信の送信中にエラーが発生しました: ${error.message}`
-        );
-        console.error("Error adding reply:", error);
-      }
-    } else {
-      Alert.alert("エラー", "返信を入力してください。");
-    }
-  };
-
-  const submitReply = () => {
-    if (newReplyText.trim()) {
-      onReplySubmit(parentReplyId, newReplyText); // 親返信IDと一緒に返信を送信
-      setNewReplyText("");
-      setParentReplyId(null);
-    }
   };
 
   const renderReply = ({ item }) => (
@@ -88,7 +85,6 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
           />
           <Text style={styles.postUser}>{item.userData.displayName}</Text>
         </TouchableOpacity>
-
       </View>
       <Text style={styles.replyText}>{item.text}</Text>
       <Text style={styles.replyTimestamp}>
@@ -99,23 +95,21 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
         )}
       </Text>
       {/* 返信ボタン */}
-      <TouchableOpacity onPress={() => handleReplyPress(item.parentReplyId)} style={styles.replyButton}>
-        <Text style={styles.replyButtonText}>返信</Text>
-      </TouchableOpacity>
+      {item.hantei === 0 ? (
+        <TouchableOpacity onPress={() => setRepliesModal(item)}>
+          <Text style={styles.replyButton}>返信</Text>
+        </TouchableOpacity>
+      ) : null}
       {/* 返信入力フィールド */}
-      {parentReplyId === item.parentReplyId && (
-        <View style={styles.replyInputContainer}>
-          <TextInput
-            style={styles.input}
-            value={newReplyText}
-            onChangeText={setNewReplyText}
-            placeholder="返信を入力..."
-          />
-          <TouchableOpacity style={styles.replyBtn} onPress={submitReply}>
-            <Text>送信</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <ReplieModal
+        visible={modalVisible}
+        items={replie}
+        onClose={() => setmodalVisible(false)}
+        postId={postId}
+        navigateProfile={navigateProfile}
+        parentReplyId={item.parentReplyId}
+        loading={loading}
+      />
     </View>
   );
 
@@ -125,44 +119,44 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
         data={replies} // ソートされた配列を使用
         renderItem={renderReply}
         keyExtractor={(item) => item.id}
+        style={styles.repliesList}
         contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={
           <Text style={styles.noRepliesText}>まだ返信がありません。</Text>
         }
       />
     </View>
-
-
   );
-
 };
 
 const styles = StyleSheet.create({
+  replyContainer: {
+    paddingHorizontal: 10,
+    paddingTop: 5,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "lightgray",
+  },
   indentedReplyContainer: {
     marginLeft: 40, // 4マス分のインデント
-
   },
   replyText: {
-    fontSize: 16,
-    margin: 5,
-    marginLeft: 10,
+    fontSize: 14,
+    paddingHorizontal: 10,
   },
   replyTimestamp: {
     fontSize: 12,
     color: "gray",
-    marginLeft: 10,
   },
   noRepliesText: {
     textAlign: "center",
     color: "gray",
     marginTop: 10,
-
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-
   },
   userBar: {
     flexDirection: "row",
@@ -179,19 +173,18 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
   },
   iconImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    marginRight: 10,
-    marginLeft: 10,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+  },
+  repliesList: {
+    marginTop: 10,
   },
   replyButton: {
-    padding: 10,
-    alignSelf: "flex-start", // 子要素の横幅に合わせる
-  },
-  replyButtonText: {
     color: "#239D60",
     fontWeight: "600",
+    paddingTop: 5,
+    paddingHorizontal: 5,
   },
   replyInputContainer: {
     flexDirection: "row",
@@ -200,7 +193,6 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   replyInput: {
-    flex: 1,
     borderColor: "gray",
     borderWidth: 1,
     borderRadius: 5,
@@ -215,8 +207,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 5,
     width: "100%",
-    flex: 1,
-
   },
   replyBtn: {
     paddingVertical: 10,
@@ -225,13 +215,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#A3DE83",
   },
-  liststyle: {
-    paddingTop: 5,
-    paddingBottom: 5,
-    marginBottom: "auto",
-    flex: 1, // 画面全体を使う
+  sky: {
+    height: 600,
   },
-  sky: { height: 600 }
 });
 
 export default RepliesList;

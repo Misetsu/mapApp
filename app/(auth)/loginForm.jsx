@@ -7,6 +7,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -46,7 +47,6 @@ export default function LoginScreen() {
 
     // 取得した認証情報 (ID トークン) を元にサインインする
     const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
-
     await auth.signInWithCredential(credential);
 
     const querySnapshot = await firestore()
@@ -69,8 +69,20 @@ export default function LoginScreen() {
   };
 
   const signInWithEmail = async () => {
-    await auth.signInWithEmailAndPassword(userEmail, userPassword);
-    router.replace({ pathname: "/" });
+    const aa = ""
+    try {
+      if(userEmail != "" && userPassword != ""){
+        aa = await auth.signInWithEmailAndPassword(userEmail, userPassword);
+        
+        router.replace({ pathname: "/" });
+      }
+      else
+      {
+        Alert.alert("入力してください。","入力してください。");
+      }
+    }catch (error) {
+      Alert.alert("ログインに失敗しました。","入力内容を再確認してください。");
+    }
   };
 
   const handleChangePassword = async () => {

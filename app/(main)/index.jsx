@@ -66,15 +66,10 @@ export default function TrackUserMapView() {
   const [selectedTag, setSelectedTag] = useState(null);
   const [mapflag, setmapflag] = useState(true);
   const [indexLoading, setIndexLoading] = useState(true);
+  const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
+  const [markers, setmarkers] = useState([]);
+  const [regionflag, setregionflag] = useState(0);
 
-  const setURLmodal = (spotId) => {
-    setSpotId(spotId);
-    setspotName(spotId);
-    setPostImage(false);
-    handleVisitState(spotId);
-    fetchPostData(spotId);
-    setModalVisible(true);
-  };
   const setmodal = (marker) => {
     try {
       const distance = calculateDistance(
@@ -85,21 +80,21 @@ export default function TrackUserMapView() {
       );
       if (distance < marker.areaRadius) {
         setPostData([]);
-        setLoading(true);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
         fetchPostData(marker.id);
+        setmarkers(marker);
       } else {
         setPostData([]);
-        setLoading(true);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
         fetchPostData(marker.id);
+        setmarkers(marker);
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -119,8 +114,15 @@ export default function TrackUserMapView() {
     // URLを解析してクエリパラメータを取得
     const queryParams = new URLSearchParams(url.split("?")[1]);
     const spotIdFromUrl = queryParams.get("spotId");
-    if (spotIdFromUrl != null) {
-      setURLmodal(parseInt(spotIdFromUrl));
+    const latitude = parseFloat(queryParams.get("latitude"));
+    const longitude = parseFloat(queryParams.get("longitude"));
+    if (latitude != null && longitude != null) {
+      setRegion({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      });
     }
   };
   function toRadians(degrees) {
@@ -435,200 +437,8 @@ export default function TrackUserMapView() {
       } catch (error) {
         console.error("Error fetching documents: ", error);
       }
-    } else {
-      //TODO
-      try {
-        const postArray = [];
-        const friendList = [];
-        const tagPostId = [];
-
-        setEmptyPost(true);
-
-        if (auth.currentUser != null) {
-          friendList.push(auth.currentUser.uid);
-
-          const queryFollow = await firestore()
-            .collection("follow")
-            .where("followerId", "==", auth.currentUser.uid)
-            .get();
-
-          if (!queryFollow.empty) {
-            let cnt = 0;
-            while (cnt < queryFollow.size) {
-              const followSnapshot = queryFollow.docs[cnt];
-              const followData = followSnapshot.data();
-              friendList.push(followData.followeeId);
-              cnt = cnt + 1;
-            }
-          }
-        }
-
-        const queryTagPost = await firestore()
-          .collection("tagPost")
-          .where("spotId", "==", spotId)
-          .where("tagId", "==", parseInt(selectedTag))
-          .orderBy("timeStamp", "desc")
-          .limit(5)
-          .get();
-
-        queryTagPost.forEach((doc) => {
-          const item = doc.data();
-          tagPostId.push(item.postId);
-        });
-
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("id", "in", tagPostId)
-          .orderBy("timeStamp", "desc")
-          .get();
-
-        if (!querySnapshot.empty) {
-          const size = querySnapshot.size;
-          let cnt = 0;
-          const firstKey = "userId";
-          const secondKey = "username";
-          const thirdKey = "userIcon";
-          const forthKey = "postId";
-          const fifthKey = "postText";
-          const sixthKey = "photoUri";
-          const seventhKey = "timestamp";
-          const eighthKey = "likeCount";
-          const ninthKey = "likeFlag";
-          const tenthKey = "replyCount";
-
-          while (cnt < size) {
-            const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
-            const postData = documentSnapshot.data();
-
-            let photoUri = "";
-            let tempObj = {};
-
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", postData.userId)
-              .get();
-            const userSnapshot = queryUser.docs[0];
-            const userData = userSnapshot.data();
-
-            if (userData.publicStatus == 0) {
-              const queryPhoto = await firestore()
-                .collection("photo")
-                .where("postId", "==", postData.id) // 特定の条件を指定
-                .get();
-              if (!queryPhoto.empty) {
-                const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
-                const photoData = photoSnapshot.data();
-
-                if (photoData.imagePath) {
-                  const url = await storage()
-                    .ref()
-                    .child(photoData.imagePath)
-                    .getDownloadURL();
-                  photoUri = url;
-                }
-              }
-
-              const queryLike = await firestore()
-                .collection("like")
-                .where("postId", "==", postData.id)
-                .get();
-
-              const likeSnapshot = queryLike.docs[0];
-              const likeData = likeSnapshot.data();
-              let likeFlag;
-              if (auth.currentUser != null) {
-                if (likeData[auth.currentUser.uid] !== undefined) {
-                  likeFlag = true;
-                } else {
-                  likeFlag = false;
-                }
-              }
-
-              const queryReply = await firestore()
-                .collection("replies")
-                .where("postId", "==", postData.id)
-                .get();
-
-              const replyCount = queryReply.empty ? 0 : queryReply.size;
-
-              tempObj[firstKey] = postData.userId;
-              tempObj[secondKey] = userData.displayName;
-              tempObj[thirdKey] = userData.photoURL;
-              tempObj[forthKey] = postData.id;
-              tempObj[fifthKey] = postData.postTxt;
-              tempObj[sixthKey] = photoUri;
-              tempObj[seventhKey] = postData.timeStamp;
-              tempObj[eighthKey] = likeData.count;
-              tempObj[ninthKey] = likeFlag;
-              tempObj[tenthKey] = replyCount;
-
-              postArray.push(tempObj);
-              setEmptyPost(false);
-            } else if (friendList.includes(userData.uid)) {
-              const queryPhoto = await firestore()
-                .collection("photo")
-                .where("postId", "==", postData.id) // 特定の条件を指定
-                .get();
-              if (!queryPhoto.empty) {
-                const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
-                const photoData = photoSnapshot.data();
-
-                if (photoData.imagePath) {
-                  const url = await storage()
-                    .ref()
-                    .child(photoData.imagePath)
-                    .getDownloadURL();
-                  photoUri = url;
-                }
-              }
-
-              const queryLike = await firestore()
-                .collection("like")
-                .where("postId", "==", postData.id)
-                .get();
-
-              const likeSnapshot = queryLike.docs[0];
-              const likeData = likeSnapshot.data();
-              let likeFlag;
-              if (likeData[auth.currentUser.uid] !== undefined) {
-                likeFlag = true;
-              } else {
-                likeFlag = false;
-              }
-
-              const queryReply = await firestore()
-                .collection("replies")
-                .where("postId", "==", postData.id)
-                .get();
-
-              const replyCount = queryReply.empty ? 0 : queryReply.size;
-
-              tempObj[firstKey] = postData.userId;
-              tempObj[secondKey] = userData.displayName;
-              tempObj[thirdKey] = userData.photoURL;
-              tempObj[forthKey] = postData.id;
-              tempObj[fifthKey] = postData.postTxt;
-              tempObj[sixthKey] = photoUri;
-              tempObj[seventhKey] = postData.timeStamp;
-              tempObj[eighthKey] = likeData.count;
-              tempObj[ninthKey] = likeFlag;
-              tempObj[tenthKey] = replyCount;
-
-              postArray.push(tempObj);
-              setEmptyPost(false);
-            }
-
-            cnt = cnt + 1;
-          }
-          setPostData(postArray);
-          setLoading(false);
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error fetching documents: ", error);
-      }
     }
+    setLoading(false);
   };
 
   const getPinColor = (marker) => {
@@ -662,8 +472,10 @@ export default function TrackUserMapView() {
 
   const setmapfixeds = () => {
     if (mapfixed == true) {
+      setregionflag(0);
       setmapfixed(false);
-    } else {
+    } else if (mapfixed == false) {
+      setregionflag(1);
       setmapfixed(true);
     }
   };
@@ -770,7 +582,6 @@ export default function TrackUserMapView() {
     }
   };
   const onRegionChangeComplete = (newRegion) => {
-    setLoading(true);
     if (mapflag) {
       setregions(newRegion); // 新しい表示領域を状態に設定
     }
@@ -1116,13 +927,6 @@ export default function TrackUserMapView() {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
-            setRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-              flag: 0,
-            });
             setregions({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
@@ -1134,6 +938,14 @@ export default function TrackUserMapView() {
           } else {
             setError("Position or coords is undefined");
           }
+          if (regionflag == 0) {
+            setRegion({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            });
+          }
         } catch (error) {
           setError(`Error updating position: ${error.message}`);
         }
@@ -1142,14 +954,15 @@ export default function TrackUserMapView() {
         setError(err.message);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: enableHighAccuracys,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
       }
     );
+    setenableHighAccuracy(true);
     return () => Geolocation.clearWatch(watchId);
-  }, [initialRegion]);
+  }, [position]);
 
   useEffect(() => {
     setUser(auth.currentUser);
@@ -1296,6 +1109,7 @@ export default function TrackUserMapView() {
         loading={loading}
         onClose={() => setModalVisible(false)}
         spotName={spotName}
+        marker={markers}
       />
 
       {mapfixed ? (
