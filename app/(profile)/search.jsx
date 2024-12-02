@@ -27,8 +27,6 @@ export default function SearchScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [followingMe, setFollowingMe] = useState(false);
 
-  
-
   const handleBackPress = () => {
     if (router) {
       router.back();
@@ -74,19 +72,19 @@ export default function SearchScreen() {
         .collection("follow")
         .where("followerId", "==", auth.currentUser.uid)
         .get();
-  
+
       const followData = {};
       for (const doc of followSnapshot.docs) {
         followData[doc.data().followeeId] = true; // 自分がフォローしているユーザー
       }
       setFollowing(followData);
-  
+
       // 自分をフォローしているユーザーを取得
       const followingMeSnapshot = await firestore()
         .collection("follow")
         .where("followeeId", "==", auth.currentUser.uid)
         .get();
-  
+
       const followingMeData = {};
       for (const doc of followingMeSnapshot.docs) {
         followingMeData[doc.data().followerId] = true; // 自分をフォローしているユーザー
@@ -216,7 +214,7 @@ export default function SearchScreen() {
       firestore()
         .collection("users")
         .where("displayName", ">=", text)
-        .where("displayName", "<=", text + "\uf8ff") // 検索条件を設定
+        .where("displayName", "<=", text + "¥uf8ff") // 検索条件を設定
         .get()
         .then((result) => {
           setSearchResult(result.docs); // 検索結果をステートに設定
@@ -231,7 +229,7 @@ export default function SearchScreen() {
   const handleFollowToggle = async (uid) => {
     if (isProcessing) return; // 処理中なら新たなリクエストを拒否
     setIsProcessing(true); // ボタンを無効化
-  
+
     try {
       if (following[uid]) {
         // フォロー解除の確認ダイアログを表示
@@ -253,7 +251,7 @@ export default function SearchScreen() {
                     .where("followerId", "==", auth.currentUser.uid)
                     .where("followeeId", "==", uid)
                     .get();
-  
+
                   if (!followDoc.empty) {
                     await followDoc.docs[0].ref.delete();
                     setFollowing((prev) => ({ ...prev, [uid]: false }));
@@ -275,7 +273,7 @@ export default function SearchScreen() {
           .where("followerId", "==", auth.currentUser.uid)
           .where("followeeId", "==", uid)
           .get();
-  
+
         if (followSnapshot.empty) {
           await firestore().collection("follow").add({
             followerId: auth.currentUser.uid,
@@ -359,12 +357,12 @@ export default function SearchScreen() {
             const userData = result.data();
             return (
               <UserItem
-                key={user.uid}
-                user={user}
-                isFollowing={following[user.uid]}
-                followingMe={followingMe[user.uid]} // 自分をフォローしているかどうか
-                onProfilePress={() => handleProfile(user.uid)}
-                onFollowToggle={() => handleFollowToggle(user.uid)}
+                key={userData.uid}
+                user={userData}
+                isFollowing={following[userData.uid]}
+                followingMe={followingMe[userData.uid]} // 自分をフォローしているかどうか
+                onProfilePress={() => handleProfile(userData.uid)}
+                onFollowToggle={() => handleFollowToggle(userData.uid)}
                 currentUserId={currentUserId}
                 isProcessing={isProcessing}
               />
@@ -377,13 +375,21 @@ export default function SearchScreen() {
 }
 
 // ユーザーアイテムのためのコンポーネントを分離してクリーンなコードを維持
-const UserItem = ({ user, isFollowing, followingMe, onProfilePress, onFollowToggle, currentUserId, isProcessing }) => (
+const UserItem = ({
+  user,
+  isFollowing,
+  followingMe,
+  onProfilePress,
+  onFollowToggle,
+  currentUserId,
+  isProcessing,
+}) => (
   <View style={styles.resultBar}>
     <TouchableOpacity onPress={onProfilePress} style={styles.userInfo}>
       <Image source={{ uri: user.photoURL }} style={styles.listProfileImage} />
       <View>
         {followingMe && (
-          <Text style={styles.followingMeText}>あなたをフォローしています。</Text>
+          <Text style={styles.followingMeText}>あなたをフォローしています</Text>
         )}
         <Text style={styles.resultText}>{user.displayName}</Text>
       </View>
@@ -409,7 +415,7 @@ const UserItem = ({ user, isFollowing, followingMe, onProfilePress, onFollowTogg
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e6e6b3", // 背景色をライトグレーに
+    backgroundColor: "#F2F5C8", // 背景色をライトグレーに
     paddingHorizontal: 20,
   },
   header: {
@@ -478,7 +484,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 15,
-    backgroundColor:"#dbdbdb",
+    backgroundColor: "#dbdbdb",
   },
   resultText: {
     fontSize: 16,
@@ -494,32 +500,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   followedButton: {
-    backgroundColor: "#91db9b", // フォロー中ボタンの色
+    backgroundColor: "#A3DE83", // フォロー中ボタンの色
   },
   unfollowedButton: {
-    backgroundColor: "#65996c", // フォローボタンの色
+    backgroundColor: "#239D60", // フォローボタンの色
   },
   buttonText: {
-    fontSize: 14,  
+    fontSize: 14,
     color: "#fff",
-  },
-  Back: {
-    position: "absolute",
-    left: 10,
-    top: 10,
   },
   backButton: {
     justifyContent: "center",
     alignItems: "center",
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+  },
+  followingMeText: {
+    fontSize: 8,
   },
 });
-
