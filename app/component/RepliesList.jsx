@@ -6,25 +6,17 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import firestore from "@react-native-firebase/firestore";
-import ReplieModal from "../component/repliemodal";
-
-const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 
 const RepliesList = ({ replies, navigateProfile, postId }) => {
-  const router = useRouter();
   const [parentReplyId, setParentReplyId] = useState(null); // 親返信ID
-  const [items, setitems] = useState([]);
   const [modalVisible, setmodalVisible] = useState(false);
   const [replie, setReplies] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const setRepliesModal = (item) => {
-    setitems(item);
     fetchData(item);
     setmodalVisible(true);
   };
@@ -54,16 +46,11 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
           };
         })
       );
-      console.log("AAAAAAAAAAAAAAAAAAAAAAAAA", repliesData);
       setReplies(repliesData);
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
     }
     setLoading(false);
-  };
-
-  const handleReplyPress = (replyId) => {
-    setParentReplyId(parentReplyId === replyId ? null : parseInt(replyId)); // 親返信をトグル
   };
 
   const renderReply = ({ item }) => (
