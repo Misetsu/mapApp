@@ -197,7 +197,7 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
-  useEffect(() => {}, [replies]);
+  useEffect(() => { }, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -407,182 +407,183 @@ const ReplyScreen = () => {
         <View>
           {selectedPost && (
             <>
-              <View style={styles.header}>
+              <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
+              <TouchableOpacity style={styles.backButton}></TouchableOpacity>
+              <View style={styles.postUserBar}>
                 <TouchableOpacity
-                  onPress={handleBackPress}
-                  style={styles.backButton}
+                  style={styles.postUser}
+                  onPress={() => {
+                    navigateProfile(selectedPost.userDetails.uid);
+                  }}
                 >
-                  <Icon name="angle-left" size={24} color="#000" />
+                  <Image
+                    source={{ uri: selectedPost.userDetails.photoURL }}
+                    style={styles.postIconImage}
+                  />
+                  <Text style={styles.userName}>
+                    {selectedPost.userDetails.displayName}
+                  </Text>
                 </TouchableOpacity>
-                <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
-                <TouchableOpacity style={styles.backButton}></TouchableOpacity>
-              </View>
-              <View style={styles.contentContainer}>
-                <View style={styles.postUserBar}>
-                  <TouchableOpacity
-                    style={styles.postUser}
-                    onPress={() => {
-                      navigateProfile(selectedPost.userDetails.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: selectedPost.userDetails.photoURL }}
-                      style={styles.postIconImage}
-                    />
-                    <Text style={{ fontSize: 16 }}>
-                      {selectedPost.userDetails.displayName}
-                    </Text>
-                  </TouchableOpacity>
-                  {selectedPost.userDetails.uid == auth.currentUser.uid ? (
-                    <View style={styles.rowView}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          router.push({
-                            pathname: "/editPost",
-                            params: { postId },
-                          });
-                        }}
-                      >
-                        <Icon name="pen" size={25} />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={handleDelete}>
-                        <Icon name="trash" size={25} />
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
-                </View>
-                {showImage == "true" ? (
-                  <View style={styles.imageContainer}>
-                    <Image source={{ uri: photoUri }} style={styles.image} />
+                {selectedPost.userDetails.uid == auth.currentUser.uid ? (
+                  <View style={styles.EditTrashRow}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.push({
+                          pathname: "/editPost",
+                          params: { postId },
+                        });
+                      }}
+                      style={styles.actionButton}
+                    >
+                      <Icon name="pen" size={25} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={handleDelete} style={styles.actionButton}
+                    >
+                      <Icon name="trash" size={25} />
+                    </TouchableOpacity>
                   </View>
                 ) : (
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: photoUri }}
-                      style={styles.image}
-                      blurRadius={50}
-                    />
-                  </View>
+                  <></>
                 )}
-
-                <View style={styles.rowSpaceView}>
-                  {isLiked ? (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={
-                        auth.currentUser
-                          ? () => handleUnlike(postId)
-                          : () => {
-                              router.push("/loginForm");
-                            }
-                      }
-                    >
-                      <Icon
-                        name="heart"
-                        size={25}
-                        color={selectedPost.likeFlag ? "#f00" : "#f00"}
-                      />
-                      <Text
-                        style={[
-                          { color: selectedPost.likeFlag ? "red" : "red" },
-                          styles.likeNum,
-                        ]}
-                      >
-                        {selectedPost.likeFlag
-                          ? selectedPost.likeCount
-                          : selectedPost.likeCount + 1}
-                      </Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={
-                        auth.currentUser
-                          ? () => handleLike(postId)
-                          : () => {
-                              router.push("/loginForm");
-                            }
-                      }
-                    >
-                      <Icon
-                        name="heart"
-                        size={25}
-                        color={selectedPost.likeFlag ? "#000" : "#000"}
-                      />
-                      <Text
-                        style={[
-                          {
-                            color: selectedPost.likeFlag ? "black" : "black",
-                          },
-                          styles.likeNum,
-                        ]}
-                      >
-                        {selectedPost.likeFlag
-                          ? selectedPost.likeCount - 1
-                          : selectedPost.likeCount}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+              </View>
+              {showImage == "true" ? (
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: photoUri }} style={styles.image} />
                 </View>
-                <View style={styles.postDetails}>
-                  <Text style={styles.spotText}>
-                    {selectedPost.postDetails.postTxt != ""
-                      ? selectedPost.postDetails.postTxt
-                      : "詳細がありません"}
-                  </Text>
-                  <Text style={styles.postDate}>
-                    {formatInTimeZone(
-                      new Date(selectedPost.postDetails.timeStamp),
-                      "Asia/Tokyo",
-                      "yyyy年MM月dd日 HH:mm"
-                    )}
-                  </Text>
-                </View>
-                <View style={styles.postDetails}>
-                  <View style={styles.selectedTag}>
-                    {selectedTag.length == 0 ? (
-                      <Text>追加されたタグがありません</Text>
-                    ) : (
-                      <FlatList
-                        horizontal={true}
-                        data={selectedTag}
-                        keyExtractor={(item) => item}
-                        showsHorizontalScrollIndicator={false}
-                        renderItem={({ item }) => {
-                          return (
-                            <View style={styles.selectedTagView}>
-                              <Icon name="tag" size={16} color={"#239D60"} />
-                              <Text>
-                                {allTag.find((o) => o.tagId == item).tagName}
-                              </Text>
-                            </View>
-                          );
-                        }}
-                      />
-                    )}
-                  </View>
-                </View>
-                <View style={styles.sky}>
-                  <FlatList
-                    data={replies}
-                    renderItem={({ item }) => (
-                      <RepliesList
-                        replies={[item]}
-                        navigateProfile={navigateProfile}
-                        postId={postId}
-                      />
-                    )}
-                    keyExtractor={(item, index) => item.id || String(index)} // idが空の場合はインデックスを使用
-                    style={styles.repliesList}
-                    ListEmptyComponent={
-                      <Text style={styles.noRepliesText}>
-                        まだ返信がありません。
-                      </Text>
-                    }
-                    scrollEventThrottle={16} // イベントの感度調整
+              ) : (
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: photoUri }}
+                    style={styles.image}
+                    blurRadius={50}
                   />
                 </View>
+              )}
+
+              <View style={styles.LikeCommentRow}>
+                {isLiked ? (
+                  <TouchableOpacity
+                    style={[styles.actionButton, { marginLeft: 20, }]}
+                    onPress={
+                      auth.currentUser
+                        ? () => handleUnlike(postId)
+                        : () => {
+                          router.push("/loginForm");
+                        }
+                    }
+                  >
+                    <Icon
+                      name="heart"
+                      size={25}
+                      color={selectedPost.likeFlag ? "#f00" : "#f00"}
+                    />
+                    <Text
+                      style={[
+                        { color: selectedPost.likeFlag ? "red" : "red" },
+                        styles.likeNum,
+                      ]}
+                    >
+                      {selectedPost.likeFlag
+                        ? selectedPost.likeCount
+                        : selectedPost.likeCount + 1}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={[styles.actionButton, { marginLeft: 20, }]}
+                    onPress={
+                      auth.currentUser
+                        ? () => handleLike(postId)
+                        : () => {
+                          router.push("/loginForm");
+                        }
+                    }
+                  >
+                    <Icon
+                      name="heart"
+                      size={25}
+                      color={selectedPost.likeFlag ? "#000" : "#000"}
+                    />
+                    <Text
+                      style={[
+                        {
+                          color: selectedPost.likeFlag ? "black" : "black",
+                        },
+                        styles.likeNum,
+                      ]}
+                    >
+                      {selectedPost.likeFlag
+                        ? selectedPost.likeCount - 1
+                        : selectedPost.likeCount}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View><View style={styles.postDetails}>
+                <Text style={styles.spotText}>
+                  {selectedPost.postDetails.postTxt != ""
+                    ? selectedPost.postDetails.postTxt
+                    : "詳細がありません"}
+                </Text>
+                <Text style={styles.postDate}>
+                  {formatInTimeZone(
+                    new Date(selectedPost.postDetails.timeStamp),
+                    "Asia/Tokyo",
+                    "yyyy年MM月dd日 HH:mm"
+                  )}
+                </Text>
+
               </View>
+              <View style={styles.postDetails}>
+                <View style={styles.selectedTag}>
+                  {selectedTag.length == 0 ? (
+                    <></>
+                  ) : (
+                    <FlatList
+                      horizontal={true}
+                      data={selectedTag}
+                      keyExtractor={(item) => item}
+                      showsHorizontalScrollIndicator={false}
+                      renderItem={({ item }) => {
+                        return (
+                          <View style={styles.selectedTagView}>
+                            <Icon name="tag" size={16} color={"#239D60"} />
+                            <Text>
+                              {allTag.find((o) => o.tagId == item).tagName}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                    />
+                  )}
+                </View>
+                <Text style={styles.displayName}>コメント</Text>
+              </View>
+              <View style={styles.sky}>
+                <FlatList
+                  data={replies}
+                  renderItem={({ item }) => (
+                    <RepliesList
+                      replies={[item]}
+                      navigateProfile={navigateProfile}
+                      postId={postId}
+                    />
+                  )}
+                  keyExtractor={(item, index) => item.id || String(index)} // idが空の場合はインデックスを使用
+                  style={styles.repliesList}
+                  ListEmptyComponent={
+                    <Text style={styles.noRepliesText}>
+                      まだ返信がありません。
+                    </Text>
+                  }
+                  scrollEventThrottle={16} // イベントの感度調整
+                />
+              </View><View style={styles.Back}>
+                <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+                  <Icon name="angle-left" size={24} color="#000" />
+                </TouchableOpacity>
+              </View>
+
             </>
           )}
         </View>
@@ -607,14 +608,8 @@ const ReplyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    height: height,
     backgroundColor: "#F2F5C8",
     flex: 1,
-    justifyContent: "space-between",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
   centerContainer: {
     width: "100%",
@@ -630,8 +625,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
   pagetitle: {
-    fontSize: 20,
+    fontSize: 30,
     marginBottom: 15,
     textAlign: "center",
     fontWeight: "300",
@@ -639,7 +639,6 @@ const styles = StyleSheet.create({
   },
   displayName: {
     fontSize: 15,
-    marginTop: 10,
     textAlign: "left",
     alignItems: "flex-start",
     fontWeight: "300",
@@ -745,7 +744,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
-    marginLeft: 20,
+  },
+  EditTrashRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    marginBottom: 10,
   },
   likeNum: {
     marginLeft: 10,
@@ -754,10 +758,6 @@ const styles = StyleSheet.create({
   rowView: {
     flexDirection: "row",
     gap: 15,
-  },
-  rowSpaceView: {
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
   sky: {
     height: height * 0.3,
@@ -768,13 +768,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 20,
     borderColor: "#239D60",
-    borderRadius: 20,
-    borderColor: "#239D60",
     flexDirection: "row",
-    gap: 5,
-    marginHorizontal: 2,
-    backgroundColor: "#f2f5c8",
-    gap: 5,
     marginHorizontal: 2,
     backgroundColor: "#f2f5c8",
     gap: 10,
