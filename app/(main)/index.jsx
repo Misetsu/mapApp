@@ -10,6 +10,7 @@ import {
   Dimensions,
   StyleSheet,
   Linking,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -20,7 +21,6 @@ import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import queryString from "query-string";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -63,17 +63,13 @@ export default function TrackUserMapView() {
   const [iconName, setIconName] = useState("users"); // 初期アイコン名
   const [chosenUser, setChosenUser] = useState(null);
   const [allTag, setAllTag] = useState([]);
-  const [selectedTag, setSelectedTag] = useState(false);
+  const [selectedTag, setSelectedTag] = useState(null);
   const [mapflag, setmapflag] = useState(true);
+  const [indexLoading, setIndexLoading] = useState(true);
+  const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
+  const [markers, setmarkers] = useState([]);
+  const [regionflag, setregionflag] = useState(0);
 
-  const setURLmodal = (spotId) => {
-    setSpotId(spotId);
-    setspotName(spotId);
-    setPostImage(false);
-    handleVisitState(spotId);
-    fetchPostData(spotId);
-    setModalVisible(true);
-  };
   const setmodal = (marker) => {
     try {
       const distance = calculateDistance(
@@ -83,22 +79,22 @@ export default function TrackUserMapView() {
         marker.mapLongitude
       );
       if (distance < marker.areaRadius) {
-        setPostData([])
-        setLoading(true)
+        setPostData([]);
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
         fetchPostData(marker.id);
+        setmarkers(marker);
       } else {
         setPostData([]);
-        setLoading(true)
         setSpotId(marker.id);
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
         fetchPostData(marker.id);
+        setmarkers(marker);
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -118,8 +114,15 @@ export default function TrackUserMapView() {
     // URLを解析してクエリパラメータを取得
     const queryParams = new URLSearchParams(url.split("?")[1]);
     const spotIdFromUrl = queryParams.get("spotId");
-    if (spotIdFromUrl != null) {
-      setURLmodal(parseInt(spotIdFromUrl));
+    const latitude = parseFloat(queryParams.get("latitude"));
+    const longitude = parseFloat(queryParams.get("longitude"));
+    if (latitude != null && longitude != null) {
+      setRegion({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      });
     }
   };
   function toRadians(degrees) {
@@ -152,7 +155,7 @@ export default function TrackUserMapView() {
 
   const fetchPostData = async (spotId) => {
     setLoading(true);
-    if (chosenUser == null) {
+    if (chosenUser == null && selectedTag == null) {
       try {
         const postArray = [];
         const friendList = [];
@@ -330,7 +333,7 @@ export default function TrackUserMapView() {
       } catch (error) {
         console.error("Error fetching documents: ", error);
       }
-    } else {
+    } else if (selectedTag == null) {
       try {
         const postArray = [];
 
@@ -435,6 +438,7 @@ export default function TrackUserMapView() {
         console.error("Error fetching documents: ", error);
       }
     }
+    setLoading(false);
   };
 
   const getPinColor = (marker) => {
@@ -459,17 +463,19 @@ export default function TrackUserMapView() {
       }
     } else {
       if (marker.visited < marker.lastUpdateAt) {
-        return require("../image/VisitedPin_New.png");
+        return require("../image/UnvisitedPin_New.png");
       } else {
-        return require("../image/VisitedPin.png");
+        return require("../image/UnvisitedPin.png");
       }
     }
   };
 
   const setmapfixeds = () => {
     if (mapfixed == true) {
+      setregionflag(0);
       setmapfixed(false);
-    } else {
+    } else if (mapfixed == false) {
+      setregionflag(1);
       setmapfixed(true);
     }
   };
@@ -576,12 +582,11 @@ export default function TrackUserMapView() {
     }
   };
   const onRegionChangeComplete = (newRegion) => {
-    setLoading(true)
     if (mapflag) {
       setregions(newRegion); // 新しい表示領域を状態に設定
     }
     setsaveregions(newRegion);
-    
+
     // 現在の表示領域をコンソールに出力
     fetchAllMarkerCord();
   };
@@ -686,18 +691,19 @@ export default function TrackUserMapView() {
     });
 
     setUserList(tempList);
+    setIndexLoading(false);
   };
 
-// アイコンマップを定義
-const handleicons = {
-  users: require('./../image/Users.png'),
-  star: require('./../image/BorderStar.png'), // 他のアイコンを追加
-  close: require('./../image/Close.png'), // 他のアイコンを追加
-};
+  // アイコンマップを定義
+  const handleicons = {
+    users: require("./../image/Users.png"),
+    star: require("./../image/BorderStar.png"), // 他のアイコンを追加
+    close: require("./../image/Close.png"), // 他のアイコンを追加
+  };
 
   const handleIconPress = () => {
     if (iconName === "close") {
-      setChosenUser(null)
+      setChosenUser(null);
       setmapflag(true);
       setregions(saveregion);
       fetchAllMarkerCord();
@@ -707,9 +713,11 @@ const handleicons = {
         setIconName("star");
       }
     } else if (indexStatus == "follow") {
+      setIndexLoading(true);
       handleChangeIndex();
       setIconName("star"); // アイコン名を "times" に変更
     } else {
+      setIndexLoading(true);
       handleChangeIndex();
       setIconName("users");
     }
@@ -796,13 +804,13 @@ const handleicons = {
       setMarkerCords([]);
     }
 
-    setSelectedTag(true);
+    setSelectedTag(parseInt(tagId));
   };
 
   const handleCancelTag = () => {
     setmapflag(true);
     setregions(saveregion);
-    setSelectedTag(false);
+    setSelectedTag(null);
     fetchAllMarkerCord();
   };
 
@@ -919,13 +927,6 @@ const handleicons = {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             });
-            setRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-              flag: 0,
-            });
             setregions({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
@@ -937,6 +938,14 @@ const handleicons = {
           } else {
             setError("Position or coords is undefined");
           }
+          if (regionflag == 0) {
+            setRegion({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            });
+          }
         } catch (error) {
           setError(`Error updating position: ${error.message}`);
         }
@@ -945,14 +954,15 @@ const handleicons = {
         setError(err.message);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: enableHighAccuracys,
         timeout: 20000,
         distanceFilter: 5,
         maximumAge: 1000,
       }
     );
+    setenableHighAccuracy(true);
     return () => Geolocation.clearWatch(watchId);
-  }, [initialRegion]);
+  }, [position]);
 
   useEffect(() => {
     setUser(auth.currentUser);
@@ -1044,17 +1054,25 @@ const handleicons = {
                   source={{ uri: item.userIcon }}
                   style={styles.listProfileImage}
                 />
-                <Text style={styles.listProfileNameText}>{item.username}</Text>
+                <Text style={styles.listProfileNameText} numberOfLines={1}>
+                  {item.username}
+                </Text>
               </TouchableOpacity>
             );
           }}
         />
-        <TouchableOpacity
-          style={styles.listProfileIndexButton}
-          onPress={handleIconPress} // 変更した関数を呼び出す
-        >
-          <Image source={handleicons[iconName]} style={styles.footerImage} />
-        </TouchableOpacity>
+        {indexLoading ? (
+          <View style={styles.listProfileIndexButton}>
+            <ActivityIndicator size="large" color="#239D60" />
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.listProfileIndexButton}
+            onPress={handleIconPress} // 変更した関数を呼び出す
+          >
+            <Image source={handleicons[iconName]} style={styles.footerImage} />
+          </TouchableOpacity>
+        )}
       </SafeAreaView>
 
       <SafeAreaView style={styles.tagContainer}>
@@ -1075,12 +1093,10 @@ const handleicons = {
             );
           }}
         />
-        {selectedTag ? (
+        {selectedTag == null ? null : (
           <TouchableOpacity onPress={handleCancelTag}>
             <Icon name="times-circle" size={30} />
           </TouchableOpacity>
-        ) : (
-          <></>
         )}
       </SafeAreaView>
 
@@ -1093,6 +1109,7 @@ const handleicons = {
         loading={loading}
         onClose={() => setModalVisible(false)}
         spotName={spotName}
+        marker={markers}
       />
 
       {mapfixed ? (
@@ -1177,9 +1194,13 @@ const handleicons = {
           <TouchableOpacity
             style={styles.footerbutton}
             onPress={() => {
-              router.push({
-                pathname: "/search",
-              });
+              user
+                ? router.push({
+                    pathname: "/search",
+                  })
+                : router.push({
+                    pathname: "/loginForm",
+                  });
             }}
           >
             <Image
@@ -1213,7 +1234,7 @@ const handleicons = {
               }}
             >
               <Image
-                source={require("./../image/Search.png")}
+                source={require("./../image/User.png")}
                 style={styles.footerImage}
               />
               <Text style={styles.listProfileNameText}>ログイン</Text>

@@ -173,6 +173,7 @@ export default function CameraScreen() {
               format={format}
               isActive={isActive}
               animatedProps={animatedProps}
+              outputOrientation={"preview"} //previewいけたよ
             />
           </GestureDetector>
           {/* 十字線または3x3グリッド */}
