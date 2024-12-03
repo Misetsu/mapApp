@@ -291,6 +291,7 @@ const handleFollowToggle = async (uid) => {
           />
         </View>
       </View>
+      
 
       {officialUsers.length > 0 && (
         <View style={styles.recommendedContainer}>
