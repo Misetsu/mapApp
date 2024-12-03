@@ -292,7 +292,6 @@ const handleFollowToggle = async (uid) => {
         </View>
       </View>
       
-
       {officialUsers.length > 0 && (
         <View style={styles.recommendedContainer}>
           <Text style={styles.sectionTitle}>おすすめ公式ユーザー</Text>
