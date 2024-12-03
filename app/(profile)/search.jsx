@@ -46,11 +46,7 @@ export default function SearchScreen() {
   // 公式ユーザーを取得
   const fetchOfficialUsers = async () => {
     try {
-      const officialUids = [
-        "2tjGBOa6snXpIpxb2drbSvUAmb83",
-        "H0zKYLQyeggzzCYgZM6bUddAItU2",
-        "1mfK81yybUe4oCDb2wTJbjOVgEB3",
-      ];
+      const officialUids = ["ro12arSIsugfifCz5BABmvOUZVR2"];
 
       const userDetails = await Promise.all(
         officialUids.map(async (uid) => {
