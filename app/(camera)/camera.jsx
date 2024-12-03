@@ -45,6 +45,7 @@ export default function CameraScreen() {
   const { latitude, longitude, spotId, point, spotNo } = params;
   const zoom = useSharedValue(device?.neutralZoom ?? 1);
   const exposureSlider = useSharedValue(0);
+  const [key, setKey] = useState(0); // 強制リロード用のキー
 
   const zoomOffset = useSharedValue(0);
   const [focusPoint, setFocusPoint] = useState(null);
@@ -93,18 +94,18 @@ export default function CameraScreen() {
 
   useEffect(() => {
     const initializeCamera = async () => {
-      if (hasPermission) {
-        setIsActive(true);
-      } else {
-        const permission = await requestPermission();
-        if (permission === "granted") {
-          setIsActive(true);
-        }
+      if (!hasPermission) {
+        await requestPermission();
+      }
+
+      // カメラ権限が付与され、デバイスが利用可能になったときに再レンダリング
+      if (hasPermission && device) {
+        setKey((prevKey) => prevKey + 1);
       }
     };
 
     initializeCamera();
-  }, [hasPermission]);
+  }, [hasPermission, device]);
 
   const onTakePicturePressed = async () => {
     try {
@@ -128,26 +129,6 @@ export default function CameraScreen() {
     }
   };
 
-  async function pickImage() {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      router.navigate({
-        pathname: "/edit",
-        params: {
-          imageUri: result.assets[0].uri,
-          latitude: latitude,
-          longitude: longitude,
-          spotId: spotId,
-          point: point,
-        },
-      });
-    }
-  }
   //exposuer slider
   const exposureValue = useDerivedValue(() => {
     if (device == null) return 0;
@@ -175,6 +156,7 @@ export default function CameraScreen() {
         <View style={styles.cameraContainer}>
           <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
             <ReanimatedCamera
+              key={key}
               ref={cameraRef}
               style={styles.camera}
               device={device}
