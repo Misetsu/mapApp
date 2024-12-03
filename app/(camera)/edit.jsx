@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Image,
@@ -16,6 +16,7 @@ import {
   Alert,
   Modal,
 } from "react-native";
+import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
@@ -28,8 +29,11 @@ const imageWidth = width * 0.5;
 const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
+
 export default function edit() {
   const [showAlert, setShowAlert] = useState(false);
+  const [Imageuri, setImageuri] = useState(null);
+  const viewRef = useRef();
 
   useEffect(() => {
     // ローカルストレージから設定を確認
@@ -99,7 +103,7 @@ export default function edit() {
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
 
-    await reference.ref(imagePath).putFile(imageUri);
+    await reference.ref(imagePath).putFile(Imageuri);
 
     if (spotId == 0) {
       const querySnapshot = await firestore()
@@ -249,6 +253,20 @@ export default function edit() {
     router.replace("/");
   };
 
+  const GetImageuri = async () => {
+    //合成写真をキャプチャする関数
+    const imageuri = await viewRef.current.capture(); //viewRefをキャプチャする
+    setImageuri(imageuri); //uriを保存
+  };
+
+  useEffect(() => {
+    //compositionuriが設定されたらアップロードの準備をする関数を呼び出すエフェクト(これがないと非同期でキャプチャする前にアップロードしようとしてフリーズする)
+    if (Imageuri != null) {
+      //初回実行時には実行sinaiyouni
+      uploadPost(); //アップロードする
+    }
+  }, [Imageuri]);
+
   const handleVisitState = async (spotId) => {
     const querySnapshot = await firestore()
       .collection("users")
@@ -373,7 +391,13 @@ export default function edit() {
         </View>
       ) : (
         <View style={styles.container}>
+          <ViewShot
+            ref={viewRef}
+            options={{ format: "jpg", quality: 1 }}
+            style={styles.imageContainer}
+          >
           <Image source={{ uri: imageUri }} style={styles.imageContainer} />
+          </ViewShot>
           {spotId == 0 && focusedInput !== "post" ? (
             <View>
               <Text style={styles.displayName}>場所の名前</Text>
@@ -445,7 +469,7 @@ export default function edit() {
             )}
             <View style={styles.tagBorder}></View>
           </View>
-          <Pressable onPress={uploadPost} style={styles.submit}>
+          <Pressable onPress={GetImageuri} style={styles.submit}>
             <Text style={styles.submitText}>アップロード</Text>
           </Pressable>
 
