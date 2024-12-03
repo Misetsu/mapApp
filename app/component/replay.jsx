@@ -58,7 +58,27 @@ const ReplyScreen = () => {
     Alert.alert("エラー", "投稿IDが指定されていません。");
     return null;
   }
+  const generateShareMessage = (spotName, spotId) => {
+    const baseURL = "http://syuto.s322.xrea.com/";
+    const queryParams = new URLSearchParams({
+      _gl: "1*siyzma*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
+      _ga: "MjAzMzg2MzgzMC4xNzMxOTM2NDM2",
+      _ga_J8YE7Q8ZQD: "MTczMjUwMTUyOS42LjEuMTczMjUwMzEzMC41OS4xLjcwODEwODkzOA",
+      spotId: spotId,
+      latitude: marker.mapLatitude,
+      longitude: marker.mapLongitude,
+    }).toString();
 
+    return `${spotName}の投稿をチェック！！\n${baseURL}?${queryParams}`;
+  };
+
+  const onShare = () => {
+    try {
+      const result = Share.open({
+        message: generateShareMessage(spotName, spotId),
+      });
+    } catch (warning) {}
+  };
   const fetchData = async () => {
     try {
       const photoQuerySnapshot = await firestore()
@@ -404,11 +424,10 @@ const ReplyScreen = () => {
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       ) : (
-        <View>
+        <>
           {selectedPost && (
             <>
               <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
-              <TouchableOpacity style={styles.backButton}></TouchableOpacity>
               <View style={styles.postUserBar}>
                 <TouchableOpacity
                   style={styles.postUser}
@@ -464,7 +483,7 @@ const ReplyScreen = () => {
               <View style={styles.LikeCommentRow}>
                 {isLiked ? (
                   <TouchableOpacity
-                    style={[styles.actionButton, { marginLeft: 20, }]}
+                  style={styles.actionButton}
                     onPress={
                       auth.currentUser
                         ? () => handleUnlike(postId)
@@ -491,7 +510,7 @@ const ReplyScreen = () => {
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
-                    style={[styles.actionButton, { marginLeft: 20, }]}
+                  style={styles.actionButton}
                     onPress={
                       auth.currentUser
                         ? () => handleLike(postId)
@@ -519,6 +538,49 @@ const ReplyScreen = () => {
                     </Text>
                   </TouchableOpacity>
                 )}
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/cameraComposition",
+                      params: {
+                        latitude: 0,
+                        longitude: 0,
+                        spotId: spotId,
+                        photoUri: encodeURIComponent(post.photoUri),
+                      },
+                    });
+                  }}
+                >
+                  <Icon name="images" size={25} color={"#000"} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/camera",
+                      params: {
+                        latitude: 0,
+                        longitude: 0,
+                        spotId: spotId,
+                        point: 0,
+                        spotNo: 0,
+                      },
+                    });
+                  }}
+                >
+                  <Icon
+                    name="map-marked-alt"
+                    size={25}
+                    color={"#000"}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => onShare()}
+                >
+                  <Icon name="share" size={25} color={"#000"} />
+                </TouchableOpacity>
               </View><View style={styles.postDetails}>
                 <Text style={styles.spotText}>
                   {selectedPost.postDetails.postTxt != ""
@@ -586,7 +648,7 @@ const ReplyScreen = () => {
 
             </>
           )}
-        </View>
+        </>
       )}
 
       <View style={styles.sendReply}>
@@ -622,8 +684,9 @@ const styles = StyleSheet.create({
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F5C8",
-    width: 40,
-    height: 40,
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",
@@ -734,6 +797,8 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    alignSelf: "center",
+    width: "90%",
     margin: 5,
   },
   actionButton: {
@@ -755,12 +820,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
   },
-  rowView: {
-    flexDirection: "row",
-    gap: 15,
-  },
   sky: {
-    height: height * 0.3,
+    height: height * 0.25,
   },
   selectedTagView: {
     paddingVertical: 5,
@@ -774,7 +835,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   selectedTag: {
-    marginVertical: 10,
+    marginTop: 10,
   },
 });
 
