@@ -427,12 +427,10 @@ export default function profile() {
           style={styles.textInput}
           editable={false}
         />
-        {isLoading ? (
-          <View></View>
-        ) : publicStatus ? (
+        {isLoading ? null : publicStatus ? (
           <UserPosts uid={uid} />
         ) : (
-          <Text>このアカウントは非公開です。</Text>
+          <Text style={styles.privateText}>このアカウントは非公開です。</Text>
         )}
       </View>
       <View style={styles.Back}>
@@ -595,5 +593,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
+  },
+  privateText: {
+    marginTop: 10,
   },
 });
