@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   },
   // 検索結果バーのスタイル
   resultBar: {
-    width: "95%",
+    width: "100%",
     flexDirection: "row", // 横並び
     justifyContent: "space-between", // 左右にスペースを均等に配置
     alignItems: "center", // アイテムを中央に配置
