@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
@@ -45,10 +46,7 @@ export default function SearchScreen() {
   // 公式ユーザーを取得
   const fetchOfficialUsers = async () => {
     try {
-      const officialUids = [
-        "2tjGBOa6snXpIpxb2drbSvUAmb83",
-        "H0zKYLQyeggzzCYgZM6bUddAItU2",
-      ];
+      const officialUids = ["ro12arSIsugfifCz5BABmvOUZVR2"];
 
       const userDetails = await Promise.all(
         officialUids.map(async (uid) => {
@@ -75,7 +73,7 @@ export default function SearchScreen() {
 
       const followData = {};
       for (const doc of followSnapshot.docs) {
-        followData[doc.data().followeeId] = true; // 自分がフォローしているユーザー
+        followData[doc.data().followeeId] = true; // フォローしているユーザーのIDを取得
       }
       setFollowing(followData);
 
@@ -197,7 +195,7 @@ export default function SearchScreen() {
             .collection("users")
             .where("uid", "==", uid)
             .get();
-          
+
           return userSnapshot.docs[0]?.data(); // ユーザーのデータを取得
         })
       );
@@ -215,15 +213,15 @@ export default function SearchScreen() {
       firestore()
         .collection("users")
         .where("displayName", ">=", text)
-        .where("displayName", "<=", text + "¥uf8ff") // 検索条件を設定
+        .where("displayName", "<=", text + "\uf8ff") // 検索条件を設定
         .get()
         .then((result) => {
-          if(result.docs[0].data().email != undefined){
+          if (result.docs[0].data().email != undefined) {
             setSearchResult(result.docs); // 検索結果をステートに設定
           }
         })
         .catch((error) => console.error("Error searching users:", error));
-        setSearchResult([]); // テキストが空の場合、検索結果をクリア
+      setSearchResult([]); // テキストが空の場合、検索結果をクリア
     } else {
       setSearchResult([]); // テキストが空の場合、検索結果をクリア
     }
@@ -235,6 +233,12 @@ export default function SearchScreen() {
     setIsProcessing(true); // ボタンを無効化
 
     try {
+      // 自分自身をフォローすることを防ぐ条件
+      if (uid === auth.currentUser.uid) {
+        Alert.alert("エラー", "自分自身をフォローすることはできません。");
+        return;
+      }
+
       if (following[uid]) {
         // フォロー解除の確認ダイアログを表示
         Alert.alert(
@@ -341,16 +345,18 @@ export default function SearchScreen() {
       {searchText === "" && recommendedUsers.length > 0 && (
         <View style={styles.recommendedContainer}>
           <Text style={styles.sectionTitle}>おすすめユーザー</Text>
-          {recommendedUsers.map((user) => (
-            <UserItem
-              key={user.uid}
-              user={user}
-              isFollowing={following[user.uid]}
-              onProfilePress={() => handleProfile(user.uid)}
-              onFollowToggle={() => handleFollowToggle(user.uid)}
-              currentUserId={auth.currentUser.uid} // 現在のユーザーIDを渡す
-            />
-          ))}
+          <ScrollView>
+            {recommendedUsers.map((user) => (
+              <UserItem
+                key={user.uid}
+                user={user}
+                isFollowing={following[user.uid]}
+                onProfilePress={() => handleProfile(user.uid)}
+                onFollowToggle={() => handleFollowToggle(user.uid)}
+                currentUserId={auth.currentUser.uid} // 現在のユーザーIDを渡す
+              />
+            ))}
+          </ScrollView>
         </View>
       )}
 
@@ -367,7 +373,7 @@ export default function SearchScreen() {
                 followingMe={followingMe[userData.uid]} // 自分をフォローしているかどうか
                 onProfilePress={() => handleProfile(userData.uid)}
                 onFollowToggle={() => handleFollowToggle(userData.uid)}
-                currentUserId={currentUserId}
+                currentUserId={auth.currentUser.uid}
                 isProcessing={isProcessing}
               />
             );
@@ -393,17 +399,16 @@ const UserItem = ({
       <Image source={{ uri: user.photoURL }} style={styles.listProfileImage} />
       <View>
         {followingMe && (
-          <Text style={styles.followingMeText}>あなたをフォローしています</Text>
+          <Text style={styles.followingMeText}>
+            あなたをフォローしています。
+          </Text>
         )}
-        <Text style={styles.resultText} numberOfLines={1}>
-          {user.displayName}
-        </Text>
+        <Text style={styles.resultText}>{user.displayName}</Text>
       </View>
     </TouchableOpacity>
-    {user.uid !== currentUserId && (
+    {user.uid !== currentUserId && ( // 自分自身のユーザーIDと一致する場合はボタンを非表示
       <TouchableOpacity
         onPress={onFollowToggle}
-        disabled={isProcessing}
         style={[
           styles.followButton,
           isFollowing ? styles.followedButton : styles.unfollowedButton,
@@ -419,105 +424,134 @@ const UserItem = ({
 
 // スタイルの定義
 const styles = StyleSheet.create({
+  // コンテナ全体のスタイル
   container: {
     flex: 1,
     backgroundColor: "#F2F5C8", // 背景色をライトグレーに
     paddingHorizontal: 20,
   },
+  // ヘッダー部分のスタイル（検索バーや戻るボタンなど）
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
+    flexDirection: "row", // 横並び
+    justifyContent: "space-between", // 左右にスペースを均等に配置
+    alignItems: "center", // アイテムを中央に配置
+    marginTop: 20, // 上の余白
+    marginBottom: 10, // 下の余白
   },
+  // 検索バーのスタイル
   searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 25,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2, // Android用シャドウ
-    flex: 1,
+    flexDirection: "row", // アイコンと入力を横並びに配置
+    alignItems: "center", // アイコンとテキストを縦に中央揃え
+    backgroundColor: "#fff", // 背景色は白
+    borderColor: "#ddd", // 枠線の色
+    borderWidth: 1, // 枠線の太さ
+    borderRadius: 25, // 丸みを帯びた角
+    padding: 10, // 内側の余白
+    shadowColor: "#000", // シャドウの色
+    shadowOffset: { width: 0, height: 1 }, // シャドウの位置
+    shadowOpacity: 0.1, // シャドウの透明度
+    shadowRadius: 5, // シャドウのぼかし具合
+    elevation: 2, // Android用のシャドウ
+    flex: 1, // 検索バーが横幅いっぱいに広がるように
   },
+  // アイコンのスタイル
   icon: {
-    marginRight: 10,
-    color: "#555",
+    marginRight: 10, // 右側の余白
+    color: "#555", // アイコンの色
   },
+  // 入力フィールドのスタイル
   input: {
-    flex: 1,
-    fontSize: 16,
-    color: "#333",
+    flex: 1, // 入力フィールドが横幅いっぱいに広がるように
+    fontSize: 16, // フォントサイズ
+    color: "#333", // テキストの色
   },
+  // おすすめユーザーのコンテナのスタイル
   recommendedContainer: {
-    marginBottom: 20,
+    marginBottom: 0, // 下の余白
   },
+  // 検索結果のコンテナのスタイル
   resultsContainer: {
     marginTop: 20,
     justifyContent: "center",
   },
+  // セクションタイトルのスタイル
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
+    fontSize: 18, // フォントサイズ
+    fontWeight: "bold", // 太字
+    color: "#333", // 色
+    marginBottom: 10, // 下の余白
   },
+  // 検索結果バーのスタイル
   resultBar: {
-    width: "95%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#ffffe0",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    width: "100%",
+    flexDirection: "row", // 横並び
+    justifyContent: "space-between", // 左右にスペースを均等に配置
+    alignItems: "center", // アイテムを中央に配置
+    backgroundColor: "#ffffe0", // 背景色（薄い黄色）
+    borderRadius: 10, // 丸みを帯びた角
+    padding: 15, // 内側の余白
+    marginBottom: 10, // 下の余白
+    shadowColor: "#000", // シャドウの色
+    shadowOffset: { width: 0, height: 2 }, // シャドウの位置
+    shadowOpacity: 0.1, // シャドウの透明度
+    shadowRadius: 5, // シャドウのぼかし具合
+    elevation: 2, // Android用のシャドウ
   },
+  // ユーザー情報を表示する部分のスタイル
   userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "row", // 横並び
+    alignItems: "center", // アイテムを中央に配置
   },
+  // プロフィール画像のスタイル
   listProfileImage: {
     width: 50,
     height: 50,
     borderRadius: 25,
     marginRight: 15,
     backgroundColor: "#dbdbdb",
+    width: 50, // 幅
+    height: 50, // 高さ
+    borderRadius: 25, // 丸い形にするための半径
+    marginRight: 15, // 右側の余白
+    backgroundColor: "#dbdbdb", // 背景色（デフォルトのグレー）
   },
+  // 結果テキストのスタイル
   resultText: {
-    width: "100%",
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#333",
+    fontSize: 16, // フォントサイズ
+    fontWeight: "500", // 太さ（普通）
+    color: "#333", // 色
   },
 
+  // フォローボタンのスタイル
   followButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: 8, // 上下の余白
+    paddingHorizontal: 20, // 左右の余白
+    borderRadius: 20, // 丸い角
+    alignItems: "center", // アイテムを中央に配置
+    justifyContent: "center", // アイテムを中央に配置
   },
+  // フォロー中ボタンのスタイル
   followedButton: {
     backgroundColor: "#A3DE83", // フォロー中ボタンの色
   },
+  // フォローボタンのスタイル
   unfollowedButton: {
     backgroundColor: "#239D60", // フォローボタンの色
   },
+  // ボタンテキストのスタイル
   buttonText: {
     fontSize: 14,
     color: "#fff",
+    fontSize: 14, // フォントサイズ
+    color: "#fff", // 文字色
   },
+  // 戻るボタンのスタイル（位置）
+  Back: {
+    position: "absolute", // 絶対位置
+    left: 10, // 左からの位置
+    top: 10, // 上からの位置
+  },
+  // 戻るボタンのスタイル（デザイン）
   backButton: {
     justifyContent: "center",
     alignItems: "center",
