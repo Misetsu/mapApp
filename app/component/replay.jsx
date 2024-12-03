@@ -34,26 +34,24 @@ const ReplyScreen = () => {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
-  const [isScrolling, setIsScrolling] = useState(false);
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState([]);
-
-  const handleScroll = (event) => {
-    const { contentOffset } = event.nativeEvent;
-    setIsScrolling(contentOffset.y > 0); // スクロール位置が0以上なら非表示
-  };
 
   const handleBackPress = () => {
     router.back();
   };
 
   const navigateProfile = (uid) => {
-    router.push({
-      pathname: "/profile",
-      params: {
-        uid: uid,
-      },
-    });
+    if (uid == auth.currentUser.uid) {
+      router.push({ pathname: "/myPage" });
+    } else {
+      router.push({
+        pathname: "/profile",
+        params: {
+          uid: uid,
+        },
+      });
+    }
   };
 
   if (!postId) {
@@ -383,7 +381,6 @@ const ReplyScreen = () => {
             // const photoRef = storage().child(
             //   selectedPost.photoDoc.imagePath + ".jpg"
             // );
-            // console.log(photoRef);
             // await photoRef.delete();
           } catch (error) {
           } finally {
@@ -413,12 +410,12 @@ const ReplyScreen = () => {
               <View style={styles.header}>
                 <TouchableOpacity
                   onPress={handleBackPress}
-                  style={styles.iconButton}
+                  style={styles.backButton}
                 >
                   <Icon name="angle-left" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.spotName}>{selectedPost.spotName}</Text>
-                <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
+                <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
+                <TouchableOpacity style={styles.backButton}></TouchableOpacity>
               </View>
               <View style={styles.contentContainer}>
                 <View style={styles.postUserBar}>
@@ -609,9 +606,14 @@ const ReplyScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
+    padding: 20,
     height: height,
     backgroundColor: "#F2F5C8",
     flex: 1,
+    justifyContent: "space-between",
+  },
+  header: {
+    flexDirection: "row",
     justifyContent: "space-between",
   },
   centerContainer: {
@@ -625,17 +627,11 @@ const styles = StyleSheet.create({
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F5C8",
-    width: 70,
-    height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
-  },
-  Back: {
-    position: "absolute",
-    top: 0,
-    left: 0,
+    width: 40,
+    height: 40,
   },
   pagetitle: {
-    fontSize: 30,
+    fontSize: 20,
     marginBottom: 15,
     textAlign: "center",
     fontWeight: "300",

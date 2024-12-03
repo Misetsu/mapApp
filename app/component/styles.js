@@ -177,6 +177,7 @@ export const styles = StyleSheet.create({
   },
   listProfileSize: {
     margin: 5,
+    width: 50,
   },
   listProfileIndexButton: {
     justifyContent: "center",
