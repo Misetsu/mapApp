@@ -84,7 +84,7 @@ export default function LoginScreen() {
             );
           });
       } else {
-        Alert.alert("入力してください。", "入力してください。");
+        Alert.alert("ログインに失敗しました。", "入力してください。");
       }
     } catch (error) {
       console.log(error);

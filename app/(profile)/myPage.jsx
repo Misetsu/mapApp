@@ -22,7 +22,6 @@ import { Alert } from "react-native";
 const auth = FirebaseAuth();
 
 export default function myPage() {
-  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
@@ -31,7 +30,6 @@ export default function myPage() {
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
   const [viewMode, setViewMode] = useState("posts"); // 投稿といいねの切り替え
   const [userStatus, setUserStatus] = useState(0);
-  const [visible, setVisible] = useState(false);
 
   const router = useRouter();
 
@@ -44,7 +42,6 @@ export default function myPage() {
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
-      setUser(auth.currentUser);
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
 
@@ -81,7 +78,6 @@ export default function myPage() {
 
         // ユーザーデータを取得するための非同期関数
         const fetchUserData = async () => {
-          setUser(auth.currentUser);
           const queryUser = await firestore()
             .collection("users")
             .doc(auth.currentUser.uid)
