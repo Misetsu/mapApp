@@ -9,10 +9,9 @@ import {
 } from "react-native";
 import { formatInTimeZone } from "date-fns-tz";
 import firestore from "@react-native-firebase/firestore";
-import ReplieModal from './repliemodal';
+import ReplieModal from "./repliemodal";
 
 const RepliesList = ({ replies, navigateProfile, postId }) => {
-  const [parentReplyId, setParentReplyId] = useState(null); // 親返信ID
   const [modalVisible, setmodalVisible] = useState(false);
   const [replie, setReplies] = useState([]);
   const [loading, setLoading] = useState(false);
