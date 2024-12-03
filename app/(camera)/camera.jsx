@@ -92,9 +92,18 @@ export default function CameraScreen() {
   );
 
   useEffect(() => {
-    if (!hasPermission) {
-      requestPermission();
-    }
+    const initializeCamera = async () => {
+      if (hasPermission) {
+        setIsActive(true);
+      } else {
+        const permission = await requestPermission();
+        if (permission === "granted") {
+          setIsActive(true);
+        }
+      }
+    };
+
+    initializeCamera();
   }, [hasPermission]);
 
   const onTakePicturePressed = async () => {
