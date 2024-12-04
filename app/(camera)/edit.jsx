@@ -29,7 +29,6 @@ const imageWidth = width * 0.5;
 const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
 
-
 export default function edit() {
   const [showAlert, setShowAlert] = useState(false);
   const [Imageuri, setImageuri] = useState(null);
@@ -118,7 +117,7 @@ export default function edit() {
         mapLatitude: latitude,
         mapLongitude: longitude,
         name: text,
-        areaRadius: 50,
+        areaRadius: 100,
         lastUpdateAt: currentTime,
       });
 
@@ -396,7 +395,7 @@ export default function edit() {
             options={{ format: "jpg", quality: 1 }}
             style={styles.imageContainer}
           >
-          <Image source={{ uri: imageUri }} style={styles.imageContainer} />
+            <Image source={{ uri: imageUri }} style={styles.imageContainer} />
           </ViewShot>
           {spotId == 0 && focusedInput !== "post" ? (
             <View>
