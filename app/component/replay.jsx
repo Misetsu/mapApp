@@ -20,6 +20,7 @@ import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
 import { Alert } from "react-native";
+import Share from "react-native-share";
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -65,8 +66,8 @@ const ReplyScreen = () => {
       _ga: "MjAzMzg2MzgzMC4xNzMxOTM2NDM2",
       _ga_J8YE7Q8ZQD: "MTczMjUwMTUyOS42LjEuMTczMjUwMzEzMC41OS4xLjcwODEwODkzOA",
       spotId: spotId,
-      latitude: marker.mapLatitude,
-      longitude: marker.mapLongitude,
+      latitude: selectedPost.latitude,
+      longitude: selectedPost.longitude,
     }).toString();
 
     return `${spotName}の投稿をチェック！！\n${baseURL}?${queryParams}`;
@@ -75,10 +76,14 @@ const ReplyScreen = () => {
   const onShare = () => {
     try {
       const result = Share.open({
-        message: generateShareMessage(spotName, spotId),
+        message: generateShareMessage(
+          selectedPost.spotName,
+          selectedPost.postDetails.spotId
+        ),
       });
     } catch (warning) {}
   };
+
   const fetchData = async () => {
     try {
       const photoQuerySnapshot = await firestore()
@@ -118,8 +123,12 @@ const ReplyScreen = () => {
             .get();
 
           let spotName = null;
+          let latitude = null;
+          let longitude = null;
           if (!spotSnapshot.empty) {
             spotName = spotSnapshot.docs[0].data().name;
+            latitude = spotSnapshot.docs[0].data().mapLatitude;
+            longitude = spotSnapshot.docs[0].data().mapLongitude;
           }
 
           const likeSnapShot = await firestore()
@@ -155,6 +164,8 @@ const ReplyScreen = () => {
             ...photoDoc,
             postDetails,
             spotName,
+            latitude,
+            longitude,
             userDetails,
             likeCount,
             likeFlag,
@@ -217,7 +228,7 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
-  useEffect(() => { }, [replies]);
+  useEffect(() => {}, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -457,7 +468,9 @@ const ReplyScreen = () => {
                       <Icon name="pen" size={25} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={handleDelete} style={styles.actionButton}
+                    <TouchableOpacity
+                      onPress={handleDelete}
+                      style={styles.actionButton}
                     >
                       <Icon name="trash" size={25} />
                     </TouchableOpacity>
@@ -483,13 +496,13 @@ const ReplyScreen = () => {
               <View style={styles.LikeCommentRow}>
                 {isLiked ? (
                   <TouchableOpacity
-                  style={styles.actionButton}
+                    style={styles.actionButton}
                     onPress={
                       auth.currentUser
                         ? () => handleUnlike(postId)
                         : () => {
-                          router.push("/loginForm");
-                        }
+                            router.push("/loginForm");
+                          }
                     }
                   >
                     <Icon
@@ -510,13 +523,13 @@ const ReplyScreen = () => {
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
-                  style={styles.actionButton}
+                    style={styles.actionButton}
                     onPress={
                       auth.currentUser
                         ? () => handleLike(postId)
                         : () => {
-                          router.push("/loginForm");
-                        }
+                            router.push("/loginForm");
+                          }
                     }
                   >
                     <Icon
@@ -546,8 +559,8 @@ const ReplyScreen = () => {
                       params: {
                         latitude: 0,
                         longitude: 0,
-                        spotId: spotId,
-                        photoUri: encodeURIComponent(post.photoUri),
+                        spotId: selectedPost.postDetails.spotId,
+                        photoUri: encodeURIComponent(photoUri),
                       },
                     });
                   }}
@@ -562,18 +575,14 @@ const ReplyScreen = () => {
                       params: {
                         latitude: 0,
                         longitude: 0,
-                        spotId: spotId,
+                        spotId: selectedPost.postDetails.spotId,
                         point: 0,
                         spotNo: 0,
                       },
                     });
                   }}
                 >
-                  <Icon
-                    name="map-marked-alt"
-                    size={25}
-                    color={"#000"}
-                  />
+                  <Icon name="map-marked-alt" size={25} color={"#000"} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
@@ -581,7 +590,8 @@ const ReplyScreen = () => {
                 >
                   <Icon name="share" size={25} color={"#000"} />
                 </TouchableOpacity>
-              </View><View style={styles.postDetails}>
+              </View>
+              <View style={styles.postDetails}>
                 <Text style={styles.spotText}>
                   {selectedPost.postDetails.postTxt != ""
                     ? selectedPost.postDetails.postTxt
@@ -594,7 +604,6 @@ const ReplyScreen = () => {
                     "yyyy年MM月dd日 HH:mm"
                   )}
                 </Text>
-
               </View>
               <View style={styles.postDetails}>
                 <View style={styles.selectedTag}>
@@ -640,12 +649,15 @@ const ReplyScreen = () => {
                   }
                   scrollEventThrottle={16} // イベントの感度調整
                 />
-              </View><View style={styles.Back}>
-                <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+              </View>
+              <View style={styles.Back}>
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={handleBackPress}
+                >
                   <Icon name="angle-left" size={24} color="#000" />
                 </TouchableOpacity>
               </View>
-
             </>
           )}
         </>
@@ -694,7 +706,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   pagetitle: {
-    fontSize: 30,
+    fontSize: 24,
     marginBottom: 15,
     textAlign: "center",
     fontWeight: "300",
@@ -835,7 +847,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   selectedTag: {
-    marginTop: 10,
+    marginVertical: 10,
   },
 });
 

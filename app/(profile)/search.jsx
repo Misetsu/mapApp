@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
@@ -16,6 +17,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
+const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -403,7 +405,9 @@ const UserItem = ({
             あなたをフォローしています。
           </Text>
         )}
-        <Text style={styles.resultText}>{user.displayName}</Text>
+        <Text style={styles.resultText} numberOfLines={1}>
+          {user.displayName}
+        </Text>
       </View>
     </TouchableOpacity>
     {user.uid !== currentUserId && ( // 自分自身のユーザーIDと一致する場合はボタンを非表示
@@ -435,7 +439,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", // 横並び
     justifyContent: "space-between", // 左右にスペースを均等に配置
     alignItems: "center", // アイテムを中央に配置
-    marginTop: 20, // 上の余白
+    marginTop: 15, // 上の余白
     marginBottom: 10, // 下の余白
   },
   // 検索バーのスタイル
@@ -520,8 +524,8 @@ const styles = StyleSheet.create({
     fontSize: 16, // フォントサイズ
     fontWeight: "500", // 太さ（普通）
     color: "#333", // 色
+    width: width * 0.35,
   },
-
   // フォローボタンのスタイル
   followButton: {
     paddingVertical: 8, // 上下の余白
@@ -544,12 +548,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14, // フォントサイズ
     color: "#fff", // 文字色
-  },
-  // 戻るボタンのスタイル（位置）
-  Back: {
-    position: "absolute", // 絶対位置
-    left: 10, // 左からの位置
-    top: 10, // 上からの位置
   },
   // 戻るボタンのスタイル（デザイン）
   backButton: {
