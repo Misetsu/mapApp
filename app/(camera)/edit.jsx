@@ -15,6 +15,7 @@ import {
   FlatList,
   Alert,
   Modal,
+  ScrollView,
 } from "react-native";
 import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -28,7 +29,6 @@ const { width, height } = Dimensions.get("window");
 const imageWidth = width * 0.5;
 const imageHeight = (imageWidth * 4) / 3;
 const auth = FirebaseAuth();
-
 
 export default function edit() {
   const [showAlert, setShowAlert] = useState(false);
@@ -118,7 +118,7 @@ export default function edit() {
         mapLatitude: latitude,
         mapLongitude: longitude,
         name: text,
-        areaRadius: 50,
+        areaRadius: 100,
         lastUpdateAt: currentTime,
       });
 
@@ -390,13 +390,13 @@ export default function edit() {
           </Text>
         </View>
       ) : (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
           <ViewShot
             ref={viewRef}
             options={{ format: "jpg", quality: 1 }}
             style={styles.imageContainer}
           >
-          <Image source={{ uri: imageUri }} style={styles.imageContainer} />
+            <Image source={{ uri: imageUri }} style={styles.imageContainer} />
           </ViewShot>
           {spotId == 0 && focusedInput !== "post" ? (
             <View>
@@ -560,7 +560,7 @@ export default function edit() {
               </View>
             </View>
           </Modal>
-        </View>
+        </ScrollView>
       )}
     </KeyboardAvoidingView>
   );

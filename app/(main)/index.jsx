@@ -747,22 +747,23 @@ export default function TrackUserMapView() {
     const spotIdList = [...new Set(tempList)];
 
     const fetchResult = [];
-    const querySpot = await firestore()
-      .collection("spot")
-      .where("id", "in", spotIdList)
-      .get();
 
-    if (!querySpot.empty) {
-      querySpot.forEach((docs) => {
-        const item = docs.data();
-        fetchResult.push(item);
-        setmapflag(false);
-        setsaveregions(regions);
-        setregions(null);
-      });
-      setMarkerCords(fetchResult);
-    } else {
+    if (spotIdList.length == 0) {
       setmapflag(true);
+    } else {
+      spotIdList.forEach(async (id) => {
+        const querySpot = await firestore()
+          .collection("spot")
+          .where("id", "==", id)
+          .get();
+
+        const item = querySpot.docs[0].data();
+        fetchResult.push(item);
+      });
+      setmapflag(false);
+      setsaveregions(regions);
+      setregions(null);
+      setMarkerCords(fetchResult);
     }
     setIconName("close");
     setChosenUser(userId);
