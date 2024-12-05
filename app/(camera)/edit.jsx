@@ -15,6 +15,7 @@ import {
   FlatList,
   Alert,
   Modal,
+  ScrollView,
 } from "react-native";
 import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -389,7 +390,7 @@ export default function edit() {
           </Text>
         </View>
       ) : (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
           <ViewShot
             ref={viewRef}
             options={{ format: "jpg", quality: 1 }}
@@ -559,7 +560,7 @@ export default function edit() {
               </View>
             </View>
           </Modal>
-        </View>
+        </ScrollView>
       )}
     </KeyboardAvoidingView>
   );
