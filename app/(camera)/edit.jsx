@@ -250,7 +250,7 @@ export default function edit() {
     }
 
     setIsoading(false);
-    router.replace("/");
+    router.navigate("/");
   };
 
   const GetImageuri = async () => {

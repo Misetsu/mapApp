@@ -129,7 +129,7 @@ export default function edit() {
     handleVisitState(parseInt(spotId));
 
     setIsoading(false);
-    router.replace("/");
+    router.navigate("/");
   };
 
   const handleVisitState = async (spotId) => {
