@@ -69,19 +69,25 @@ export default function LoginScreen() {
   };
 
   const signInWithEmail = async () => {
-    const aa = ""
     try {
-      if(userEmail != "" && userPassword != ""){
-        aa = await auth.signInWithEmailAndPassword(userEmail, userPassword);
-        
-        router.replace({ pathname: "/" });
+      if (userEmail != "" && userPassword != "") {
+        await auth
+          .signInWithEmailAndPassword(userEmail, userPassword)
+          .then(() => {
+            router.replace({ pathname: "/" });
+          })
+          .catch((error) => {
+            console.log(error);
+            Alert.alert(
+              "ログインに失敗しました。",
+              "入力内容を再確認してください。"
+            );
+          });
+      } else {
+        Alert.alert("ログインに失敗しました。", "入力してください。");
       }
-      else
-      {
-        Alert.alert("入力してください。","入力してください。");
-      }
-    }catch (error) {
-      Alert.alert("ログインに失敗しました。","入力内容を再確認してください。");
+    } catch (error) {
+      console.log(error);
     }
   };
 

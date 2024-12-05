@@ -879,24 +879,26 @@ export default function TrackUserMapView() {
   }
 
   const handlePost = async () => {
-    const queryUser = await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .get();
+    if (auth.currentUser != null) {
+      const queryUser = await firestore()
+        .collection("users")
+        .doc(auth.currentUser.uid)
+        .get();
 
-    const userData = queryUser.data();
+      const userData = queryUser.data();
 
-    const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
+      const pointRequired = fibonacci(parseInt(userData.spotCreate) + 1);
 
-    router.push({
-      pathname: "/selectSpot",
-      params: {
-        latitude: position.latitude,
-        longitude: position.longitude,
-        pointRequired: pointRequired,
-        userPoint: userData.spotPoint,
-      },
-    });
+      router.push({
+        pathname: "/selectSpot",
+        params: {
+          latitude: position.latitude,
+          longitude: position.longitude,
+          pointRequired: pointRequired,
+          userPoint: userData.spotPoint,
+        },
+      });
+    }
   };
 
   const fetchAllTag = async () => {
