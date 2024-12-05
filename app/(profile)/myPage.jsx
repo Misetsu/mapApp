@@ -406,17 +406,19 @@ export default function myPage() {
               ログアウト
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: "none", width: "50%", marginBottom: 0 },
-            ]}
-            onPress={toggleDeleteModal}
-          >
-            <Text style={[styles.buttonText, { color: "#FF6666" }]}>
-              アカウント削除
-            </Text>
-          </TouchableOpacity>
+          {auth.currentUser.uid == "ro12arSIsugfifCz5BABmvOUZVR2" ? null : (
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: "none", width: "50%", marginBottom: 0 },
+              ]}
+              onPress={toggleDeleteModal}
+            >
+              <Text style={[styles.buttonText, { color: "#FF6666" }]}>
+                アカウント削除
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       <View style={styles.Back}>
