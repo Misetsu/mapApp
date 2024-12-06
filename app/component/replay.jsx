@@ -19,7 +19,9 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
-import { Alert } from "react-native";
+import RNFS from "react-native-fs";
+import { PermissionsAndroid, Alert } from "react-native";
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import Share from "react-native-share";
 
 const auth = FirebaseAuth();
@@ -201,6 +203,54 @@ const ReplyScreen = () => {
       console.error("データ取得中にエラーが発生しました: ", error);
     } finally {
       setLoading(false);
+    }
+  };
+  const saveImageToDevice = async () => {
+    try {
+      // 書き込み権限をリクエスト
+      await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      );
+
+      if (
+        !PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        )
+      ) {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+      }
+
+      if (!photoUri) {
+        Alert.alert("エラー", "保存する画像が見つかりません。");
+        return;
+      }
+
+      const pathname = selectedPost.postDetails.imagePath.split("/");
+      // 保存するパスを設定
+      const downloadPath =
+        RNFS.DownloadDirectoryPath + "/" + pathname[1] + ".jpg";
+
+      // ダウンロード処理
+      const result = await RNFS.downloadFile({
+        fromUrl: photoUri, // 表示されている画像のURL
+        toFile: downloadPath, // 保存先のパス
+      }).promise;
+
+      if (result.statusCode === 200) {
+        // Androidの場合、メディアスキャンを実行してギャラリーに画像を認識させる
+        await CameraRoll.saveAsset(downloadPath, {
+          type: "photo",
+          album: "Pocape",
+        });
+        Alert.alert("", `画像が保存されました。`);
+      } else {
+        Alert.alert("エラー", "画像の保存に失敗しました。");
+      }
+    } catch (error) {
+      console.error("画像保存中にエラーが発生しました: ", error);
+      Alert.alert("エラー", "画像保存中に問題が発生しました。");
     }
   };
 
@@ -555,22 +605,6 @@ const ReplyScreen = () => {
                   style={styles.actionButton}
                   onPress={() => {
                     router.push({
-                      pathname: "/cameraComposition",
-                      params: {
-                        latitude: 0,
-                        longitude: 0,
-                        spotId: selectedPost.postDetails.spotId,
-                        photoUri: encodeURIComponent(photoUri),
-                      },
-                    });
-                  }}
-                >
-                  <Icon name="images" size={25} color={"#000"} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => {
-                    router.push({
                       pathname: "/camera",
                       params: {
                         latitude: 0,
@@ -584,12 +618,46 @@ const ReplyScreen = () => {
                 >
                   <Icon name="map-marked-alt" size={25} color={"#000"} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => onShare()}
-                >
-                  <Icon name="share" size={25} color={"#000"} />
-                </TouchableOpacity>
+                {showImage == "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/cameraComposition",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: selectedPost.postDetails.spotId,
+                          photoUri: encodeURIComponent(photoUri),
+                        },
+                      });
+                    }}
+                  >
+                    <Icon name="images" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
+                {showImage == "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => onShare()}
+                  >
+                    <Icon name="share" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
+                {showImage == "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => saveImageToDevice()}
+                  >
+                    <Icon name="download" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
               </View>
               <View style={styles.postDetails}>
                 <Text style={styles.spotText}>
@@ -848,6 +916,24 @@ const styles = StyleSheet.create({
   },
   selectedTag: {
     marginVertical: 10,
+  },
+  saveButton: {
+    backgroundColor: "#4CAF50", // 緑色の背景
+    paddingVertical: 12, // 上下のパディング
+    paddingHorizontal: 20, // 左右のパディング
+    borderRadius: 8, // 角を丸く
+    alignItems: "center", // テキストを中央揃え
+    justifyContent: "center",
+    shadowColor: "#000", // 影の色
+    shadowOffset: { width: 0, height: 2 }, // 影の位置
+    shadowOpacity: 0.2, // 影の透明度
+    shadowRadius: 4, // 影のぼかし半径
+    elevation: 5, // Android用の影
+  },
+  saveButtonText: {
+    color: "#FFFFFF", // 白色の文字
+    fontSize: 16, // 文字サイズ
+    fontWeight: "bold", // 太字
   },
 });
 
