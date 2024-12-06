@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
   userBar: {
     flexDirection: "row",
     justifyContent: "center",
+    gap: 5,
   },
   postUser: {
     flexDirection: "row",

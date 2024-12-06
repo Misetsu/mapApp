@@ -208,7 +208,7 @@ const ReplyScreen = () => {
   const saveImageToDevice = async () => {
     try {
       // 書き込み権限をリクエスト
-      const granted = await PermissionsAndroid.request(
+      await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
       );
 
@@ -217,8 +217,9 @@ const ReplyScreen = () => {
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
         )
       ) {
-        Alert.alert("エラー", "ストレージのアクセス権が必要です。");
-        return;
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
       }
 
       if (!photoUri) {
