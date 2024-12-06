@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Linking,
   ActivityIndicator,
+  StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -979,6 +980,7 @@ export default function TrackUserMapView() {
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
+      <StatusBar barStyle={"dark-content"}></StatusBar>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
       </View>
