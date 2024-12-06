@@ -19,7 +19,8 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
-import { Alert } from "react-native";
+import RNFS from "react-native-fs";
+import { PermissionsAndroid, Alert } from "react-native";
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -174,6 +175,43 @@ const ReplyScreen = () => {
       setLoading(false);
     }
   };
+  const saveImageToDevice = async () => {
+    try {
+      // 書き込み権限をリクエスト
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      );
+  
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert("エラー", "ストレージのアクセス権が必要です。");
+        return;
+      }
+  
+      if (!photoUri) {
+        Alert.alert("エラー", "保存する画像が見つかりません。");
+        return;
+      }
+  
+      // 保存するパスを設定
+      const downloadPath = `${RNFS.DownloadDirectoryPath}/saved-image.jpg`;
+  
+      // ダウンロード処理
+      const result = await RNFS.downloadFile({
+        fromUrl: photoUri, // 表示されている画像のURL
+        toFile: downloadPath, // 保存先のパス
+      }).promise;
+  
+      if (result.statusCode === 200) {
+        Alert.alert("成功", `画像が保存されました: ${downloadPath}`);
+      } else {
+        Alert.alert("エラー", "画像の保存に失敗しました。");
+      }
+    } catch (error) {
+      console.error("画像保存中にエラーが発生しました: ", error);
+      Alert.alert("エラー", "画像保存中に問題が発生しました。");
+    }
+  };
+
 
   const fetchAllTag = async () => {
     try {
@@ -398,6 +436,7 @@ const ReplyScreen = () => {
         <>
           {selectedPost && (
             <>
+              
               <View style={styles.header}>
                 <TouchableOpacity
                   onPress={handleBackPress}
@@ -407,7 +446,11 @@ const ReplyScreen = () => {
                 </TouchableOpacity>
                 <Text style={styles.spotName}>{selectedPost.spotName}</Text>
                 <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
+                <TouchableOpacity style={styles.saveButton} onPress={saveImageToDevice}>
+                <Text style={styles.saveButtonText}>画像を保存</Text>
+                </TouchableOpacity>
               </View>
+              
               <View style={styles.contentContainer}>
                 <View style={styles.postUserBar}>
                   <TouchableOpacity
@@ -779,6 +822,24 @@ const styles = StyleSheet.create({
   },
   selectedTag: {
     marginTop: 10,
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50', // 緑色の背景
+    paddingVertical: 12, // 上下のパディング
+    paddingHorizontal: 20, // 左右のパディング
+    borderRadius: 8, // 角を丸く
+    alignItems: 'center', // テキストを中央揃え
+    justifyContent: 'center',
+    shadowColor: '#000', // 影の色
+    shadowOffset: { width: 0, height: 2 }, // 影の位置
+    shadowOpacity: 0.2, // 影の透明度
+    shadowRadius: 4, // 影のぼかし半径
+    elevation: 5, // Android用の影
+  },
+  saveButtonText: {
+    color: '#FFFFFF', // 白色の文字
+    fontSize: 16, // 文字サイズ
+    fontWeight: 'bold', // 太字
   },
 });
 
