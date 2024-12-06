@@ -166,6 +166,7 @@ const EditPostScreen = () => {
           tagId: parseInt(tag),
           postId: parseInt(postId),
           spotId: parseInt(selectedPost.postDetails.spotId),
+          timeStamp: selectedPost.postDetails.timeStamp,
         });
     }
     router.back();
@@ -187,71 +188,66 @@ const EditPostScreen = () => {
           <>
             {selectedPost && (
               <>
-                <View style={styles.header}>
-                  <TouchableOpacity
-                    onPress={handleBackPress}
-                    style={styles.iconButton}
-                  >
-                    <Icon name="angle-left" size={24} color="#000" />
-                  </TouchableOpacity>
-                  <Text style={styles.spotName}>投稿編集</Text>
-                  <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={handleSave}
-                  >
-                    <Icon name="save" size={24} color="#239D60" />
-                  </TouchableOpacity>
-                </View>
+                <Text style={styles.pagetitle}>投稿編集</Text>
+
                 <View style={styles.contentContainer}>
                   <View style={styles.imageContainer}>
                     <Image source={{ uri: photoUri }} style={styles.image} />
                   </View>
 
                   <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>
+                    <Text style={styles.displayName}>
                       投稿スポット：{selectedPost.spotName}
                     </Text>
                   </View>
 
                   <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>
+                    <Text style={styles.displayName}>
                       {selectedPost.postDetails.postTxt != ""
                         ? selectedPost.postDetails.postTxt
                         : "詳細がありません"}
                     </Text>
                   </View>
                   <View style={styles.postDetails}>
-                    <Text style={styles.spotText}>タグ：</Text>
-                    <View style={styles.selectedTag}>
-                      {selectedTag.length == 0 ? (
-                        <Text>追加されたタグがありません</Text>
-                      ) : (
-                        <FlatList
-                          horizontal={true}
-                          data={selectedTag}
-                          keyExtractor={(item) => item}
-                          showsHorizontalScrollIndicator={false}
-                          renderItem={({ item }) => {
-                            return (
-                              <TouchableOpacity
-                                style={styles.selectedTagView}
-                                onPress={() => {
-                                  deleteTag(item);
-                                }}
-                              >
-                                <Text>
-                                  {allTag.find((o) => o.tagId == item).tagName}
-                                </Text>
-                                <Icon name="times-circle" size={16} />
-                              </TouchableOpacity>
-                            );
-                          }}
-                        />
-                      )}
-                    </View>
+                    <Text style={styles.displayName}>タグ</Text>
+                    {selectedTag.length == 0 ? (
+                      <Text
+                        style={[
+                          styles.selectedTagContainer,
+                          { paddingTop: 10, paddingBottom: 4 },
+                        ]}
+                      >
+                        追加されたタグがありません
+                      </Text>
+                    ) : (
+                      <FlatList
+                        style={styles.selectedTagContainer}
+                        horizontal={true}
+                        data={selectedTag}
+                        keyExtractor={(item) => item}
+                        showsHorizontalScrollIndicator={false}
+                        renderItem={({ item }) => {
+                          return (
+                            <TouchableOpacity
+                              style={styles.selectedTagView}
+                              onPress={() => {
+                                deleteTag(item);
+                              }}
+                            >
+                              <Icon name="tag" size={16} color={"#239D60"} />
+
+                              <Text>
+                                {allTag.find((o) => o.tagId == item).tagName}
+                              </Text>
+                              <Icon name="times-circle" size={16} />
+                            </TouchableOpacity>
+                          );
+                        }}
+                      />
+                    )}
                     <View style={styles.tagBorder}></View>
-                    <Text style={{ fontSize: 12, marginBottom: 10 }}>
-                      タグを4つまで選択できます
+                    <Text style={styles.noamllabel}>
+                      タグを４つまで選択できます
                     </Text>
                     <FlatList
                       style={styles.allTagContainer}
@@ -270,7 +266,7 @@ const EditPostScreen = () => {
                             style={styles.tagView}
                             onPress={() => addTag(item.tagId)}
                           >
-                            <Icon name="tag" size={16} />
+                            <Icon name="tag" size={16} color={"#239D60"} />
                             <Text>{item.tagName}</Text>
                           </TouchableOpacity>
                         );
@@ -285,6 +281,11 @@ const EditPostScreen = () => {
             )}
           </>
         )}
+        <View style={styles.Back}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Icon name="angle-left" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -292,39 +293,35 @@ const EditPostScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
+    padding: 20,
     height: height,
     backgroundColor: "#F2F5C8",
   },
+  pagetitle: {
+    fontSize: 30,
+    marginBottom: 15,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#000000",
+  },
+  noamllabel: {
+    fontSize: 15,
+    margin: 5,
+    fontWeight: "600",
+    color: "#239D60",
+    textAlign: "center",
+  },
   centerContainer: {
-    width: "100%",
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F2F5C8",
   },
   contentContainer: {
-    paddingHorizontal: 20,
     paddingTop: 10,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  iconButton: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  spotName: {
-    fontSize: 20,
-    fontWeight: "bold",
   },
   imageContainer: {
     width: ((height * 0.3) / 4) * 3,
     height: height * 0.3,
-    marginBottom: 10,
     overflow: "hidden",
     alignSelf: "center",
   },
@@ -337,135 +334,51 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: "#ffffff",
   },
-  postDetails: {
-    padding: 10,
-  },
-  spotText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  input: {
-    height: 50,
-    backgroundColor: "#FAFAFA",
-    borderColor: "gray",
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 5,
-    width: "100%",
-    flex: 1,
-  },
-  replyBtn: {
-    height: 50,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    justifyContent: "center",
-    backgroundColor: "#A3DE83",
-  },
-  repliesList: {},
-  replyContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "lightgray",
-  },
-  replyText: {
-    fontSize: 14,
-    paddingHorizontal: 10,
-  },
-  replyTimestamp: {
-    fontSize: 12,
-    color: "gray",
-  },
-  noRepliesText: {
-    textAlign: "center",
-    color: "gray",
+  displayName: {
+    fontSize: 15,
     marginTop: 10,
-  },
-  sendReply: {
-    width: "100%",
-    backgroundColor: "#F2F5C8",
-    flexDirection: "row",
-    paddingHorizontal: 10,
-    paddingBottom: 10,
-    gap: 10,
-  },
-  postUserBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-  postUser: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 10,
-    height: "100%",
-  },
-  postIconImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-  postDate: {
-    fontSize: 12,
-    color: "gray",
-  },
-  actionButton: {
-    width: 40,
-    height: 40,
-    padding: 5,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center", // ボタン内のテキストを中央に配置
-    alignItems: "center",
-  },
-  likeNum: {
     marginLeft: 10,
-    fontSize: 16,
+    textAlign: "left",
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
-  rowView: {
-    flexDirection: "row",
-    gap: 15,
-  },
-  rowSpaceView: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  selectedTagContainer: {
+    margin: 5,
   },
   tagView: {
-    width: width / 3,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 10,
   },
   selectedTagView: {
-    marginHorizontal: 2,
-    width: width / 3.5,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 5,
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 10,
-  },
-  tagContainer: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  selectedTag: {
-    marginTop: 10,
   },
   tagBorder: {
-    width: "100%",
-    borderBottomWidth: 2,
-    marginVertical: 10,
+    margin: 5,
+    marginTop: 0,
+    marginBottom: 0,
+    borderBottomWidth: 3,
+    borderColor: "#239D60",
+    marginVertical: 16,
   },
   allTagContainer: {
+    marginTop: 5,
     height: height * 0.2,
   },
   submit: {
@@ -480,6 +393,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#f2f2f2",
     textAlign: "center",
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
 });
 

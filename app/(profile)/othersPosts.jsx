@@ -13,6 +13,7 @@ import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import ImageResizer from 'react-native-image-resizer';
 
 const auth = FirebaseAuth();
 
@@ -67,7 +68,7 @@ export default function UserPosts(uid) {
 
             // 画像パスが存在する場合、URL を取得
             if (photoData.imagePath) {
-              photoUri = await storage()
+              originalUri = await storage()
                 .ref(photoData.imagePath)
                 .getDownloadURL();
             }
@@ -77,6 +78,15 @@ export default function UserPosts(uid) {
                 visited = true;
               }
             }
+            const resizedImage = await ImageResizer.createResizedImage(
+              originalUri, // 元の画像URL
+              400,
+              300,
+              "JPEG",      // フォーマット (JPEG / PNG)
+              50,          // 品質 (0 - 100)
+              0            // 回転角度
+            );
+            photoUri = resizedImage.uri;
 
             return {
               photoUri: photoUri,

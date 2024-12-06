@@ -11,7 +11,6 @@ import {
   FlatList, // ScrollViewからFlatListに変更z
   KeyboardAvoidingView,
   Platform,
-  MediaScannerConnection,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -23,6 +22,7 @@ import RepliesList from "./RepliesList"; // RepliesList コンポーネントを
 import RNFS from "react-native-fs";
 import { PermissionsAndroid, Alert } from "react-native";
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import Share from "react-native-share";
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -37,32 +37,54 @@ const ReplyScreen = () => {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
-  const [isScrolling, setIsScrolling] = useState(false);
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState([]);
-
-  const handleScroll = (event) => {
-    const { contentOffset } = event.nativeEvent;
-    setIsScrolling(contentOffset.y > 0); // スクロール位置が0以上なら非表示
-  };
 
   const handleBackPress = () => {
     router.back();
   };
 
   const navigateProfile = (uid) => {
-    router.push({
-      pathname: "/profile",
-      params: {
-        uid: uid,
-      },
-    });
+    if (uid == auth.currentUser.uid) {
+      router.push({ pathname: "/myPage" });
+    } else {
+      router.push({
+        pathname: "/profile",
+        params: {
+          uid: uid,
+        },
+      });
+    }
   };
 
   if (!postId) {
     Alert.alert("エラー", "投稿IDが指定されていません。");
     return null;
   }
+  const generateShareMessage = (spotName, spotId) => {
+    const baseURL = "http://syuto.s322.xrea.com/";
+    const queryParams = new URLSearchParams({
+      _gl: "1*siyzma*_gcl_au*MTk4MDUwNjE0Ni4xNzMxOTM2NTY2",
+      _ga: "MjAzMzg2MzgzMC4xNzMxOTM2NDM2",
+      _ga_J8YE7Q8ZQD: "MTczMjUwMTUyOS42LjEuMTczMjUwMzEzMC41OS4xLjcwODEwODkzOA",
+      spotId: spotId,
+      latitude: selectedPost.latitude,
+      longitude: selectedPost.longitude,
+    }).toString();
+
+    return `${spotName}の投稿をチェック！！\n${baseURL}?${queryParams}`;
+  };
+
+  const onShare = () => {
+    try {
+      const result = Share.open({
+        message: generateShareMessage(
+          selectedPost.spotName,
+          selectedPost.postDetails.spotId
+        ),
+      });
+    } catch (warning) {}
+  };
 
   const fetchData = async () => {
     try {
@@ -103,8 +125,12 @@ const ReplyScreen = () => {
             .get();
 
           let spotName = null;
+          let latitude = null;
+          let longitude = null;
           if (!spotSnapshot.empty) {
             spotName = spotSnapshot.docs[0].data().name;
+            latitude = spotSnapshot.docs[0].data().mapLatitude;
+            longitude = spotSnapshot.docs[0].data().mapLongitude;
           }
 
           const likeSnapShot = await firestore()
@@ -140,6 +166,8 @@ const ReplyScreen = () => {
             ...photoDoc,
             postDetails,
             spotName,
+            latitude,
+            longitude,
             userDetails,
             likeCount,
             likeFlag,
@@ -215,7 +243,7 @@ const ReplyScreen = () => {
           type: "photo",
           album: "Pocape",
         });
-        Alert.alert("成功", `画像が保存されました: ${downloadPath}`);
+        Alert.alert("", `画像が保存されました。`);
       } else {
         Alert.alert("エラー", "画像の保存に失敗しました。");
       }
@@ -375,60 +403,70 @@ const ReplyScreen = () => {
       {
         text: "削除",
         onPress: async () => {
-          let batch = firestore().batch();
+          setLoading(true);
+          try {
+            let batch = firestore().batch();
 
-          await firestore()
-            .collection("post")
-            .where("id", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("post")
+              .where("id", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("photo")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach(async (doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("photo")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach(async (doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("like")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("like")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("replies")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("replies")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await firestore()
-            .collection("tagPost")
-            .where("postId", "==", parseInt(postId))
-            .get()
-            .then((snapshot) => {
-              snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
+            await firestore()
+              .collection("tagPost")
+              .where("postId", "==", parseInt(postId))
+              .get()
+              .then((snapshot) => {
+                snapshot.docs.forEach((doc) => {
+                  batch.delete(doc.ref);
+                });
               });
-            });
 
-          await batch.commit();
-          await storage().ref(selectedPost.photoDoc.imagePath).delete();
+            await batch.commit();
+            // const photoRef = storage().child(
+            //   selectedPost.photoDoc.imagePath + ".jpg"
+            // );
+            // await photoRef.delete();
+          } catch (error) {
+          } finally {
+            setLoading(false);
+            router.back();
+          }
         },
       },
     ]);
@@ -439,6 +477,7 @@ const ReplyScreen = () => {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // iOSの場合はオフセット調整
+      enabled={true}
     >
       {loading ? (
         <View style={styles.centerContainer}>
@@ -448,256 +487,307 @@ const ReplyScreen = () => {
         <>
           {selectedPost && (
             <>
-              <View style={styles.header}>
+              <Text style={styles.pagetitle}>{selectedPost.spotName}</Text>
+              <View style={styles.postUserBar}>
                 <TouchableOpacity
+                  style={styles.postUser}
+                  onPress={() => {
+                    navigateProfile(selectedPost.userDetails.uid);
+                  }}
+                >
+                  <Image
+                    source={{ uri: selectedPost.userDetails.photoURL }}
+                    style={styles.postIconImage}
+                  />
+                  <Text style={styles.userName}>
+                    {selectedPost.userDetails.displayName}
+                  </Text>
+                </TouchableOpacity>
+                {selectedPost.userDetails.uid == auth.currentUser.uid ? (
+                  <View style={styles.EditTrashRow}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.push({
+                          pathname: "/editPost",
+                          params: { postId },
+                        });
+                      }}
+                      style={styles.actionButton}
+                    >
+                      <Icon name="pen" size={25} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={handleDelete}
+                      style={styles.actionButton}
+                    >
+                      <Icon name="trash" size={25} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <></>
+                )}
+              </View>
+              {showImage == "true" ? (
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: photoUri }} style={styles.image} />
+                </View>
+              ) : (
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: photoUri }}
+                    style={styles.image}
+                    blurRadius={50}
+                  />
+                </View>
+              )}
+
+              <View style={styles.LikeCommentRow}>
+                {isLiked ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={
+                      auth.currentUser
+                        ? () => handleUnlike(postId)
+                        : () => {
+                            router.push("/loginForm");
+                          }
+                    }
+                  >
+                    <Icon
+                      name="heart"
+                      size={25}
+                      color={selectedPost.likeFlag ? "#f00" : "#f00"}
+                    />
+                    <Text
+                      style={[
+                        { color: selectedPost.likeFlag ? "red" : "red" },
+                        styles.likeNum,
+                      ]}
+                    >
+                      {selectedPost.likeFlag
+                        ? selectedPost.likeCount
+                        : selectedPost.likeCount + 1}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={
+                      auth.currentUser
+                        ? () => handleLike(postId)
+                        : () => {
+                            router.push("/loginForm");
+                          }
+                    }
+                  >
+                    <Icon
+                      name="heart"
+                      size={25}
+                      color={selectedPost.likeFlag ? "#000" : "#000"}
+                    />
+                    <Text
+                      style={[
+                        {
+                          color: selectedPost.likeFlag ? "black" : "black",
+                        },
+                        styles.likeNum,
+                      ]}
+                    >
+                      {selectedPost.likeFlag
+                        ? selectedPost.likeCount - 1
+                        : selectedPost.likeCount}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/camera",
+                      params: {
+                        latitude: 0,
+                        longitude: 0,
+                        spotId: selectedPost.postDetails.spotId,
+                        point: 0,
+                        spotNo: 0,
+                      },
+                    });
+                  }}
+                >
+                  <Icon name="map-marked-alt" size={25} color={"#000"} />
+                </TouchableOpacity>
+                {showImage == "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/cameraComposition",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: selectedPost.postDetails.spotId,
+                          photoUri: encodeURIComponent(photoUri),
+                        },
+                      });
+                    }}
+                  >
+                    <Icon name="images" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
+                {showImage == "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => onShare()}
+                  >
+                    <Icon name="share" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
+                {showImage == "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => saveImageToDevice()}
+                  >
+                    <Icon name="download" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
+              </View>
+              <View style={styles.postDetails}>
+                <Text style={styles.spotText}>
+                  {selectedPost.postDetails.postTxt != ""
+                    ? selectedPost.postDetails.postTxt
+                    : "詳細がありません"}
+                </Text>
+                <Text style={styles.postDate}>
+                  {formatInTimeZone(
+                    new Date(selectedPost.postDetails.timeStamp),
+                    "Asia/Tokyo",
+                    "yyyy年MM月dd日 HH:mm"
+                  )}
+                </Text>
+              </View>
+              <View style={styles.postDetails}>
+                <View style={styles.selectedTag}>
+                  {selectedTag.length == 0 ? (
+                    <></>
+                  ) : (
+                    <FlatList
+                      horizontal={true}
+                      data={selectedTag}
+                      keyExtractor={(item) => item}
+                      showsHorizontalScrollIndicator={false}
+                      renderItem={({ item }) => {
+                        return (
+                          <View style={styles.selectedTagView}>
+                            <Icon name="tag" size={16} color={"#239D60"} />
+                            <Text>
+                              {allTag.find((o) => o.tagId == item).tagName}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                    />
+                  )}
+                </View>
+                <Text style={styles.displayName}>コメント</Text>
+              </View>
+              <View style={styles.sky}>
+                <FlatList
+                  data={replies}
+                  renderItem={({ item }) => (
+                    <RepliesList
+                      replies={[item]}
+                      navigateProfile={navigateProfile}
+                      postId={postId}
+                    />
+                  )}
+                  keyExtractor={(item, index) => item.id || String(index)} // idが空の場合はインデックスを使用
+                  style={styles.repliesList}
+                  ListEmptyComponent={
+                    <Text style={styles.noRepliesText}>
+                      まだ返信がありません。
+                    </Text>
+                  }
+                  scrollEventThrottle={16} // イベントの感度調整
+                />
+              </View>
+              <View style={styles.Back}>
+                <TouchableOpacity
+                  style={styles.backButton}
                   onPress={handleBackPress}
-                  style={styles.iconButton}
                 >
                   <Icon name="angle-left" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.spotName}>{selectedPost.spotName}</Text>
-                <TouchableOpacity style={styles.iconButton}></TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={saveImageToDevice}
-                >
-                  <Text style={styles.saveButtonText}>画像を保存</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.contentContainer}>
-                <View style={styles.postUserBar}>
-                  <TouchableOpacity
-                    style={styles.postUser}
-                    onPress={() => {
-                      navigateProfile(selectedPost.userDetails.uid);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: selectedPost.userDetails.photoURL }}
-                      style={styles.postIconImage}
-                    />
-                    <Text style={{ fontSize: 16 }}>
-                      {selectedPost.userDetails.displayName}
-                    </Text>
-                  </TouchableOpacity>
-                  <Text style={styles.postDate}>
-                    {formatInTimeZone(
-                      new Date(selectedPost.postDetails.timeStamp),
-                      "Asia/Tokyo",
-                      "yyyy年MM月dd日 HH:mm"
-                    )}
-                  </Text>
-                </View>
-                {showImage == "true" ? (
-                  <View style={styles.imageContainer}>
-                    <Image source={{ uri: photoUri }} style={styles.image} />
-                  </View>
-                ) : (
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: photoUri }}
-                      style={styles.image}
-                      blurRadius={50}
-                    />
-                  </View>
-                )}
-
-                <View style={styles.rowSpaceView}>
-                  {isLiked ? (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={
-                        auth.currentUser
-                          ? () => handleUnlike(postId)
-                          : () => {
-                              router.push("/loginForm");
-                            }
-                      }
-                    >
-                      <Icon
-                        name="heart"
-                        size={25}
-                        color={selectedPost.likeFlag ? "#f00" : "#f00"}
-                      />
-                      <Text
-                        style={[
-                          { color: selectedPost.likeFlag ? "red" : "red" },
-                          styles.likeNum,
-                        ]}
-                      >
-                        {selectedPost.likeFlag
-                          ? selectedPost.likeCount
-                          : selectedPost.likeCount + 1}
-                      </Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={
-                        auth.currentUser
-                          ? () => handleLike(postId)
-                          : () => {
-                              router.push("/loginForm");
-                            }
-                      }
-                    >
-                      <Icon
-                        name="heart"
-                        size={25}
-                        color={selectedPost.likeFlag ? "#000" : "#000"}
-                      />
-                      <Text
-                        style={[
-                          {
-                            color: selectedPost.likeFlag ? "black" : "black",
-                          },
-                          styles.likeNum,
-                        ]}
-                      >
-                        {selectedPost.likeFlag
-                          ? selectedPost.likeCount - 1
-                          : selectedPost.likeCount}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                  {selectedPost.userDetails.uid == auth.currentUser.uid ? (
-                    <View style={styles.rowView}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          router.push({
-                            pathname: "/editPost",
-                            params: { postId },
-                          });
-                        }}
-                      >
-                        <Icon name="pen" size={25} />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={handleDelete}>
-                        <Icon name="trash" size={25} />
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <></>
-                  )}
-                </View>
-                <View style={styles.postDetails}>
-                  <Text style={styles.spotText}>
-                    {selectedPost.postDetails.postTxt != ""
-                      ? selectedPost.postDetails.postTxt
-                      : "詳細がありません"}
-                  </Text>
-                </View>
-                <View style={styles.postDetails}>
-                  <View style={styles.selectedTag}>
-                    {selectedTag.length == 0 ? (
-                      <Text>追加されたタグがありません</Text>
-                    ) : (
-                      <FlatList
-                        horizontal={true}
-                        data={selectedTag}
-                        keyExtractor={(item) => item}
-                        showsHorizontalScrollIndicator={false}
-                        renderItem={({ item }) => {
-                          return (
-                            <View style={styles.selectedTagView}>
-                              <Icon name="tag" size={16} />
-                              <Text>
-                                {allTag.find((o) => o.tagId == item).tagName}
-                              </Text>
-                            </View>
-                          );
-                        }}
-                      />
-                    )}
-                  </View>
-                </View>
-                <View style={styles.sky}>
-                  <FlatList
-                    data={replies}
-                    renderItem={({ item }) => (
-                      <RepliesList
-                        replies={[item]}
-                        navigateProfile={navigateProfile}
-                        postId={postId}
-                        style={styles.test}
-                      />
-                    )}
-                    keyExtractor={(item, index) => item.id || String(index)} // idが空の場合はインデックスを使用
-                    style={styles.repliesList}
-                    ListEmptyComponent={
-                      <Text style={styles.noRepliesText}>
-                        まだ返信がありません。
-                      </Text>
-                    }
-                    onScroll={handleScroll} // スクロールイベントを監視
-                    scrollEventThrottle={16} // イベントの感度調整
-                  />
-                </View>
               </View>
             </>
           )}
         </>
       )}
 
-      {/* </ScrollView> */}
-      {/* スクロール中で非表示 */}
-      {!isScrolling && (
-        <View style={styles.sendReply}>
-          <TextInput
-            style={styles.input}
-            placeholder="返信を入力..."
-            value={replyText}
-            onChangeText={setReplyText}
-            multiline
-          />
-          <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
-            <Text style={styles.replyBtnText}>送信</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.sendReply}>
+        <TextInput
+          style={styles.input}
+          placeholder="コメントを入力..."
+          value={replyText}
+          onChangeText={setReplyText}
+          multiline
+        />
+        <TouchableOpacity style={styles.replyBtn} onPress={handleReplySubmit}>
+          <Text>送信</Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: height - 60,
+    padding: 20,
     backgroundColor: "#F2F5C8",
     flex: 1,
-    marginBottom: "auto",
   },
   centerContainer: {
     width: "100%",
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F2F5C8",
     flex: 1,
   },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    backgroundColor: "#F2F5C8",
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
-  iconButton: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
+  pagetitle: {
+    fontSize: 24,
+    marginBottom: 15,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#000000",
   },
-  spotName: {
-    fontSize: 20,
-    fontWeight: "bold",
+  displayName: {
+    fontSize: 15,
+    textAlign: "left",
+    alignItems: "flex-start",
+    fontWeight: "300",
   },
   imageContainer: {
     width: ((height * 0.3) / 4) * 3,
     height: height * 0.3,
-    marginBottom: 10,
     overflow: "hidden",
     alignSelf: "center",
   },
@@ -736,22 +826,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#A3DE83",
   },
-  repliesList: {},
-  replyContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "lightgray",
-    marginBottom: "auto",
-    backgroundColor: "white",
-  },
-  replyText: {
-    fontSize: 14,
-    paddingHorizontal: 10,
-  },
-  replyTimestamp: {
-    fontSize: 12,
-    color: "gray",
-  },
   noRepliesText: {
     textAlign: "center",
     color: "gray",
@@ -778,18 +852,33 @@ const styles = StyleSheet.create({
   },
   postUser: {
     flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    padding: 5,
+  },
+  userName: {
+    fontSize: 18,
+    color: "#000000",
     justifyContent: "center",
-    gap: 10,
-    height: "100%",
+    fontWeight: "300",
   },
   postIconImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
   },
   postDate: {
     fontSize: 12,
     color: "gray",
+  },
+  LikeCommentRow: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignSelf: "center",
+    width: "90%",
+    margin: 5,
   },
   actionButton: {
     width: 40,
@@ -800,42 +889,32 @@ const styles = StyleSheet.create({
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
   },
+  EditTrashRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignSelf: "flex-start", // 子要素の横幅に合わせる
+    marginBottom: 10,
+  },
   likeNum: {
     marginLeft: 10,
     fontSize: 16,
   },
-  rowView: {
-    flexDirection: "row",
-    gap: 15,
-  },
-  rowSpaceView: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  test: {
-    backgroundColor: "white",
-    adding: 10,
-    marginBottom: "auto",
-    height: ((height * 0.3) / 4) * 3,
-    flex: 1, // 画面全体を使う
-  },
   sky: {
-    height: 300,
+    height: height * 0.25,
   },
   selectedTagView: {
-    marginHorizontal: 2,
-    width: width / 3.5,
-    borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#239D60",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    marginHorizontal: 2,
+    backgroundColor: "#f2f5c8",
     gap: 10,
   },
   selectedTag: {
-    marginTop: 10,
+    marginVertical: 10,
   },
   saveButton: {
     backgroundColor: "#4CAF50", // 緑色の背景

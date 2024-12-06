@@ -8,13 +8,13 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./othersPosts";
-import { Alert } from "react-native";
 
 const auth = FirebaseAuth();
 
@@ -31,94 +31,101 @@ export default function profile() {
   const [isFollowModalVisible, setIsFollowModalVisible] = useState(false); // フォローモーダルの表示状態を管理
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
   const [publicStatus, setPublicStatus] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // ローディング状態を追加
 
   useEffect(() => {
     const { uid } = params;
 
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
-      const queryProfile = await firestore()
-        .collection("users")
-        .where("uid", "==", uid)
-        .get();
-      const profileData = queryProfile.docs[0].data();
-      setDisplayName(profileData.displayName);
-      setPhotoUri(profileData.photoURL);
+      try {
+        const queryProfile = await firestore()
+          .collection("users")
+          .where("uid", "==", uid)
+          .get();
+        const profileData = queryProfile.docs[0].data();
+        setDisplayName(profileData.displayName);
+        setPhotoUri(profileData.photoURL);
 
-      if (profileData.email == undefined) {
-        router.push({ pathname: "/notFoundUser", params: { uid: uid } }); // TODO
-      }
-
-      if (profileData.publicStatus == 0) {
-        setPublicStatus(true);
-      }
-
-      // フォロー中取得
-      const queryFollow = await firestore()
-        .collection("follow")
-        .where("followerId", "==", uid)
-        .get();
-
-      if (!queryFollow.empty) {
-        let cnt = 0;
-        let followArray = [];
-        const firstKey = "uid";
-        const secondKey = "displayName";
-        const thirdKey = "photoURL";
-        while (cnt < queryFollow.size) {
-          let tempObj = {};
-          const followData = queryFollow.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followData.followeeId)
-            .get();
-          const userData = queryUser.docs[0].data();
-
-          tempObj[firstKey] = userData.uid;
-          tempObj[secondKey] = userData.displayName;
-          tempObj[thirdKey] = userData.photoURL;
-
-          followArray.push(tempObj);
-
-          cnt = cnt + 1;
+        if (profileData.email == undefined) {
+          router.replace({ pathname: "/notFoundUser", params: { uid: uid } }); // TODO
         }
-        setFollowList(followArray);
-      }
 
-      // フォローワー取得
-      const queryFollower = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", uid)
-        .get();
+        if (profileData.publicStatus == 0) {
+          setPublicStatus(true);
+        }
 
-      if (!queryFollower.empty) {
-        let cnt = 0;
-        let followerArray = [];
-        const firstKey = "uid";
-        const secondKey = "displayName";
-        const thirdKey = "photoURL";
-        while (cnt < queryFollower.size) {
-          let tempObj = {};
-          const followerData = queryFollower.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followerData.followerId)
-            .get();
-          const userData = queryUser.docs[0].data();
+        // フォロー中取得
+        const queryFollow = await firestore()
+          .collection("follow")
+          .where("followerId", "==", uid)
+          .get();
 
-          if (userData.uid == auth.currentUser.uid) {
-            setPublicStatus(true);
+        if (!queryFollow.empty) {
+          let cnt = 0;
+          let followArray = [];
+          const firstKey = "uid";
+          const secondKey = "displayName";
+          const thirdKey = "photoURL";
+          while (cnt < queryFollow.size) {
+            let tempObj = {};
+            const followData = queryFollow.docs[cnt].data();
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", followData.followeeId)
+              .get();
+            const userData = queryUser.docs[0].data();
+
+            tempObj[firstKey] = userData.uid;
+            tempObj[secondKey] = userData.displayName;
+            tempObj[thirdKey] = userData.photoURL;
+
+            followArray.push(tempObj);
+
+            cnt = cnt + 1;
           }
-
-          tempObj[firstKey] = userData.uid;
-          tempObj[secondKey] = userData.displayName;
-          tempObj[thirdKey] = userData.photoURL;
-
-          followerArray.push(tempObj);
-
-          cnt = cnt + 1;
+          setFollowList(followArray);
         }
-        setFollowerList(followerArray);
+
+        // フォローワー取得
+        const queryFollower = await firestore()
+          .collection("follow")
+          .where("followeeId", "==", uid)
+          .get();
+
+        if (!queryFollower.empty) {
+          let cnt = 0;
+          let followerArray = [];
+          const firstKey = "uid";
+          const secondKey = "displayName";
+          const thirdKey = "photoURL";
+          while (cnt < queryFollower.size) {
+            let tempObj = {};
+            const followerData = queryFollower.docs[cnt].data();
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", followerData.followerId)
+              .get();
+            const userData = queryUser.docs[0].data();
+
+            if (userData.uid == auth.currentUser.uid) {
+              setPublicStatus(true);
+            }
+
+            tempObj[firstKey] = userData.uid;
+            tempObj[secondKey] = userData.displayName;
+            tempObj[thirdKey] = userData.photoURL;
+
+            followerArray.push(tempObj);
+
+            cnt = cnt + 1;
+          }
+          setFollowerList(followerArray);
+        }
+      } catch (error) {
+        console.error("データ取得中にエラーが発生しました:", error);
+      } finally {
+        setIsLoading(false); // データ取得完了
       }
     };
 
@@ -337,7 +344,7 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followList.map((follow) => {
                   return (
                     <TouchableOpacity
@@ -352,7 +359,7 @@ export default function profile() {
                         style={styles.listProfileImage}
                       />
                       <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>
+                        <Text style={styles.listUsername} numberOfLines={1}>
                           {follow.displayName}
                         </Text>
                       </View>
@@ -380,7 +387,7 @@ export default function profile() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followerList.map((follower) => {
                   return (
                     <TouchableOpacity
@@ -395,7 +402,7 @@ export default function profile() {
                         style={styles.listProfileImage}
                       />
                       <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>
+                        <Text style={styles.listUsername} numberOfLines={1}>
                           {follower.displayName}
                         </Text>
                       </View>
@@ -420,10 +427,10 @@ export default function profile() {
           style={styles.textInput}
           editable={false}
         />
-        {publicStatus ? (
+        {isLoading ? null : publicStatus ? (
           <UserPosts uid={uid} />
         ) : (
-          <Text>このアカウントは非公開です。</Text>
+          <Text style={styles.privateText}>このアカウントは非公開です。</Text>
         )}
       </View>
       <View style={styles.Back}>
@@ -532,13 +539,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // 背景を半透明に
+    backgroundColor: "rgba(0, 0, 0, 0.4)", // 背景を半透明に
   },
   modalContent: {
     width: "90%",
+    maxHeight: "80%",
     padding: 20,
-    paddingTop: 15,
-    backgroundColor: "#F2F5C2",
+    backgroundColor: "#F2F5C8",
     borderRadius: 10,
   },
   listUsernamecontainer: {
@@ -586,5 +593,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
+  },
+  privateText: {
+    marginTop: 10,
   },
 });

@@ -22,7 +22,6 @@ import { Alert } from "react-native";
 const auth = FirebaseAuth();
 
 export default function myPage() {
-  const [user, setUser] = useState(null); // 現在のユーザー情報を保持
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
   const [displayName, setDisplayName] = useState(""); // ユーザーの表示名
   const [followerList, setFollowerList] = useState([]);
@@ -31,7 +30,6 @@ export default function myPage() {
   const [isFollowerModalVisible, setIsFollowerModalVisible] = useState(false); // フォロワーモーダルの表示状態を管理
   const [viewMode, setViewMode] = useState("posts"); // 投稿といいねの切り替え
   const [userStatus, setUserStatus] = useState(0);
-  const [visible, setVisible] = useState(false);
 
   const router = useRouter();
 
@@ -44,7 +42,6 @@ export default function myPage() {
   useEffect(() => {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
-      setUser(auth.currentUser);
       setDisplayName(auth.currentUser.displayName);
       setPhotoUri(auth.currentUser.photoURL);
 
@@ -81,7 +78,6 @@ export default function myPage() {
 
         // ユーザーデータを取得するための非同期関数
         const fetchUserData = async () => {
-          setUser(auth.currentUser);
           const queryUser = await firestore()
             .collection("users")
             .doc(auth.currentUser.uid)
@@ -277,7 +273,7 @@ export default function myPage() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロー中</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followList.map((follow) => {
                   return (
                     <TouchableOpacity
@@ -292,7 +288,7 @@ export default function myPage() {
                         style={styles.listProfileImage}
                       />
                       <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>
+                        <Text style={styles.listUsername} numberOfLines={1}>
                           {follow.displayName}
                         </Text>
                       </View>
@@ -320,7 +316,7 @@ export default function myPage() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.subtitle}>フォロワー</Text>
-              <ScrollView style={styles.modalContent}>
+              <ScrollView>
                 {followerList.map((follower) => {
                   return (
                     <TouchableOpacity
@@ -335,7 +331,7 @@ export default function myPage() {
                         style={styles.listProfileImage}
                       />
                       <View style={styles.listUsernamecontainer}>
-                        <Text style={styles.listUsername}>
+                        <Text style={styles.listUsername} numberOfLines={1}>
                           {follower.displayName}
                         </Text>
                       </View>
@@ -406,17 +402,19 @@ export default function myPage() {
               ログアウト
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: "none", width: "50%", marginBottom: 0 },
-            ]}
-            onPress={toggleDeleteModal}
-          >
-            <Text style={[styles.buttonText, { color: "#FF6666" }]}>
-              アカウント削除
-            </Text>
-          </TouchableOpacity>
+          {auth.currentUser.uid == "ro12arSIsugfifCz5BABmvOUZVR2" ? null : (
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: "none", width: "50%", marginBottom: 0 },
+              ]}
+              onPress={toggleDeleteModal}
+            >
+              <Text style={[styles.buttonText, { color: "#FF6666" }]}>
+                アカウント削除
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       <View style={styles.Back}>
@@ -511,18 +509,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
   },
   modalOverlay: {
-    flex: 0.6,
-    marginTop: "auto",
-    marginBottom: "auto",
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0)", // 背景を半透明に
+    backgroundColor: "rgba(0, 0, 0, 0.4)", // 背景を半透明に
   },
   modalContent: {
     width: "90%",
+    maxHeight: "80%",
     padding: 20,
-    paddingTop: 15,
-    backgroundColor: "#F2F5A0",
+    backgroundColor: "#F2F5C8",
     borderRadius: 10,
   },
   listUsernamecontainer: {

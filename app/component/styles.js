@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
   },
   errorContainer: {
     position: "absolute",
-    top: 50,
+    top: 85,
     left: 0,
     right: 0,
     backgroundColor: "red",
@@ -171,11 +171,13 @@ export const styles = StyleSheet.create({
   },
   //インデックスバーアイコンの幅
   listProfileNameText: {
+    width: "100%",
     fontSize: 12,
     textAlign: "center",
   },
   listProfileSize: {
     margin: 5,
+    width: 50,
   },
   listProfileIndexButton: {
     justifyContent: "center",
