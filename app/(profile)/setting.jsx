@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -52,7 +53,9 @@ export default function myPage() {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push("/myPage")}
+          onPress={() => {
+            Linking.openURL("mailto: ekatiihs2024@gmail.com");
+          }}
         >
           <Text style={styles.buttonText}>ヘルプ</Text>
         </TouchableOpacity>
