@@ -683,7 +683,6 @@ const styles = StyleSheet.create({
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
     marginTop: 5, // ボタン間にスペースを追加
