@@ -200,11 +200,14 @@ export default function MyModal({
                         style={styles.postImage}
                       />
                     ) : (
-                      <Image
-                        source={{ uri: post.photoUri }}
-                        style={styles.postImage}
-                        blurRadius={50}
-                      />
+                      <View style={{ justifyContent: "center" }}>
+                        <Image
+                          source={{ uri: post.photoUri }}
+                          style={styles.postImage}
+                          blurRadius={50}
+                        />
+                        <Text style={styles.areaLabel}>現在範囲外にいます</Text>
+                      </View>
                     )}
 
                     <View style={styles.LikeCommentRow}>
@@ -500,5 +503,13 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     marginBottom: 10, // ボタン間にスペースを追加
+  },
+  areaLabel: {
+    position: "absolute",
+    alignSelf: "center",
+    backgroundColor: "white",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
 });

@@ -30,7 +30,7 @@ const { width, height } = Dimensions.get("window"); //デバイスの幅と高�
 const ReplyScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { postId, showImage } = params;
+  const { postId, showImage, myPage } = params;
   const [replyText, setReplyText] = useState("");
   const [photoUri, setPhotoUri] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
@@ -529,7 +529,7 @@ const ReplyScreen = () => {
                   <></>
                 )}
               </View>
-              {showImage == "true" ? (
+              {showImage == "true" || myPage == "true" ? (
                 <View style={styles.imageContainer}>
                   <Image source={{ uri: photoUri }} style={styles.image} />
                 </View>
@@ -601,24 +601,28 @@ const ReplyScreen = () => {
                     </Text>
                   </TouchableOpacity>
                 )}
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/camera",
-                      params: {
-                        latitude: 0,
-                        longitude: 0,
-                        spotId: selectedPost.postDetails.spotId,
-                        point: 0,
-                        spotNo: 0,
-                      },
-                    });
-                  }}
-                >
-                  <Icon name="map-marked-alt" size={25} color={"#000"} />
-                </TouchableOpacity>
-                {showImage == "true" ? (
+                {showImage == "true" && myPage !== "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/camera",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: selectedPost.postDetails.spotId,
+                          point: 0,
+                          spotNo: 0,
+                        },
+                      });
+                    }}
+                  >
+                    <Icon name="map-marked-alt" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
+                {showImage == "true" && myPage !== "true" ? (
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => {

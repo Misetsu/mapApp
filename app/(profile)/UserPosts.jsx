@@ -13,7 +13,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ImageResizer from 'react-native-image-resizer';
+import ImageResizer from "react-native-image-resizer";
 
 const auth = FirebaseAuth();
 
@@ -38,7 +38,6 @@ export default function UserPosts() {
           .orderBy("postId", "desc")
           .get();
         if (photoSnapshot.empty) {
-          
           return;
         }
         setlen(photoSnapshot.size);
@@ -61,9 +60,9 @@ export default function UserPosts() {
               originalUri, // 元の画像URL
               400,
               300,
-              "JPEG",      // フォーマット (JPEG / PNG)
-              50,          // 品質 (0 - 100)
-              0            // 回転角度
+              "JPEG", // フォーマット (JPEG / PNG)
+              50, // 品質 (0 - 100)
+              0 // 回転角度
             );
             photoUri = resizedImage.uri;
             return {
@@ -101,10 +100,10 @@ export default function UserPosts() {
     }
   };
 
-  const navigateDetailPage = (postId, showImage) => {
+  const navigateDetailPage = (postId, showImage, myPage) => {
     router.push({
       pathname: "/component/replay",
-      params: { postId: postId, showImage: showImage },
+      params: { postId: postId, showImage: showImage, myPage: myPage },
     });
   };
 
@@ -126,7 +125,7 @@ export default function UserPosts() {
           {posts.map((post) => (
             <TouchableOpacity
               key={post.postId}
-              onPress={() => navigateDetailPage(post.postId, true)}
+              onPress={() => navigateDetailPage(post.postId, true, true)}
               style={styles.postContainer}
             >
               {post.photoUri ? (
