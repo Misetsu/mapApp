@@ -438,6 +438,201 @@ export default function TrackUserMapView() {
       } catch (error) {
         console.error("Error fetching documents: ", error);
       }
+    } else {
+      try {
+        const postArray = [];
+        const friendList = [];
+
+        setEmptyPost(true);
+
+        if (auth.currentUser != null) {
+          friendList.push(auth.currentUser.uid);
+
+          const queryFollow = await firestore()
+            .collection("follow")
+            .where("followerId", "==", auth.currentUser.uid)
+            .get();
+
+          if (!queryFollow.empty) {
+            let cnt = 0;
+            while (cnt < queryFollow.size) {
+              const followSnapshot = queryFollow.docs[cnt];
+              const followData = followSnapshot.data();
+              friendList.push(followData.followeeId);
+              cnt = cnt + 1;
+            }
+          }
+        }
+
+        const postSnapshot = await firestore()
+          .collection("tagPost")
+          .where("spotId", "==", spotId)
+          .where("tagId", "==", parseInt(selectedTag))
+          .orderBy("timeStamp", "desc")
+          .limit(5)
+          .get();
+
+        const postIdList = [];
+
+        if (!postSnapshot.empty) {
+          postSnapshot.forEach((doc) => {
+            const item = doc.data();
+            postIdList.push(item.postId);
+          });
+        }
+
+        const querySnapshot = await firestore()
+          .collection("post")
+          .where("id", "in", postIdList)
+          .orderBy("timeStamp", "desc")
+          .get();
+
+        if (!querySnapshot.empty) {
+          const size = querySnapshot.size;
+          let cnt = 0;
+          const firstKey = "userId";
+          const secondKey = "username";
+          const thirdKey = "userIcon";
+          const forthKey = "postId";
+          const fifthKey = "postText";
+          const sixthKey = "photoUri";
+          const seventhKey = "timestamp";
+          const eighthKey = "likeCount";
+          const ninthKey = "likeFlag";
+          const tenthKey = "replyCount";
+
+          while (cnt < size) {
+            const documentSnapshot = querySnapshot.docs[cnt]; // 最初のドキュメントを取得
+            const postData = documentSnapshot.data();
+
+            let photoUri = "";
+            let tempObj = {};
+
+            const queryUser = await firestore()
+              .collection("users")
+              .where("uid", "==", postData.userId)
+              .get();
+            const userSnapshot = queryUser.docs[0];
+            const userData = userSnapshot.data();
+
+            if (userData.publicStatus == 0) {
+              const queryPhoto = await firestore()
+                .collection("photo")
+                .where("postId", "==", postData.id) // 特定の条件を指定
+                .get();
+              if (!queryPhoto.empty) {
+                const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+                const photoData = photoSnapshot.data();
+
+                if (photoData.imagePath) {
+                  const url = await storage()
+                    .ref()
+                    .child(photoData.imagePath)
+                    .getDownloadURL();
+                  photoUri = url;
+                }
+              }
+
+              const queryLike = await firestore()
+                .collection("like")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const likeSnapshot = queryLike.docs[0];
+              const likeData = likeSnapshot.data();
+              let likeFlag;
+              if (auth.currentUser != null) {
+                if (likeData[auth.currentUser.uid] !== undefined) {
+                  likeFlag = true;
+                } else {
+                  likeFlag = false;
+                }
+              }
+
+              const queryReply = await firestore()
+                .collection("replies")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const replyCount = queryReply.empty ? 0 : queryReply.size;
+
+              tempObj[firstKey] = postData.userId;
+              tempObj[secondKey] = userData.displayName;
+              tempObj[thirdKey] = userData.photoURL;
+              tempObj[forthKey] = postData.id;
+              tempObj[fifthKey] = postData.postTxt;
+              tempObj[sixthKey] = photoUri;
+              tempObj[seventhKey] = postData.timeStamp;
+              tempObj[eighthKey] = likeData.count;
+              tempObj[ninthKey] = likeFlag;
+              tempObj[tenthKey] = replyCount;
+
+              postArray.push(tempObj);
+              setEmptyPost(false);
+            } else if (friendList.includes(userData.uid)) {
+              const queryPhoto = await firestore()
+                .collection("photo")
+                .where("postId", "==", postData.id) // 特定の条件を指定
+                .get();
+              if (!queryPhoto.empty) {
+                const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
+                const photoData = photoSnapshot.data();
+
+                if (photoData.imagePath) {
+                  const url = await storage()
+                    .ref()
+                    .child(photoData.imagePath)
+                    .getDownloadURL();
+                  photoUri = url;
+                }
+              }
+
+              const queryLike = await firestore()
+                .collection("like")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const likeSnapshot = queryLike.docs[0];
+              const likeData = likeSnapshot.data();
+              let likeFlag;
+              if (likeData[auth.currentUser.uid] !== undefined) {
+                likeFlag = true;
+              } else {
+                likeFlag = false;
+              }
+
+              const queryReply = await firestore()
+                .collection("replies")
+                .where("postId", "==", postData.id)
+                .get();
+
+              const replyCount = queryReply.empty ? 0 : queryReply.size;
+
+              tempObj[firstKey] = postData.userId;
+              tempObj[secondKey] = userData.displayName;
+              tempObj[thirdKey] = userData.photoURL;
+              tempObj[forthKey] = postData.id;
+              tempObj[fifthKey] = postData.postTxt;
+              tempObj[sixthKey] = photoUri;
+              tempObj[seventhKey] = postData.timeStamp;
+              tempObj[eighthKey] = likeData.count;
+              tempObj[ninthKey] = likeFlag;
+              tempObj[tenthKey] = replyCount;
+
+              postArray.push(tempObj);
+              setEmptyPost(false);
+            }
+
+            cnt = cnt + 1;
+          }
+          setPostData(postArray);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching documents: ", error);
+      }
     }
     setLoading(false);
   };

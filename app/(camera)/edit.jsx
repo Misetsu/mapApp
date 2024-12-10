@@ -403,7 +403,7 @@ export default function edit() {
               <Text style={styles.displayName}>場所の名前</Text>
               <TextInput
                 style={styles.textInput}
-                maxLength={30}
+                maxLength={14}
                 onFocus={() => handleFocus("name")}
                 onBlur={handleBlur}
                 onChangeText={setText}
