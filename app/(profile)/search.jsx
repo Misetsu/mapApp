@@ -327,7 +327,7 @@ export default function SearchScreen() {
         </View>
       </View>
 
-      {officialUsers.length > 0 && (
+      {searchResult.length > 0 && searchText !== "" ? null : (
         <View style={styles.recommendedContainer}>
           <Text style={styles.sectionTitle}>おすすめ公式ユーザー</Text>
           {officialUsers.map((user) => (
