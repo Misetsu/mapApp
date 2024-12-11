@@ -174,6 +174,9 @@ export default function MyModal({
             showsVerticalScrollIndicator={false}
             style={styles.modalView}
           >
+            <View style={styles.postView}>
+              <Text style={styles.userName}>{spotName}</Text>
+            </View>
             {postData.map((post) => {
               if (!post) return null; // postが未定義の場合はスキップ
               const isLiked = likes[post.postId]; // idを使用する
@@ -200,11 +203,14 @@ export default function MyModal({
                         style={styles.postImage}
                       />
                     ) : (
-                      <Image
-                        source={{ uri: post.photoUri }}
-                        style={styles.postImage}
-                        blurRadius={50}
-                      />
+                      <View style={{ justifyContent: "center" }}>
+                        <Image
+                          source={{ uri: post.photoUri }}
+                          style={styles.postImage}
+                          blurRadius={50}
+                        />
+                        <Text style={styles.areaLabel}>現在範囲外にいます</Text>
+                      </View>
                     )}
 
                     <View style={styles.LikeCommentRow}>
@@ -387,6 +393,14 @@ export default function MyModal({
           </ScrollView>
         ) : (
           <View style={styles.postViewCentering}>
+            <Text
+              style={[
+                styles.userName,
+                { alignSelf: "flex-start", paddingBottom: 10 },
+              ]}
+            >
+              {spotName}
+            </Text>
             <Text style={styles.userName}>投稿がありません</Text>
             <View style={styles.closeButton}>
               <TouchableOpacity style={styles.button} onPress={onClose}>
@@ -405,13 +419,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: height,
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
   modalView: {
     flexDirection: "column",
     width: 350,
-    margin: 20,
-    marginBottom: 0,
-    marginTop: 85,
+    marginHorizontal: 20,
     alignSelf: "center",
     position: "relative",
   },
@@ -500,5 +513,13 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     marginBottom: 10, // ボタン間にスペースを追加
+  },
+  areaLabel: {
+    position: "absolute",
+    alignSelf: "center",
+    backgroundColor: "white",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
 });

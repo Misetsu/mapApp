@@ -391,6 +391,14 @@ export default function edit() {
         </View>
       ) : (
         <ScrollView style={styles.container}>
+          <View style={styles.Back}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}
+            >
+              <Icon name="angle-left" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
           <ViewShot
             ref={viewRef}
             options={{ format: "jpg", quality: 1 }}
@@ -403,7 +411,7 @@ export default function edit() {
               <Text style={styles.displayName}>場所の名前</Text>
               <TextInput
                 style={styles.textInput}
-                maxLength={30}
+                maxLength={14}
                 onFocus={() => handleFocus("name")}
                 onBlur={handleBlur}
                 onChangeText={setText}
@@ -473,14 +481,6 @@ export default function edit() {
             <Text style={styles.submitText}>アップロード</Text>
           </Pressable>
 
-          <View style={styles.Back}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}
-            >
-              <Icon name="angle-left" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
           <Modal
             animationType="fade"
             transparent={true}
@@ -569,7 +569,7 @@ export default function edit() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#F2F5C8",
-    padding: 20,
+    paddingHorizontal: 20,
     flex: 1,
   },
   pagetitle: {
@@ -584,7 +584,6 @@ const styles = StyleSheet.create({
     width: imageWidth,
     height: imageHeight,
     alignSelf: "center",
-    marginTop: 5,
   },
   displayName: {
     fontSize: 15,
@@ -667,12 +666,11 @@ const styles = StyleSheet.create({
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F5C8",
-    width: 70,
-    height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    width: 50,
+    height: 50,
+    marginTop: 5,
   },
   Back: {
-    position: "absolute",
     top: 0,
     left: 0,
   },

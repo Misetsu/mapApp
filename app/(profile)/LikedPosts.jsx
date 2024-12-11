@@ -14,7 +14,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ImageResizer from 'react-native-image-resizer';
+import ImageResizer from "react-native-image-resizer";
 
 const auth = FirebaseAuth();
 
@@ -70,9 +70,9 @@ export default function UserLikedPosts() {
                 originalUri, // 元の画像URL
                 400,
                 300,
-                "JPEG",      // フォーマット (JPEG / PNG)
-                50,          // 品質 (0 - 100)
-                0            // 回転角度
+                "JPEG", // フォーマット (JPEG / PNG)
+                50, // 品質 (0 - 100)
+                0 // 回転角度
               );
               photoUri = resizedImage.uri;
 
@@ -109,10 +109,10 @@ export default function UserLikedPosts() {
     fetchLikedPosts();
   }, [userId, startpage]);
 
-  const navigateDetailPage = (postId, showImage) => {
+  const navigateDetailPage = (postId, showImage, myPage) => {
     router.push({
       pathname: "/component/replay",
-      params: { postId: postId, showImage: showImage },
+      params: { postId: postId, showImage: showImage, myPage: myPage },
     });
   };
 
@@ -150,7 +150,7 @@ export default function UserLikedPosts() {
           {likedPosts.map((post) => (
             <TouchableOpacity
               key={post.postId}
-              onPress={() => navigateDetailPage(post.postId, true)}
+              onPress={() => navigateDetailPage(post.postId, true, true)}
               style={styles.postContainer}
             >
               {post.photoUri ? (

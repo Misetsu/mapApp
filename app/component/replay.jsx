@@ -30,7 +30,7 @@ const { width, height } = Dimensions.get("window"); //デバイスの幅と高�
 const ReplyScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { postId, showImage } = params;
+  const { postId, showImage, myPage } = params;
   const [replyText, setReplyText] = useState("");
   const [photoUri, setPhotoUri] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
@@ -529,7 +529,7 @@ const ReplyScreen = () => {
                   <></>
                 )}
               </View>
-              {showImage == "true" ? (
+              {showImage == "true" || myPage == "true" ? (
                 <View style={styles.imageContainer}>
                   <Image source={{ uri: photoUri }} style={styles.image} />
                 </View>
@@ -601,24 +601,28 @@ const ReplyScreen = () => {
                     </Text>
                   </TouchableOpacity>
                 )}
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/camera",
-                      params: {
-                        latitude: 0,
-                        longitude: 0,
-                        spotId: selectedPost.postDetails.spotId,
-                        point: 0,
-                        spotNo: 0,
-                      },
-                    });
-                  }}
-                >
-                  <Icon name="map-marked-alt" size={25} color={"#000"} />
-                </TouchableOpacity>
-                {showImage == "true" ? (
+                {showImage == "true" && myPage !== "true" ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/camera",
+                        params: {
+                          latitude: 0,
+                          longitude: 0,
+                          spotId: selectedPost.postDetails.spotId,
+                          point: 0,
+                          spotNo: 0,
+                        },
+                      });
+                    }}
+                  >
+                    <Icon name="map-marked-alt" size={25} color={"#000"} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.actionButton} />
+                )}
+                {showImage == "true" && myPage !== "true" ? (
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => {
@@ -763,10 +767,8 @@ const styles = StyleSheet.create({
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",
@@ -774,7 +776,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   pagetitle: {
-    fontSize: 24,
+    fontSize: 20,
     marginBottom: 15,
     textAlign: "center",
     fontWeight: "300",
