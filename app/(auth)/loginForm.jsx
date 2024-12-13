@@ -37,10 +37,9 @@ export default function LoginScreen() {
 
   const signInWithGoogle = async () => {
     // Google のログイン画面を表示して認証用の ID トークンを取得する
+    try {
     const user = await GoogleSignin.signIn();
-
     const idToken = user.idToken;
-
     if (idToken === null) {
       return;
     }
@@ -65,6 +64,12 @@ export default function LoginScreen() {
       });
     } else {
       router.replace({ pathname: "/" });
+    }
+  }catch (error) {
+      Alert.alert(
+        "ログインに失敗しました。",
+        error.code
+      );
     }
   };
 
