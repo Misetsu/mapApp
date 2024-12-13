@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
@@ -1187,6 +1187,7 @@ export default function TrackUserMapView() {
       {initialRegion && (
         <MapView
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
+          provider={PROVIDER_GOOGLE}
           style={[
             StyleSheet.absoluteFillObject,
             { marginTop: 85, marginBottom: 70 },
