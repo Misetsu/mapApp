@@ -51,60 +51,64 @@ export default function CameraScreen() {
   const flatListRef = useRef(null);
   const [selectedIndex, setSelectedIndex] = useState(null); // 選択されたアイテムのインデックスを管理
   const data = [
-    { key: "top", icon: "angle-double-up", onPress: () => handleTopPress() },
+    {
+      key: "top",
+      icon: require("./../image/top.png"),
+      onPress: () => handleTopPress(),
+    },
     {
       key: "bottom",
-      icon: "angle-double-down",
+      icon: require("./../image/bottom.png"),
       onPress: () => handleBottomPress(),
     },
     {
       key: "left",
-      icon: "angle-double-left",
+      icon: require("./../image/left.png"),
       onPress: () => handleLeftPress(),
     },
     {
       key: "right",
-      icon: "angle-double-right",
+      icon: require("./../image/right.png"),
       onPress: () => handleRightPress(),
     },
     {
       key: "top1",
-      icon: "angle-up",
+      icon: require("./../image/topTop.png"),
       onPress: () => handleTopFirstQuarterPress(),
     },
     {
       key: "top2",
-      icon: "angle-up",
+      icon: require("./../image/topBottom.png"),
       onPress: () => handleTopSecondQuarterPress(),
     },
     {
       key: "top3",
-      icon: "angle-down",
+      icon: require("./../image/bottomTop.png"),
       onPress: () => handleTopThirdQuarterPress(),
     },
     {
       key: "top4",
-      icon: "angle-down",
+      icon: require("./../image/bottomBottom.png"),
       onPress: () => handleTopFourthQuarterPress(),
     },
     {
       key: "left1",
-      icon: "angle-left",
+      icon: require("./../image/leftLeft.png"),
       onPress: () => handleLeftFirstQuarterPress(),
     },
     {
       key: "left2",
-      icon: "angle-left",
+      icon: require("./../image/leftRight.png"),
       onPress: () => handleLeftSecondQuarterPress(),
     },
     {
       key: "right3",
-      icon: "angle-right",
+      icon: require("./../image/rightLeft.png"),
       onPress: () => handleRightThirdQuarterPress(),
     },
     {
       key: "right4",
-      icon: "angle-right",
+      icon: require("./../image/rightRight.png"),
       onPress: () => handleRightFourthQuarterPress(),
     },
   ];
@@ -671,7 +675,8 @@ export default function CameraScreen() {
                   selectedIndex === index && styles.selectedButton, // 選択されたアイテムに背景色を適用
                 ]}
               >
-                <FontAwesome5 name={item.icon} size={30} color="#FFF" />
+                <Image source={item.icon} style={styles.image} />
+                {/* <FontAwesome5 name={item.icon} size={30} color="#FFF" /> */}
               </TouchableOpacity>
             )}
             contentContainerStyle={{
@@ -1092,5 +1097,10 @@ const styles = StyleSheet.create({
     width: width,
     height: height,
     transform: [{ translateY: (-height / 4) * 3 }],
+  },
+  image: {
+    width: 35,
+    height: 35,
+    alignSelf: "center",
   },
 });
