@@ -113,6 +113,14 @@ export const styles = StyleSheet.create({
     width: 35,
     height: 35,
     alignSelf: "center",
+  },//インデックスバー上の画像
+  closeImage: {
+    width: 34,
+    height: 34,
+    alignSelf: "center",
+    borderWidth: 2,
+    borderColor: "#239D60",
+    backgroundColor: "#f2f5c8",
   },
   mapfixed: {
     position: "absolute",

@@ -1297,7 +1297,10 @@ export default function TrackUserMapView() {
         />
         {selectedTag == null ? null : (
           <TouchableOpacity onPress={handleCancelTag}>
-            <Icon name="times-circle" size={30} />
+            <Image
+          source={require("./../image/Close.png")}
+          style={styles.closeImage}
+        />
           </TouchableOpacity>
         )}
       </SafeAreaView>

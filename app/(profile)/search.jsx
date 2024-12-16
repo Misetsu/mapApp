@@ -314,7 +314,7 @@ export default function SearchScreen() {
         <View style={styles.searchBar}>
           <Image
             source={require("./../image/Search.png")}
-            style={styles.actionButton}
+            style={styles.searchIcon}
           />
           <TextInput
             style={[styles.input, { fontSize: 18 }]}
@@ -463,6 +463,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5, // シャドウのぼかし具合
     elevation: 2, // Android用のシャドウ
     flex: 1, // 検索バーが横幅いっぱいに広がるように
+    marginLeft: 40,
   },
   // アイコンのスタイル
   icon: {
@@ -577,6 +578,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
+  },searchIcon:{
+    width: 25,
+    height: 25,
+    marginRight: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   followingMeText: {
     fontSize: 8,
