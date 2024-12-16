@@ -157,6 +157,14 @@ export const styles = StyleSheet.create({
     marginHorizontal: 2,
     backgroundColor: "#f2f5c8",
   },
+  TagButton: {
+    width: 20,
+    height: 20,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   userList: {
     display: "flex",
     flexDirection: "column",

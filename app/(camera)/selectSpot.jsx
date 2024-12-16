@@ -77,9 +77,9 @@ export default function SelectSpot() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-          Math.cos(toRadians(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -217,7 +217,10 @@ export default function SelectSpot() {
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Icon name="angle-left" size={24} color="#000" />
+          <Image
+            source={require("./../image/Left.png")}
+            style={styles.actionButton}
+          />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -231,9 +234,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
   },
   pagetitle: {
-    fontSize: 30,
+    fontSize: 24,
+    height: 30,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
+    color: "#000000",
   },
   subtitle: {
     fontSize: 18,
@@ -293,6 +299,16 @@ const styles = StyleSheet.create({
   pointText: {
     paddingHorizontal: 20,
     paddingTop: 10,
+  },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える

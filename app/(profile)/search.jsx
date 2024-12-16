@@ -310,14 +310,12 @@ export default function SearchScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.Back}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Icon name="angle-left" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
         {/* 検索バーのUI */}
         <View style={styles.searchBar}>
-          <Icon name="search" size={20} color="#000" style={styles.icon} />
+          <Image
+            source={require("./../image/Search.png")}
+            style={styles.actionButton}
+          />
           <TextInput
             style={[styles.input, { fontSize: 18 }]}
             placeholder="検索"
@@ -325,6 +323,14 @@ export default function SearchScreen() {
             value={searchText}
           />
         </View>
+      </View>
+      <View style={styles.Back}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Image
+            source={require("./../image/Left.png")}
+            style={styles.actionButton}
+          />
+        </TouchableOpacity>
       </View>
 
       {searchResult.length > 0 && searchText !== "" ? null : (
@@ -465,6 +471,7 @@ const styles = StyleSheet.create({
   },
   // 入力フィールドのスタイル
   input: {
+    width: "80%",
     flex: 1, // 入力フィールドが横幅いっぱいに広がるように
     fontSize: 16, // フォントサイズ
     color: "#333", // テキストの色
@@ -549,12 +556,27 @@ const styles = StyleSheet.create({
     fontSize: 14, // フォントサイズ
     color: "#fff", // 文字色
   },
-  // 戻るボタンのスタイル（デザイン）
-  backButton: {
-    justifyContent: "center",
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
-    width: 40,
-    height: 40,
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   followingMeText: {
     fontSize: 8,

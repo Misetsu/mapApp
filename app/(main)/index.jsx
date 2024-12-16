@@ -143,9 +143,9 @@ export default function TrackUserMapView() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-          Math.cos(toRadians(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -755,13 +755,13 @@ export default function TrackUserMapView() {
             if (regions != null) {
               if (
                 item.mapLatitude >=
-                  regions.latitude - regions.latitudeDelta / 2 &&
+                regions.latitude - regions.latitudeDelta / 2 &&
                 item.mapLatitude <=
-                  regions.latitude + regions.latitudeDelta / 2 &&
+                regions.latitude + regions.latitudeDelta / 2 &&
                 item.mapLongitude >=
-                  regions.longitude - regions.longitudeDelta / 2 &&
+                regions.longitude - regions.longitudeDelta / 2 &&
                 item.mapLongitude <=
-                  regions.longitude + regions.longitudeDelta / 2
+                regions.longitude + regions.longitudeDelta / 2
               ) {
                 fetchResult.push(item);
               }
@@ -1286,8 +1286,10 @@ export default function TrackUserMapView() {
               <TouchableOpacity
                 style={styles.tag}
                 onPress={() => handleTagChoose(item.tagId)}
-              >
-                <Icon name="tag" size={18} color={"#239D60"} />
+              ><Image
+                  source={require("./../image/Tag.png")}
+                  style={styles.TagButton}
+                />
                 <Text>{item.tagName}</Text>
               </TouchableOpacity>
             );
@@ -1396,11 +1398,11 @@ export default function TrackUserMapView() {
             onPress={() => {
               user
                 ? router.push({
-                    pathname: "/search",
-                  })
+                  pathname: "/search",
+                })
                 : router.push({
-                    pathname: "/loginForm",
-                  });
+                  pathname: "/loginForm",
+                });
             }}
           >
             <Image

@@ -323,7 +323,7 @@ export default function MyModal({
                           source={require("./../image/Comment.png")}
                           style={styles.actionButton}
                         />
-                        <Text> {post.replyCount}</Text>
+                        <Text style={styles.likeNum}>{post.replyCount}</Text>
                       </TouchableOpacity>
                       {postImage ? (
                         <TouchableOpacity
@@ -509,16 +509,16 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   actionButton: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     padding: 5,
+    margin: 5,
     display: "flex",
     flexDirection: "row",
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
   },
   likeNum: {
-    marginLeft: 10,
     fontSize: 16,
   },
   postText: {

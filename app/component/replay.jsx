@@ -83,7 +83,7 @@ const ReplyScreen = () => {
           selectedPost.postDetails.spotId
         ),
       });
-    } catch (warning) {}
+    } catch (warning) { }
   };
 
   const fetchData = async () => {
@@ -278,7 +278,7 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
-  useEffect(() => {}, [replies]);
+  useEffect(() => { }, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -514,15 +514,19 @@ const ReplyScreen = () => {
                         });
                       }}
                       style={styles.actionButton}
-                    >
-                      <Icon name="pen" size={25} />
+                    ><Image
+                        source={require("./../image/Edit.png")}
+                        style={styles.actionButton}
+                      />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       onPress={handleDelete}
                       style={styles.actionButton}
-                    >
-                      <Icon name="trash" size={25} />
+                    ><Image
+                        source={require("./../image/Trash.png")}
+                        style={styles.actionButton}
+                      />
                     </TouchableOpacity>
                   </View>
                 ) : (
@@ -551,14 +555,13 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleUnlike(postId)
                         : () => {
-                            router.push("/loginForm");
-                          }
+                          router.push("/loginForm");
+                        }
                     }
                   >
-                    <Icon
-                      name="heart"
-                      size={25}
-                      color={selectedPost.likeFlag ? "#f00" : "#f00"}
+                    <Image
+                      source={require("./../image/RedHeart.png")}
+                      style={styles.actionButton}
                     />
                     <Text
                       style={[
@@ -578,14 +581,13 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleLike(postId)
                         : () => {
-                            router.push("/loginForm");
-                          }
+                          router.push("/loginForm");
+                        }
                     }
                   >
-                    <Icon
-                      name="heart"
-                      size={25}
-                      color={selectedPost.likeFlag ? "#000" : "#000"}
+                    <Image
+                      source={require("./../image/Heart.png")}
+                      style={styles.actionButton}
                     />
                     <Text
                       style={[
@@ -616,8 +618,10 @@ const ReplyScreen = () => {
                         },
                       });
                     }}
-                  >
-                    <Icon name="map-marked-alt" size={25} color={"#000"} />
+                  ><Image
+                      source={require("./../image/MixPhoto.png")}
+                      style={styles.actionButton}
+                    />
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity style={styles.actionButton} />
@@ -636,8 +640,10 @@ const ReplyScreen = () => {
                         },
                       });
                     }}
-                  >
-                    <Icon name="images" size={25} color={"#000"} />
+                  ><Image
+                      source={require("./../image/PinPhoto.png")}
+                      style={styles.actionButton}
+                    />
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity style={styles.actionButton} />
@@ -646,8 +652,10 @@ const ReplyScreen = () => {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => onShare()}
-                  >
-                    <Icon name="share" size={25} color={"#000"} />
+                  ><Image
+                      source={require("./../image/share.png")}
+                      style={styles.actionButton}
+                    />
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity style={styles.actionButton} />
@@ -656,8 +664,10 @@ const ReplyScreen = () => {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => saveImageToDevice()}
-                  >
-                    <Icon name="download" size={25} color={"#000"} />
+                  ><Image
+                      source={require("./../image/Download.png")}
+                      style={styles.actionButton}
+                    />
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity style={styles.actionButton} />
@@ -689,8 +699,10 @@ const ReplyScreen = () => {
                       showsHorizontalScrollIndicator={false}
                       renderItem={({ item }) => {
                         return (
-                          <View style={styles.selectedTagView}>
-                            <Icon name="tag" size={16} color={"#239D60"} />
+                          <View style={styles.selectedTagView}><Image
+                            source={require("./../image/Tag.png")}
+                            style={styles.TagButton}
+                          />
                             <Text>
                               {allTag.find((o) => o.tagId == item).tagName}
                             </Text>
@@ -722,19 +734,19 @@ const ReplyScreen = () => {
                   scrollEventThrottle={16} // イベントの感度調整
                 />
               </View>
-              <View style={styles.Back}>
-                <TouchableOpacity
-                  style={styles.backButton}
-                  onPress={handleBackPress}
-                >
-                  <Icon name="angle-left" size={24} color="#000" />
-                </TouchableOpacity>
-              </View>
             </>
           )}
         </>
       )}
 
+      <View style={styles.Back}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Image
+            source={require("./../image/Left.png")}
+            style={styles.actionButton}
+          />
+        </TouchableOpacity>
+      </View>
       <View style={styles.sendReply}>
         <TextInput
           style={styles.input}
@@ -764,11 +776,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     flex: 1,
   },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",
@@ -776,8 +799,9 @@ const styles = StyleSheet.create({
     left: 0,
   },
   pagetitle: {
-    fontSize: 20,
-    marginBottom: 15,
+    fontSize: 24,
+    height: 30,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
     color: "#000000",
@@ -883,10 +907,9 @@ const styles = StyleSheet.create({
     width: "90%",
     margin: 5,
   },
-  actionButton: {
-    width: 40,
-    height: 40,
-    padding: 5,
+  TagButton: {
+    width: 20,
+    height: 20,
     display: "flex",
     flexDirection: "row",
     justifyContent: "center", // ボタン内のテキストを中央に配置
@@ -899,7 +922,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   likeNum: {
-    marginLeft: 10,
     fontSize: 16,
   },
   sky: {

@@ -324,12 +324,16 @@ export default function profile() {
             </TouchableOpacity>
           )}
           {isFav ? (
-            <TouchableOpacity onPress={handleFav}>
-              <Icon name="star" size={40} color="#f2c530" />
+            <TouchableOpacity onPress={handleFav}><Image
+            source={require("./../image/Star.png")}
+            style={styles.Star}
+          />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={handleFav}>
-              <Icon name="star-o" size={40} color="#000" />
+            <TouchableOpacity onPress={handleFav}><Image
+            source={require("./../image/BorderStar.png")}
+            style={styles.Star}
+          />
             </TouchableOpacity>
           )}
         </View>
@@ -435,7 +439,10 @@ export default function profile() {
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Icon name="angle-left" size={24} color="#000" />
+          <Image
+            source={require("./../image/Left.png")}
+            style={styles.actionButton}
+          />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -468,9 +475,9 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   pagetitle: {
-    fontSize: 30,
-    height: 70,
-    marginTop: 0,
+    fontSize: 24,
+    height: 30,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
     color: "#000000",
@@ -580,6 +587,25 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     color: "black",
     fontWeight: "300",
+  },
+  Star: {
+    width: 50,
+    height: 50,
+    padding: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える

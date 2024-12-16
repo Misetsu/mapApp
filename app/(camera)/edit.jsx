@@ -391,14 +391,6 @@ export default function edit() {
         </View>
       ) : (
         <ScrollView style={styles.container}>
-          <View style={styles.Back}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}
-            >
-              <Icon name="angle-left" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
           <ViewShot
             ref={viewRef}
             options={{ format: "jpg", quality: 1 }}
@@ -544,8 +536,10 @@ export default function edit() {
                       <TouchableOpacity
                         style={styles.tagView}
                         onPress={() => addTag(item.tagId)}
-                      >
-                        <Icon name="tag" size={16} color={"#239D60"} />
+                      ><Image
+                          source={require("./../image/Tag.png")}
+                          style={styles.TagButton}
+                        />
                         <Text>{item.tagName}</Text>
                       </TouchableOpacity>
                     );
@@ -562,6 +556,14 @@ export default function edit() {
           </Modal>
         </ScrollView>
       )}
+          <View style={styles.Back}>
+            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+              <Image
+                source={require("./../image/Left.png")}
+                style={styles.actionButton}
+              />
+            </TouchableOpacity>
+          </View>
     </KeyboardAvoidingView>
   );
 }
@@ -573,9 +575,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pagetitle: {
-    fontSize: 30,
-    height: 50,
-    marginTop: 0,
+    fontSize: 24,
+    height: 30,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
     color: "#000000",
@@ -659,18 +661,36 @@ const styles = StyleSheet.create({
     borderColor: "#239D60",
     marginVertical: 16,
   },
+  TagButton: {
+    width: 20,
+    height: 20,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   allTagContainer: {
     // height: height * 0.4,
+  },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F5C8",
-    width: 50,
-    height: 50,
-    marginTop: 5,
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
   },
   Back: {
+    position: "absolute",
     top: 0,
     left: 0,
   },

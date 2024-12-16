@@ -162,7 +162,10 @@ export default function LoginScreen() {
         </TouchableOpacity>
         <View style={styles.Back}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Icon name="angle-left" size={24} color="#000" />
+            <Image
+              source={require("./../image/Left.png")}
+              style={styles.actionButton}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -179,9 +182,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
   },
   pagetitle: {
-    fontSize: 30,
-    height: 70,
-    marginTop: 0,
+    fontSize: 24,
+    height: 30,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "300",
     color: "#000000",
@@ -262,10 +265,19 @@ const styles = StyleSheet.create({
     width: 300,
     resizeMode: "contain", // 画像のリサイズ方法を指定
   },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
     marginTop: 5, // ボタン間にスペースを追加

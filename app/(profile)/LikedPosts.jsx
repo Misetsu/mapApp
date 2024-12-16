@@ -168,16 +168,20 @@ export default function UserLikedPosts() {
           <TouchableOpacity
             style={styles.arrowleft}
             onPress={() => paging("left")}
-          >
-            <Icon name="arrow-left" size={24} color="#000" />
+          ><Image
+              source={require("./../image/Left.png")}
+              style={styles.actionButton}
+            />
           </TouchableOpacity>
         )}
         {endpage < len && (
           <TouchableOpacity
             style={styles.arrowright}
             onPress={() => paging("right")}
-          >
-            <Icon name="arrow-right" size={24} color="#000" />
+          ><Image
+              source={require("./../image/Right.png")}
+              style={styles.actionButton}
+            />
           </TouchableOpacity>
         )}
       </View>

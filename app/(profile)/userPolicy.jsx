@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -138,18 +139,17 @@ export default function myPage() {
 
   return (
     <ScrollView>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBackPress} style={styles.iconButton}>
-          <Icon name="angle-left" size={24} color="#000" />
-        </TouchableOpacity>
-
-        <Text style={styles.pagetitle}>利用規約</Text>
-
-        <TouchableOpacity style={styles.iconButton} />
-      </View>
-
       <View style={styles.container}>
+        <Text style={styles.pagetitle}>利用規約</Text>
         <Text style={{ fontSize: 16, lineHeight: 24 }}>{termsText}</Text>
+        <View style={styles.Back}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Image
+              source={require("./../image/Left.png")}
+              style={styles.actionButton}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -160,6 +160,29 @@ const styles = StyleSheet.create({
     flexDirection: "row", // 横並びにする
     alignItems: "center", // 縦方向の中央揃え
     justifyContent: "space-between", // アイコンを左端に配置
+    flex: 1,
+  },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
+  backButton: {
+    justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
+    alignItems: "center", // 画像をボタンの水平方向の中央に揃える
+    width: 70,
+    height: 70,
+    marginTop: 5, // ボタン間にスペースを追加
+  },
+  Back: {
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   iconButton: {
     width: 50, // 横幅を設定
@@ -168,7 +191,12 @@ const styles = StyleSheet.create({
     alignItems: "center", // 横中央揃え
   },
   pagetitle: {
-    fontSize: 20, // タイトルのフォントサイズ
+    fontSize: 24,
+    height: 30,
+    marginBottom: 10,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#000000",
   },
   container: {
     flex: 1,
