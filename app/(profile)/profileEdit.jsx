@@ -14,7 +14,6 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 const reference = storage();
@@ -320,7 +319,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

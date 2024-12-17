@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import { useNavigation } from "@react-navigation/native";
 
 const auth = FirebaseAuth();
@@ -216,7 +215,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

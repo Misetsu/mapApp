@@ -12,7 +12,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import CheckBox from "@react-native-community/checkbox";
 import * as ImagePicker from "expo-image-picker";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -139,7 +138,10 @@ export default function SignupScreenGoogle() {
 
         <View style={styles.Back}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Icon name="angle-left" size={24} color="#000" />
+            <Image
+              source={require("./../image/Close.png")}
+              style={styles.actionButton}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -217,6 +219,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#f2f2f2",
     textAlign: "center",
+  },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える

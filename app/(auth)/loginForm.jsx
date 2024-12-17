@@ -13,7 +13,6 @@ import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 
@@ -280,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

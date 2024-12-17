@@ -14,7 +14,6 @@ import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import Share from "react-native-share";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する

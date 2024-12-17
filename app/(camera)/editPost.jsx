@@ -15,7 +15,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -233,13 +232,18 @@ const EditPostScreen = () => {
                               onPress={() => {
                                 deleteTag(item);
                               }}
-                            >
-                              <Icon name="tag" size={16} color={"#239D60"} />
+                            ><Image
+                            source={require("./../image/Tag.png")}
+                            style={styles.TagButton}
+                          />
 
                               <Text>
                                 {allTag.find((o) => o.tagId == item).tagName}
                               </Text>
-                              <Icon name="times-circle" size={16} />
+                              <Image
+                                source={require("./../image/Close.png")}
+                                style={styles.TagButton}
+                              />
                             </TouchableOpacity>
                           );
                         }}
@@ -422,7 +426,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

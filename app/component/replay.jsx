@@ -17,7 +17,6 @@ import { formatInTimeZone } from "date-fns-tz";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
 import RNFS from "react-native-fs";
 import { PermissionsAndroid, Alert } from "react-native";
@@ -791,7 +790,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

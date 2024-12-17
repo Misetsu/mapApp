@@ -11,7 +11,6 @@ import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ImageResizer from "react-native-image-resizer";
 

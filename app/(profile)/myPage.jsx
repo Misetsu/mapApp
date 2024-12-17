@@ -15,7 +15,6 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./UserPosts";
 import LikedPosts from "./LikedPosts";
 import SwitchWithIcons from "react-native-switch-with-icons";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Alert } from "react-native";
 
@@ -573,7 +572,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

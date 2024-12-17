@@ -11,7 +11,6 @@ import {
   Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./othersPosts";
@@ -613,7 +612,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

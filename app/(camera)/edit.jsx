@@ -22,7 +22,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
@@ -459,8 +458,10 @@ export default function edit() {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => {
                   return (
-                    <TouchableOpacity style={styles.tagView}>
-                      <Icon name="tag" size={16} color={"#239D60"} />
+                    <TouchableOpacity style={styles.tagView}><Image
+                      source={require("./../image/Tag.png")}
+                      style={styles.TagButton}
+                    />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
                     </TouchableOpacity>
                   );
@@ -505,12 +506,16 @@ export default function edit() {
                           onPress={() => {
                             deleteTag(item);
                           }}
-                        >
-                          <Icon name="tag" size={16} color={"#239D60"} />
+                        ><Image
+                            source={require("./../image/Tag.png")}
+                            style={styles.TagButton}
+                          />
                           <Text>
                             {allTag.find((o) => o.tagId == item).tagName}
-                          </Text>
-                          <Icon name="times-circle" size={16} />
+                          </Text><Image
+                            source={require("./../image/Close.png")}
+                            style={styles.TagButton}
+                          />
                         </TouchableOpacity>
                       );
                     }}
@@ -556,14 +561,14 @@ export default function edit() {
           </Modal>
         </ScrollView>
       )}
-          <View style={styles.Back}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-              <Image
-                source={require("./../image/Left.png")}
-                style={styles.actionButton}
-              />
-            </TouchableOpacity>
-          </View>
+      <View style={styles.Back}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Image
+            source={require("./../image/Left.png")}
+            style={styles.actionButton}
+          />
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -687,7 +692,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

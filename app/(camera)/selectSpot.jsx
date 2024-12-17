@@ -14,7 +14,6 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -316,7 +315,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

@@ -8,7 +8,6 @@ import {
   Image,
 } from "react-native";
 import { useRouter } from "expo-router";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 export default function myPage() {
   const router = useRouter();
@@ -147,7 +146,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",
