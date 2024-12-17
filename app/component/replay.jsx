@@ -110,7 +110,6 @@ const ReplyScreen = () => {
             if (!originalphotoQuerySnapshot.empty) {
               const originalphotoDoc =
                 originalphotoQuerySnapshot.docs[0].data();
-              console.log(originalphotoDoc);
               if (originalphotoDoc.imagePath) {
                 const originalurl = await storage()
                   .ref(originalphotoDoc.imagePath)
