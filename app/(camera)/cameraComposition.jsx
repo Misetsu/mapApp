@@ -7,6 +7,7 @@ import {
   Image,
   Modal,
   Text,
+  FlatList,
 } from "react-native";
 import {
   Stack,
@@ -47,6 +48,71 @@ const height = (width / 3) * 4;
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 export default function CameraScreen() {
+  const flatListRef = useRef(null);
+  const [selectedIndex, setSelectedIndex] = useState(null); // 選択されたアイテムのインデックスを管理
+  const data = [
+    {
+      key: "top",
+      icon: require("./../image/top.png"),
+      onPress: () => handleTopPress(),
+    },
+    {
+      key: "bottom",
+      icon: require("./../image/bottom.png"),
+      onPress: () => handleBottomPress(),
+    },
+    {
+      key: "left",
+      icon: require("./../image/left.png"),
+      onPress: () => handleLeftPress(),
+    },
+    {
+      key: "right",
+      icon: require("./../image/right.png"),
+      onPress: () => handleRightPress(),
+    },
+    {
+      key: "top1",
+      icon: require("./../image/topTop.png"),
+      onPress: () => handleTopFirstQuarterPress(),
+    },
+    {
+      key: "top2",
+      icon: require("./../image/topBottom.png"),
+      onPress: () => handleTopSecondQuarterPress(),
+    },
+    {
+      key: "top3",
+      icon: require("./../image/bottomTop.png"),
+      onPress: () => handleTopThirdQuarterPress(),
+    },
+    {
+      key: "top4",
+      icon: require("./../image/bottomBottom.png"),
+      onPress: () => handleTopFourthQuarterPress(),
+    },
+    {
+      key: "left1",
+      icon: require("./../image/leftLeft.png"),
+      onPress: () => handleLeftFirstQuarterPress(),
+    },
+    {
+      key: "left2",
+      icon: require("./../image/leftRight.png"),
+      onPress: () => handleLeftSecondQuarterPress(),
+    },
+    {
+      key: "right3",
+      icon: require("./../image/rightLeft.png"),
+      onPress: () => handleRightThirdQuarterPress(),
+    },
+    {
+      key: "right4",
+      icon: require("./../image/rightRight.png"),
+      onPress: () => handleRightFourthQuarterPress(),
+    },
+  ];
+
   const cameraRef = useRef(null);
   const [cameraPosition, setCameraPosition] = useState("back");
   const device = useCameraDevice(cameraPosition);
@@ -57,6 +123,17 @@ export default function CameraScreen() {
   const [bottomLeftDisplay, setBottomLeftDisplay] = useState(true);
   const [topRightDisplay, setTopRightDisplay] = useState(false);
   const [bottomRightDisplay, setBottomRightDisplay] = useState(false);
+  const [LeftFirstQuarterDisplay, setLeftFirstQuarterDisplay] = useState(false);
+  const [LeftSecondQuarterDisplay, setLeftSecondQuarterDisplay] =
+    useState(false);
+  const [RightThirdQuarterDisplay, setRightThirdQuarterDisplay] =
+    useState(false);
+  const [RightFourthQuarterDisplay, setRightFourthQuarterDisplay] =
+    useState(false);
+  const [TopFirstQuarterDisplay, setTopFirstQuarterDisplay] = useState(false);
+  const [TopSecondQuarterDisplay, setTopSecondQuarterDisplay] = useState(false);
+  const [TopThirdQuarterDisplay, setTopThirdQuarterDisplay] = useState(false);
+  const [TopFourthQuarterDisplay, setTopFourthQuarterDisplay] = useState(false);
 
   const [isCrosshair, setIsCrosshair] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -138,6 +215,14 @@ export default function CameraScreen() {
           topLeftdirection: topLeftDisplay,
           bottomRightdirection: bottomRightDisplay,
           bottomLeftdirection: bottomLeftDisplay,
+          leftFirstdirection: LeftFirstQuarterDisplay,
+          leftSeconddirection: LeftSecondQuarterDisplay,
+          rightThirddirection: RightThirdQuarterDisplay,
+          rightFourthdirection: RightFourthQuarterDisplay,
+          topFirstdirection: TopFirstQuarterDisplay,
+          topSeconddirection: TopSecondQuarterDisplay,
+          topThirddirection: TopThirdQuarterDisplay,
+          topFourthdirection: TopFourthQuarterDisplay,
         },
       });
     } catch (error) {
@@ -201,6 +286,14 @@ export default function CameraScreen() {
     setTopRightDisplay(true);
     setBottomLeftDisplay(false);
     setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
   };
 
   const handleBottomPress = () => {
@@ -208,6 +301,14 @@ export default function CameraScreen() {
     setTopRightDisplay(false);
     setBottomLeftDisplay(true);
     setBottomRightDisplay(true);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
   };
 
   const handleLeftPress = () => {
@@ -215,6 +316,14 @@ export default function CameraScreen() {
     setTopRightDisplay(false);
     setBottomLeftDisplay(true);
     setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
   };
 
   const handleRightPress = () => {
@@ -222,6 +331,134 @@ export default function CameraScreen() {
     setTopRightDisplay(true);
     setBottomLeftDisplay(false);
     setBottomRightDisplay(true);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleLeftFirstQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(true);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleLeftSecondQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(true);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleRightThirdQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(true);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleRightFourthQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(true);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleTopFirstQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(true);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleTopSecondQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(true);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleTopThirdQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(true);
+    setTopFourthQuarterDisplay(false);
+  };
+
+  const handleTopFourthQuarterPress = () => {
+    setTopLeftDisplay(false);
+    setTopRightDisplay(false);
+    setBottomLeftDisplay(false);
+    setBottomRightDisplay(false);
+    setLeftFirstQuarterDisplay(false);
+    setLeftSecondQuarterDisplay(false);
+    setRightThirdQuarterDisplay(false);
+    setRightFourthQuarterDisplay(false);
+    setTopFirstQuarterDisplay(false);
+    setTopSecondQuarterDisplay(false);
+    setTopThirdQuarterDisplay(false);
+    setTopFourthQuarterDisplay(true);
   };
 
   const toggleGrid = () => {
@@ -234,6 +471,21 @@ export default function CameraScreen() {
 
   const toggleModalVisibility = () => {
     setIsModalVisible((prev) => !prev); //modalの表示状況の制御
+  };
+
+  const handlePress = (index) => {
+    setSelectedIndex(index); // アイテムを選択したときに選択されたインデックスを更新
+    if (flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.5,
+      });
+    }
+    // 選択したアイテムのonPressを呼び出す
+    if (data[index].onPress) {
+      data[index].onPress();
+    }
   };
 
   return (
@@ -287,7 +539,78 @@ export default function CameraScreen() {
               />
             </View>
           )}
-
+          {/* 左左 */}
+          {LeftFirstQuarterDisplay && (
+            <View style={styles.modalButtonLeftFirstQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.LeftFirstQuarterDisplay}
+              />
+            </View>
+          )}
+          {/* 左右 */}
+          {LeftSecondQuarterDisplay && (
+            <View style={styles.modalButtonLeftSecondQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.LeftSecondQuarterDisplay}
+              />
+            </View>
+          )}
+          {/* 右左 */}
+          {RightThirdQuarterDisplay && (
+            <View style={styles.modalButtonRightThirdQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.RightThirdQuarterDisplay}
+              />
+            </View>
+          )}
+          {/* 右右 */}
+          {RightFourthQuarterDisplay && (
+            <View style={styles.modalButtonRightFourthQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.RightFourthQuarterDisplay}
+              />
+            </View>
+          )}
+          {/* 上上 */}
+          {TopFirstQuarterDisplay && (
+            <View style={styles.modalButtonTopFirstQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.TopFirstQuarterDisplay}
+              />
+            </View>
+          )}
+          {/* 上下 */}
+          {TopSecondQuarterDisplay && (
+            <View style={styles.modalButtonTopSecondQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.TopSecondQuarterDisplay}
+              />
+            </View>
+          )}
+          {/* 下上 */}
+          {TopThirdQuarterDisplay && (
+            <View style={styles.modalButtonTopThirdQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.TopThirdQuarterDisplay}
+              />
+            </View>
+          )}
+          {/* 下下 */}
+          {TopFourthQuarterDisplay && (
+            <View style={styles.modalButtonTopFourthQuarter}>
+              <Image
+                source={{ uri: photoUri }}
+                style={styles.TopFourthQuarterDisplay}
+              />
+            </View>
+          )}
           {/* 十字線または3x3グリッド */}
           <View style={styles.crosshairContainer}>
             {isCrosshair ? (
@@ -339,30 +662,30 @@ export default function CameraScreen() {
         </View>
 
         <View style={styles.chooseHarfDisplayContainer}>
-          <TouchableOpacity
-            onPress={handleTopPress}
-            style={styles.chooseTopHarfDisplay}
-          >
-            <FontAwesome5 name="angle-double-up" size={30} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleBottomPress}
-            style={styles.chooseBottomHarfDisplay}
-          >
-            <FontAwesome5 name="angle-double-down" size={30} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleLeftPress}
-            style={styles.chooseLeftHarfDisplay}
-          >
-            <FontAwesome5 name="angle-double-left" size={30} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleRightPress}
-            style={styles.chooseRightHarfDisplay}
-          >
-            <FontAwesome5 name="angle-double-right" size={30} color="#FFF" />
-          </TouchableOpacity>
+          <TouchableOpacity style={styles.colonButton}></TouchableOpacity>
+          <FlatList
+            ref={flatListRef}
+            data={data}
+            horizontal
+            keyExtractor={(item) => item.key}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
+                onPress={() => handlePress(index)}
+                style={[
+                  styles.chooseDisplayButton,
+                  selectedIndex === index && styles.selectedButton, // 選択されたアイテムに背景色を適用
+                ]}
+              >
+                <Image source={item.icon} style={styles.image} />
+                {/* <FontAwesome5 name={item.icon} size={30} color="#FFF" /> */}
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={{
+              alignItems: "center",
+              paddingHorizontal: "50%",
+            }}
+            showsHorizontalScrollIndicator={false}
+          />
 
           {/* 詳細選択ボタンの追加 */}
           <TouchableOpacity
@@ -527,32 +850,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     height: 50,
     bottom: wholeHeight * 0.22,
-    width: "50%",
+    width: "100%",
     borderRadius: 30,
   },
-  chooseTopHarfDisplay: {
+  chooseDisplayButton: {
     //backgroundColor: "purple",
-    justifyContent: "center",
-    alignItems: "center",
-    height: 40,
-    width: 40,
-  },
-  chooseBottomHarfDisplay: {
-    //backgroundColor: "pink",
-    justifyContent: "center",
-    alignItems: "center",
-    height: 40,
-    width: 40,
-  },
-  chooseLeftHarfDisplay: {
-    //backgroundColor: "red",
-    justifyContent: "center",
-    alignItems: "center",
-    height: 40,
-    width: 40,
-  },
-  chooseRightHarfDisplay: {
-    //backgroundColor: "orange",
     justifyContent: "center",
     alignItems: "center",
     height: 40,
@@ -654,6 +956,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 20,
   },
+  selectedButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.3)", // 選択されたアイテムの背景色（薄灰色）
+    borderRadius: 15,
+  },
   modalButtonTopLeft: {
     position: "absolute",
     width: "50%",
@@ -682,6 +988,60 @@ const styles = StyleSheet.create({
     top: "50%",
     left: "50%",
   },
+  modalButtonLeftFirstQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+  },
+  modalButtonLeftSecondQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "25%",
+  },
+  modalButtonRightThirdQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "50%",
+  },
+  modalButtonRightFourthQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "75%",
+  },
+  modalButtonTopFirstQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+  },
+  modalButtonTopSecondQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "25%",
+  },
+  modalButtonTopThirdQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "50%",
+  },
+  modalButtonTopFourthQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "75%",
+  },
   topLeftDisplay: {
     width: width,
     height: height,
@@ -700,5 +1060,48 @@ const styles = StyleSheet.create({
     width: width,
     height: height,
     transform: [{ translateX: -width / 2 }, { translateY: -height / 2 }],
+  },
+  LeftFirstQuarterDisplay: {
+    width: width,
+    height: height,
+  },
+  LeftSecondQuarterDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateX: -width / 4 }],
+  },
+  RightThirdQuarterDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateX: -width / 2 }],
+  },
+  RightFourthQuarterDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateX: (-width / 4) * 3 }],
+  },
+  TopFirstQuarterDisplay: {
+    width: width,
+    height: height,
+  },
+  TopSecondQuarterDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateY: -height / 4 }],
+  },
+  TopThirdQuarterDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateY: -height / 2 }],
+  },
+  TopFourthQuarterDisplay: {
+    width: width,
+    height: height,
+    transform: [{ translateY: (-height / 4) * 3 }],
+  },
+  image: {
+    width: 35,
+    height: 35,
+    alignSelf: "center",
   },
 });
