@@ -479,7 +479,7 @@ export default function CameraScreen() {
       flatListRef.current.scrollToIndex({
         index,
         animated: true,
-        viewPosition: 0.565,
+        viewPosition: 0.5,
       });
     }
     // 選択したアイテムのonPressを呼び出す
@@ -662,6 +662,7 @@ export default function CameraScreen() {
         </View>
 
         <View style={styles.chooseHarfDisplayContainer}>
+          <TouchableOpacity style={styles.colonButton}></TouchableOpacity>
           <FlatList
             ref={flatListRef}
             data={data}
