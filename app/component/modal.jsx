@@ -16,6 +16,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import Share from "react-native-share";
+import { Picker } from '@react-native-picker/picker';
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
@@ -33,6 +34,7 @@ export default function MyModal({
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
+  const [sortOption, setSortOption] = useState("date"); // 状態変数を初期化
 
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
@@ -176,6 +178,14 @@ export default function MyModal({
           >
             <View style={styles.postView}>
               <Text style={styles.userName}>{spotName}</Text>
+              <Picker
+                  selectedValue={sortOption} // 名前が一致しているか確認
+                  onValueChange={(itemValue) => setSortOption(itemValue)}
+                  style={styles.picker}
+              >
+                <Picker.Item label="日付順" value="date" />
+                <Picker.Item label="いいね順" value="likes" />
+              </Picker>
             </View>
             {postData.map((post) => {
               if (!post) return null; // postが未定義の場合はスキップ
