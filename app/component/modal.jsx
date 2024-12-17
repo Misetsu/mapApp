@@ -326,6 +326,7 @@ export default function MyModal({
                                 longitude: 0,
                                 spotId: spotId,
                                 photoUri: encodeURIComponent(post.photoUri),
+                                postId: post.postId
                               },
                             });
                           }}

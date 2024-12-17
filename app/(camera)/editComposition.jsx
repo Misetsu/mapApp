@@ -59,6 +59,7 @@ export default function edit() {
     topSeconddirection,
     topThirddirection,
     topFourthdirection,
+    postId,
   } = params;
 
   const uploadPost = async () => {
@@ -96,6 +97,7 @@ export default function edit() {
         spotId: parseInt(spotId),
         userId: auth.currentUser.uid,
         timeStamp: currentTime,
+        originalpostId: parseInt(postId),
       })
       .catch((error) => console.log(error));
 
