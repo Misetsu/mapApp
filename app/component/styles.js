@@ -85,8 +85,15 @@ export const styles = StyleSheet.create({
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "rgba(255, 255, 255, 0.75)",
-    width: 70,
-    height: 70,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    margin: 10,
+  },
+  mapbuttonImage: {
+    width: 30,
+    height: 30,
+    alignSelf: "center",
   },
   buttonText: {
     color: "white",
@@ -115,21 +122,24 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
   },//インデックスバー上の画像
   closeImage: {
-    width: 34,
-    height: 34,
+    width: 24,
+    height: 24,
     alignSelf: "center",
     borderWidth: 2,
     borderColor: "#239D60",
     backgroundColor: "#f2f5c8",
+    margin: 5,
+    marginLeft:10,
+    marginRight:10,
   },
   mapfixed: {
     position: "absolute",
-    top: 85,
+    top: 125,
     right: 0,
   },
   defaultlocation: {
     position: "absolute",
-    top: 155,
+    top: 185,
     right: 0,
   },
   indexContainer: {
@@ -149,10 +159,10 @@ export const styles = StyleSheet.create({
     top: 85,
     width: "100%",
     paddingTop: 5,
-    paddingLeft: 5,
-    paddingRight: 75,
+    paddingBottom: 5,
     justifyContent: "space-between",
     flexDirection: "row",
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
   },
   tag: {
     paddingVertical: 5,

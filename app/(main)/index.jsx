@@ -1324,7 +1324,7 @@ export default function TrackUserMapView() {
           >
             <Image
               source={require("./../image/MapFixed.png")}
-              style={styles.footerImage}
+              style={styles.mapbuttonImage}
             />
           </TouchableOpacity>
         </View>
@@ -1336,7 +1336,7 @@ export default function TrackUserMapView() {
           >
             <Image
               source={require("./../image/MapUnFixed.png")}
-              style={styles.footerImage}
+              style={styles.mapbuttonImage}
             />
           </TouchableOpacity>
         </View>
@@ -1355,7 +1355,7 @@ export default function TrackUserMapView() {
         >
           <Image
             source={require("./../image/Location.png")}
-            style={styles.footerImage}
+            style={styles.mapbuttonImage}
           />
         </TouchableOpacity>
       </View>
