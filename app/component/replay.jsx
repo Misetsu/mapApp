@@ -39,8 +39,8 @@ const ReplyScreen = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [allTag, setAllTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState([]);
-  const [originalphoto,setoriginalphoto] = useState(null)
-  const [originalpostId,setoriginalpostId] = useState(null)
+  const [originalphoto, setoriginalphoto] = useState(null);
+  const [originalpostId, setoriginalpostId] = useState(null);
 
   const handleBackPress = () => {
     router.back();
@@ -79,7 +79,7 @@ const ReplyScreen = () => {
 
   const onShare = () => {
     try {
-      const result = Share.open({
+      Share.open({
         message: generateShareMessage(
           selectedPost.spotName,
           selectedPost.postDetails.spotId
@@ -101,22 +101,25 @@ const ReplyScreen = () => {
           const url = await storage().ref(photoDoc.imagePath).getDownloadURL();
           setPhotoUri(url);
 
-          if(photoDoc.originalpostId){
+          if (photoDoc.originalpostId) {
             const originalphotoQuerySnapshot = await firestore()
-            .collection("photo")
-            .where("postId", "==", parseInt(photoDoc.originalpostId))
-            .get();
+              .collection("photo")
+              .where("postId", "==", parseInt(photoDoc.originalpostId))
+              .get();
 
             if (!originalphotoQuerySnapshot.empty) {
-              const originalphotoDoc = originalphotoQuerySnapshot.docs[0].data();
-              console.log(originalphotoDoc)
+              const originalphotoDoc =
+                originalphotoQuerySnapshot.docs[0].data();
+              console.log(originalphotoDoc);
               if (originalphotoDoc.imagePath) {
-                const originalurl = await storage().ref(originalphotoDoc.imagePath).getDownloadURL();
+                const originalurl = await storage()
+                  .ref(originalphotoDoc.imagePath)
+                  .getDownloadURL();
                 setoriginalphoto(originalurl);
-                setoriginalpostId(photoDoc.originalpostId)
+                setoriginalpostId(photoDoc.originalpostId);
               }
+            }
           }
-        }
 
           const postSnapshot = await firestore()
             .collection("post")
@@ -525,22 +528,24 @@ const ReplyScreen = () => {
                 </TouchableOpacity>
                 {selectedPost.userDetails.uid == auth.currentUser.uid ? (
                   <View style={styles.EditTrashRow}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        router.push({
-                          pathname: "/component/replay",
-                          params: {
-                            postId: originalpostId,
-                            showImage: showImage,
-                          }, // idを使用
-                        });
-                      }}
-                    >
-                    <Image
-                    source={{uri:originalphoto}}
-                    style={styles.originalpostImage}
-                    />
-                    </TouchableOpacity>
+                    {originalpostId != null ? (
+                      <TouchableOpacity
+                        onPress={() => {
+                          router.push({
+                            pathname: "/component/replay",
+                            params: {
+                              postId: originalpostId,
+                              showImage: showImage,
+                            }, // idを使用
+                          });
+                        }}
+                      >
+                        <Image
+                          source={{ uri: originalphoto }}
+                          style={styles.originalpostImage}
+                        />
+                      </TouchableOpacity>
+                    ) : null}
                     <TouchableOpacity
                       onPress={() => {
                         router.push({
@@ -562,23 +567,25 @@ const ReplyScreen = () => {
                   </View>
                 ) : (
                   <View style={styles.EditTrashRow}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        router.push({
-                          pathname: "/component/replay",
-                          params: {
-                            postId: originalpostId,
-                            showImage: showImage,
-                          }, // idを使用
-                        });
-                      }}
-                    >
-                    <Image
-                    source={{uri:originalphoto}}
-                    style={styles.originalpostImage}
-                    />
-                    </TouchableOpacity>
-                    </View>
+                    {originalpostId != null ? (
+                      <TouchableOpacity
+                        onPress={() => {
+                          router.push({
+                            pathname: "/component/replay",
+                            params: {
+                              postId: originalpostId,
+                              showImage: showImage,
+                            }, // idを使用
+                          });
+                        }}
+                      >
+                        <Image
+                          source={{ uri: originalphoto }}
+                          style={styles.originalpostImage}
+                        />
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
                 )}
               </View>
               {showImage == "true" || myPage == "true" ? (
@@ -685,7 +692,7 @@ const ReplyScreen = () => {
                           longitude: 0,
                           spotId: selectedPost.postDetails.spotId,
                           photoUri: encodeURIComponent(photoUri),
-                          postId: postId
+                          postId: postId,
                         },
                       });
                     }}
