@@ -51,6 +51,14 @@ export default function edit() {
     topLeftdirection,
     bottomRightdirection,
     bottomLeftdirection,
+    leftFirstdirection,
+    leftSeconddirection,
+    rightThirddirection,
+    rightFourthdirection,
+    topFirstdirection,
+    topSeconddirection,
+    topThirddirection,
+    topFourthdirection,
     postId,
   } = params;
 
@@ -89,7 +97,7 @@ export default function edit() {
         spotId: parseInt(spotId),
         userId: auth.currentUser.uid,
         timeStamp: currentTime,
-        originalpostId: parseInt(postId)
+        originalpostId: parseInt(postId),
       })
       .catch((error) => console.log(error));
 
@@ -315,6 +323,78 @@ export default function edit() {
                 <Image
                   source={{ uri: Composition }}
                   style={styles.bottomRightDisplay}
+                />
+              </View>
+            )}
+            {/* 左左 */}
+            {leftFirstdirection == "true" && (
+              <View style={styles.modalButtonLeftFirstQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.LeftFirstQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 左右 */}
+            {leftSeconddirection == "true" && (
+              <View style={styles.modalButtonLeftSecondQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.LeftSecondQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 右左 */}
+            {rightThirddirection == "true" && (
+              <View style={styles.modalButtonRightThirdQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.RightThirdQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 右右 */}
+            {rightFourthdirection == "true" && (
+              <View style={styles.modalButtonRightFourthQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.RightFourthQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 上上 */}
+            {topFirstdirection == "true" && (
+              <View style={styles.modalButtonTopFirstQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopFirstQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 上下 */}
+            {topSeconddirection == "true" && (
+              <View style={styles.modalButtonTopSecondQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopSecondQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 下上 */}
+            {topThirddirection == "true" && (
+              <View style={styles.modalButtonTopThirdQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopThirdQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 下下 */}
+            {topFourthdirection == "true" && (
+              <View style={styles.modalButtonTopFourthQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopFourthQuarterDisplay}
                 />
               </View>
             )}
@@ -554,6 +634,60 @@ const styles = StyleSheet.create({
     top: "50%",
     left: "50%",
   },
+  modalButtonLeftFirstQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+  },
+  modalButtonLeftSecondQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "25%",
+  },
+  modalButtonRightThirdQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "50%",
+  },
+  modalButtonRightFourthQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "75%",
+  },
+  modalButtonTopFirstQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+  },
+  modalButtonTopSecondQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "25%",
+  },
+  modalButtonTopThirdQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "50%",
+  },
+  modalButtonTopFourthQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "75%",
+  },
   topLeftDisplay: {
     width: imageWidth,
     height: imageHeight,
@@ -575,6 +709,44 @@ const styles = StyleSheet.create({
       { translateX: -imageWidth / 2 },
       { translateY: -imageHeight / 2 },
     ],
+  },
+  LeftFirstQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+  },
+  LeftSecondQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateX: -imageWidth / 4 }],
+  },
+  RightThirdQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateX: -imageWidth / 2 }],
+  },
+  RightFourthQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateX: (-imageWidth / 4) * 3 }],
+  },
+  TopFirstQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+  },
+  TopSecondQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: -imageHeight / 4 }],
+  },
+  TopThirdQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: -imageHeight / 2 }],
+  },
+  TopFourthQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: (-imageHeight / 4) * 3 }],
   },
   tagView: {
     paddingVertical: 5,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   ScrollView,
   View,
@@ -8,11 +8,7 @@ import {
   Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { useNavigation } from "@react-navigation/native";
-
-const auth = FirebaseAuth();
 
 export default function myPage() {
   const router = useRouter();
@@ -23,15 +19,6 @@ export default function myPage() {
     }
   };
 
-  const navigation = useNavigation();
-
-  const signout = async () => {
-    await auth.signOut();
-    router.replace({ pathname: "/" });
-  };
-
-  //
-
   return (
     <ScrollView style={styles.scrview}>
       <View style={styles.container}>
@@ -39,14 +26,22 @@ export default function myPage() {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push("/userPolicy")}
+          onPress={() => {
+            Linking.openURL(
+              "https://ekatiihs.wordpress.com/%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84/"
+            );
+          }}
         >
           <Text style={styles.buttonText}>利用規約</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push("/privacyPolicy")}
+          onPress={() => {
+            Linking.openURL(
+              "https://ekatiihs.wordpress.com/%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC/"
+            );
+          }}
         >
           <Text style={styles.buttonText}>プライバシーポリシー</Text>
         </TouchableOpacity>
