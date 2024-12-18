@@ -144,7 +144,7 @@ export default function UserPosts() {
             onPress={() => paging("left")}
           >
             <Image
-              source={require("./../image/Left.png")}
+              source={require("./../image/Left_arrow.png")}
               style={styles.actionButton}
             />
           </TouchableOpacity>
@@ -154,7 +154,7 @@ export default function UserPosts() {
             style={styles.arrowright}
             onPress={() => paging("right")}
           ><Image
-              source={require("./../image/Right.png")}
+              source={require("./../image/Right_arrow.png")}
               style={styles.actionButton}
             />
           </TouchableOpacity>

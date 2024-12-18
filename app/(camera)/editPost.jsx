@@ -233,9 +233,9 @@ const EditPostScreen = () => {
                                 deleteTag(item);
                               }}
                             ><Image
-                            source={require("./../image/Tag.png")}
-                            style={styles.TagButton}
-                          />
+                                source={require("./../image/Tag.png")}
+                                style={styles.TagButton}
+                              />
 
                               <Text>
                                 {allTag.find((o) => o.tagId == item).tagName}
@@ -289,7 +289,7 @@ const EditPostScreen = () => {
         )}<View style={styles.Back}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Image
-              source={require("./../image/Left.png")}
+              source={require("./../image/Left_arrow.png")}
               style={styles.actionButton}
             />
           </TouchableOpacity>

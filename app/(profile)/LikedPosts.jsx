@@ -168,7 +168,7 @@ export default function UserLikedPosts() {
             style={styles.arrowleft}
             onPress={() => paging("left")}
           ><Image
-              source={require("./../image/Left.png")}
+              source={require("./../image/Left_arrow.png")}
               style={styles.actionButton}
             />
           </TouchableOpacity>
@@ -178,7 +178,7 @@ export default function UserLikedPosts() {
             style={styles.arrowright}
             onPress={() => paging("right")}
           ><Image
-              source={require("./../image/Right.png")}
+              source={require("./../image/Right_arrow.png")}
               style={styles.actionButton}
             />
           </TouchableOpacity>

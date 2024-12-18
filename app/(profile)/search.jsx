@@ -326,7 +326,7 @@ export default function SearchScreen() {
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <Image
-            source={require("./../image/Left.png")}
+            source={require("./../image/Left_arrow.png")}
             style={styles.actionButton}
           />
         </TouchableOpacity>
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-  },searchIcon:{
+  }, searchIcon: {
     width: 25,
     height: 25,
     marginRight: 5,

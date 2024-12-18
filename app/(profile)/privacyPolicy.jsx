@@ -112,13 +112,13 @@ Eメールアドレス：ekatiihs@gmail.com
         <Text style={styles.pagetitle}>プライバシーポリシー</Text>
         <Text style={{ fontSize: 16, lineHeight: 24 }}>{termsText}</Text>
         <View style={styles.Back}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Image
-            source={require("./../image/Left.png")}
-            style={styles.actionButton}
-          />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Image
+              source={require("./../image/Left_arrow.png")}
+              style={styles.actionButton}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );

@@ -209,7 +209,7 @@ export default function SignupScreen() {
         <View style={styles.Back}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Image
-              source={require("./../image/Left.png")}
+              source={require("./../image/Left_arrow.png")}
               style={styles.actionButton}
             />
           </TouchableOpacity>
