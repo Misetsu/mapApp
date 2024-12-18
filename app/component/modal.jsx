@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Dimensions,
   ScrollView,
+  FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -30,9 +31,17 @@ export default function MyModal({
   onClose,
   spotName,
   marker,
+  fetchMorePosts, // 新しい投稿を取得するための関数をプロパティとして渡す
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
+
+  // 初回ロード後に呼び出すロジック
+  useEffect(() => {
+    if (!loading && postData.length === 0) {
+      fetchMorePosts(); // 初期データを読み込む
+    }
+  }, [loading, postData]);
 
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
@@ -170,25 +179,35 @@ export default function MyModal({
             <Text>読み込み中...</Text>
           </View>
         ) : !empty && postData.length > 0 ? (
-          <ScrollView
+          <FlatList
+            data={postData}
+            keyExtractor={(post) => post.postId.toString()}
             showsVerticalScrollIndicator={false}
             style={styles.modalView}
-          >
-            <View style={styles.postView}>
-              <Text style={styles.userName}>{spotName}</Text>
-            </View>
-            {postData.map((post) => {
-              if (!post) return null; // postが未定義の場合はスキップ
-              const isLiked = likes[post.postId]; // idを使用する
+            ListHeaderComponent={
+              <View style={styles.postView}>
+                <Text style={styles.userName}>{spotName}</Text>
+              </View>
+            }
+            onEndReached={() => {
+              // リストの末尾に到達したときに次のデータを読み込む
+              fetchMorePosts();
+            }}
+            onEndReachedThreshold={0.5} // 50% スクロールしたときにトリガー
+            ListFooterComponent={
+              loading && <ActivityIndicator size="small" color="#239D60" />
+            }
+            renderItem={({ item: post }) => {
+              if (!post) return null;
+              const isLiked = likes[post.postId];
               const flag = tempObj1[post.postId];
               const count = tempObj2[post.postId];
+
               return (
                 <View key={post.postId} style={styles.postView}>
                   <TouchableOpacity
                     style={styles.profileBar}
-                    onPress={() => {
-                      navigateProfile(post.userId);
-                    }}
+                    onPress={() => navigateProfile(post.userId)}
                   >
                     <Image
                       source={{ uri: post.userIcon }}
@@ -212,7 +231,6 @@ export default function MyModal({
                         <Text style={styles.areaLabel}>現在範囲外にいます</Text>
                       </View>
                     )}
-
                     <View style={styles.LikeCommentRow}>
                       {/* いいねボタン */}
                       {postImage ? (
@@ -223,9 +241,7 @@ export default function MyModal({
                               onPress={
                                 auth.currentUser
                                   ? () => handleUnlike(post.postId)
-                                  : () => {
-                                      router.push("/loginForm");
-                                    }
+                                  : () => router.push("/loginForm")
                               }
                             >
                               <Icon
@@ -248,9 +264,7 @@ export default function MyModal({
                               onPress={
                                 auth.currentUser
                                   ? () => handleLike(post.postId)
-                                  : () => {
-                                      router.push("/loginForm");
-                                    }
+                                  : () => router.push("/loginForm")
                               }
                             >
                               <Icon
@@ -302,15 +316,15 @@ export default function MyModal({
                       )}
                       <TouchableOpacity
                         style={styles.actionButton}
-                        onPress={() => {
+                        onPress={() =>
                           router.push({
                             pathname: "/component/replay",
                             params: {
                               postId: post.postId,
                               showImage: postImage,
-                            }, // idを使用
-                          });
-                        }}
+                            },
+                          })
+                        }
                       >
                         <Icon name="comment" size={25} color={"#000"} />
                         <Text> {post.replyCount}</Text>
@@ -318,7 +332,7 @@ export default function MyModal({
                       {postImage ? (
                         <TouchableOpacity
                           style={styles.actionButton}
-                          onPress={() => {
+                          onPress={() =>
                             router.push({
                               pathname: "/cameraComposition",
                               params: {
@@ -327,8 +341,8 @@ export default function MyModal({
                                 spotId: spotId,
                                 photoUri: encodeURIComponent(post.photoUri),
                               },
-                            });
-                          }}
+                            })
+                          }
                         >
                           <Icon name="images" size={25} color={"#000"} />
                         </TouchableOpacity>
@@ -340,7 +354,7 @@ export default function MyModal({
                       {postImage ? (
                         <TouchableOpacity
                           style={styles.actionButton}
-                          onPress={() => {
+                          onPress={() =>
                             router.push({
                               pathname: "/camera",
                               params: {
@@ -350,8 +364,8 @@ export default function MyModal({
                                 point: 0,
                                 spotNo: 0,
                               },
-                            });
-                          }}
+                            })
+                          }
                         >
                           <Icon
                             name="map-marked-alt"
@@ -389,8 +403,8 @@ export default function MyModal({
                   </View>
                 </View>
               );
-            })}
-          </ScrollView>
+            }}
+          />
         ) : (
           <View style={styles.postViewCentering}>
             <Text
