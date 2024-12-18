@@ -972,7 +972,7 @@ const styles = StyleSheet.create({
     borderColor: "#239D60",
     flexDirection: "row",
     marginHorizontal: 2,
-    backgroundColor: "#f2f5c8",
+    backgroundColor: "#F2F5C8",
     gap: 10,
   },
   selectedTag: {
