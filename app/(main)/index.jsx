@@ -1284,7 +1284,9 @@ export default function TrackUserMapView() {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity
-                style={styles.tag}
+                style={
+                  selectedTag == item.tagId ? styles.selectedTag : styles.tag
+                }
                 onPress={() => handleTagChoose(item.tagId)}
               >
                 <Icon name="tag" size={18} color={"#239D60"} />

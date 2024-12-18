@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 5,
     marginHorizontal: 2,
-    backgroundColor: "#f2f5c8",
+    backgroundColor: "#F2F5C8",
     gap: 10,
   },
   selectedTagView: {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 5,
     marginHorizontal: 2,
-    backgroundColor: "#f2f5c8",
+    backgroundColor: "#F2F5C8",
     gap: 10,
   },
   tagBorder: {
