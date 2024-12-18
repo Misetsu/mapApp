@@ -63,12 +63,12 @@ export default function CameraScreen() {
     },
     {
       key: "left",
-      icon: require("./../image/Left_arrow.png"),
+      icon: require("./../image/left.png"),
       onPress: () => handleLeftPress(),
     },
     {
       key: "right",
-      icon: require("./../image/Right_arrow.png"),
+      icon: require("./../image/right.png"),
       onPress: () => handleRightPress(),
     },
     {
