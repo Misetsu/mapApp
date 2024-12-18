@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -69,6 +69,8 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
+  const mapRef = useRef(null);
+  const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
   const setmodal = (marker) => {
     try {
@@ -716,6 +718,23 @@ export default function TrackUserMapView() {
     }
   };
 
+
+  // ズームイン関数
+  const zoomIn = () => {
+    mapRef.current.getCamera().then((camera) => {
+      camera.zoom += 0.75;
+      mapRef.current.animateCamera(camera, { duration: 400 });
+    });
+  };
+
+  // ズームアウト関数
+  const zoomOut = () => {
+    mapRef.current.getCamera().then((camera) => {
+      camera.zoom -= 0.75;
+      mapRef.current.animateCamera(camera, { duration: 400 });
+    });
+  };
+
   const fetchAllMarkerCord = async () => {
     if (!modalVisible) {
       let vivstedSpot = {};
@@ -1185,6 +1204,8 @@ export default function TrackUserMapView() {
       )}
       {initialRegion && (
         <MapView
+          toolbarEnabled={false} // Androidのボタンを無効化
+          ref={mapRef}
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
           style={[
             StyleSheet.absoluteFillObject,
@@ -1297,9 +1318,9 @@ export default function TrackUserMapView() {
         {selectedTag == null ? null : (
           <TouchableOpacity onPress={handleCancelTag}>
             <Image
-          source={require("./../image/Close.png")}
-          style={styles.closeImage}
-        />
+              source={require("./../image/Close.png")}
+              style={styles.closeImage}
+            />
           </TouchableOpacity>
         )}
       </SafeAreaView>
@@ -1355,6 +1376,31 @@ export default function TrackUserMapView() {
         >
           <Image
             source={require("./../image/Location.png")}
+            style={styles.mapbuttonImage}
+          />
+        </TouchableOpacity>
+      </View>
+
+
+      <View style={styles.mapZoom}>
+        <TouchableOpacity
+          style={styles.mapbutton}
+          onPress={zoomIn} // 拡大
+        >
+          <Image
+            source={require("./../image/Plus.png")}
+            style={styles.mapbuttonImage}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.mapZoomout}>
+        <TouchableOpacity
+          style={styles.mapbutton}
+          onPress={zoomOut} // 縮小
+        >
+          <Image
+            source={require("./../image/Minus.png")}
             style={styles.mapbuttonImage}
           />
         </TouchableOpacity>

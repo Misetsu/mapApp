@@ -122,15 +122,15 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
   },//インデックスバー上の画像
   closeImage: {
-    width: 24,
-    height: 24,
+    width: 30,
+    height: 30,
     alignSelf: "center",
     borderWidth: 2,
     borderColor: "#239D60",
     backgroundColor: "#f2f5c8",
-    margin: 5,
-    marginLeft:10,
-    marginRight:10,
+    margin:2,
+    marginLeft:5,
+    marginRight:5,
   },
   mapfixed: {
     position: "absolute",
@@ -140,6 +140,16 @@ export const styles = StyleSheet.create({
   defaultlocation: {
     position: "absolute",
     top: 185,
+    right: 0,
+  },
+  mapZoom: {
+    position: "absolute",
+    top: 245,
+    right: 0,
+  },
+  mapZoomout: {
+    position: "absolute",
+    top: 305,
     right: 0,
   },
   indexContainer: {
