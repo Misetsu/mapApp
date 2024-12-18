@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "224298539879-3653i1ep459fv67lscs8r0fgsb3avb79.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.anonymous.mapApp",
+            "certificate_hash": "ed78462d34cf9633ba1b588ad60691fa6c99bbea"
+          }
+        },
+        {
+          "client_id": "224298539879-b4enuij0dtp4a28ki8in0gq8upkdnmq8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.anonymous.mapApp",
+            "certificate_hash": "a15b9f2f63540b0bf7588c755930526f3524505e"
+          }
+        },
+        {
           "client_id": "224298539879-makas889djcv3m1sgnch667hc31qacek.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -37,6 +53,13 @@
             {
               "client_id": "224298539879-t62hp3sk9t27ecupcds9d8aj29jr9hmm.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "224298539879-2e3kf15bb1i8l94bq7tk7nia5jfuuca0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.anonymous.mapApp"
+              }
             }
           ]
         }

@@ -36,34 +36,36 @@ export default function LoginScreen() {
 
   const signInWithGoogle = async () => {
     // Google のログイン画面を表示して認証用の ID トークンを取得する
-    const user = await GoogleSignin.signIn();
+    try {
+      const user = await GoogleSignin.signIn();
+      const idToken = user.idToken;
+      if (idToken === null) {
+        return;
+      }
 
-    const idToken = user.idToken;
+      // 取得した認証情報 (ID トークン) を元にサインインする
+      const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
+      await auth.signInWithCredential(credential);
 
-    if (idToken === null) {
-      return;
-    }
+      const querySnapshot = await firestore()
+        .collection("users")
+        .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
+        .get();
 
-    // 取得した認証情報 (ID トークン) を元にサインインする
-    const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
-    await auth.signInWithCredential(credential);
-
-    const querySnapshot = await firestore()
-      .collection("users")
-      .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
-      .get();
-
-    if (querySnapshot.empty) {
-      router.push({
-        pathname: "/signupFormGoogle",
-        params: {
-          uid: auth.currentUser.uid,
-          displayName: auth.currentUser.displayName,
-          photoURL: auth.currentUser.photoURL,
-        },
-      });
-    } else {
-      router.replace({ pathname: "/" });
+      if (querySnapshot.empty) {
+        router.push({
+          pathname: "/signupFormGoogle",
+          params: {
+            uid: auth.currentUser.uid,
+            displayName: auth.currentUser.displayName,
+            photoURL: auth.currentUser.photoURL,
+          },
+        });
+      } else {
+        router.replace({ pathname: "/" });
+      }
+    } catch (error) {
+      Alert.alert("ログインに失敗しました。", error.code);
     }
   };
 

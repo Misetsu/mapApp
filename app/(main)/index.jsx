@@ -1304,7 +1304,9 @@ export default function TrackUserMapView() {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity
-                style={styles.tag}
+                style={
+                  selectedTag == item.tagId ? styles.selectedTag : styles.tag
+                }
                 onPress={() => handleTagChoose(item.tagId)}
               ><Image
                   source={require("./../image/Tag.png")}

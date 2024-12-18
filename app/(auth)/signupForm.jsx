@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Image,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
@@ -160,7 +161,9 @@ export default function SignupScreen() {
           <Text style={styles.noamllabel}>
             <TouchableOpacity
               onPress={() => {
-                router.push("/userPolicy");
+                Linking.openURL(
+                  "https://ekatiihs.wordpress.com/%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84/"
+                );
               }}
             >
               <Text
@@ -172,7 +175,9 @@ export default function SignupScreen() {
             、
             <TouchableOpacity
               onPress={() => {
-                router.push("/privacyPolicy");
+                Linking.openURL(
+                  "https://ekatiihs.wordpress.com/%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC/"
+                );
               }}
             >
               <Text
