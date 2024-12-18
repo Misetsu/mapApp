@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import Icon from "react-native-vector-icons/FontAwesome";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 
@@ -265,7 +264,10 @@ export default function profile() {
       </View>
       <View style={styles.Back}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Icon name="angle-left" size={24} color="#000" />
+          <Image
+            source={require("./../image/Left_arrow.png")}
+            style={styles.actionButton}
+          />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -411,13 +413,23 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "300",
   },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
     backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",

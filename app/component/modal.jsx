@@ -14,7 +14,6 @@ import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import Share from "react-native-share";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -70,7 +69,7 @@ export default function MyModal({
       const result = Share.open({
         message: generateShareMessage(spotName, spotId),
       });
-    } catch (warning) {}
+    } catch (warning) { }
   };
 
   const handleUnlike = async (postId) => {
@@ -224,14 +223,13 @@ export default function MyModal({
                                 auth.currentUser
                                   ? () => handleUnlike(post.postId)
                                   : () => {
-                                      router.push("/loginForm");
-                                    }
+                                    router.push("/loginForm");
+                                  }
                               }
                             >
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#000" : "#f00"}
+                              <Image
+                                source={require("./../image/Heart.png")}
+                                style={styles.actionButton}
                               />
                               <Text
                                 style={[
@@ -249,15 +247,18 @@ export default function MyModal({
                                 auth.currentUser
                                   ? () => handleLike(post.postId)
                                   : () => {
-                                      router.push("/loginForm");
-                                    }
+                                    router.push("/loginForm");
+                                  }
                               }
                             >
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#f00" : "#000"}
+                              {isLiked ? (<Image
+                                source={require("./../image/RedHeart.png")}
+                                style={styles.actionButton}
                               />
+                              ) : (<Image
+                                source={require("./../image/Heart.png")}
+                                style={styles.actionButton}
+                              />)}
                               <Text
                                 style={[
                                   { color: isLiked ? "red" : "black" },
@@ -273,11 +274,14 @@ export default function MyModal({
                         <View>
                           {flag ? (
                             <TouchableOpacity style={styles.actionButton}>
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#000" : "#f00"}
+                              {isLiked ? (<Image
+                                source={require("./../image/RedHeart.png")}
+                                style={styles.actionButton}
                               />
+                              ) : (<Image
+                                source={require("./../image/Heart.png")}
+                                style={styles.actionButton}
+                              />)}
                               <Text
                                 style={{ color: isLiked ? "black" : "red" }}
                               >
@@ -286,11 +290,14 @@ export default function MyModal({
                             </TouchableOpacity>
                           ) : (
                             <TouchableOpacity style={styles.actionButton}>
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#f00" : "#000"}
+                              {isLiked ? (<Image
+                                source={require("./../image/RedHeart.png")}
+                                style={styles.actionButton}
                               />
+                              ) : (<Image
+                                source={require("./../image/Heart.png")}
+                                style={styles.actionButton}
+                              />)}
                               <Text
                                 style={{ color: isLiked ? "red" : "black" }}
                               >
@@ -311,9 +318,11 @@ export default function MyModal({
                             }, // idを使用
                           });
                         }}
-                      >
-                        <Icon name="comment" size={25} color={"#000"} />
-                        <Text> {post.replyCount}</Text>
+                      ><Image
+                          source={require("./../image/Comment.png")}
+                          style={styles.actionButton}
+                        />
+                        <Text style={styles.likeNum}>{post.replyCount}</Text>
                       </TouchableOpacity>
                       {postImage ? (
                         <TouchableOpacity
@@ -330,8 +339,10 @@ export default function MyModal({
                               },
                             });
                           }}
-                        >
-                          <Icon name="images" size={25} color={"#000"} />
+                        ><Image
+                        source={require("./../image/MixPhoto.png")}
+                        style={styles.actionButton}
+                      />
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
@@ -354,11 +365,10 @@ export default function MyModal({
                             });
                           }}
                         >
-                          <Icon
-                            name="map-marked-alt"
-                            size={25}
-                            color={"#000"}
-                          />
+                          <Image
+                        source={require("./../image/PinPhoto.png")}
+                        style={styles.actionButton}
+                      />
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
@@ -378,14 +388,19 @@ export default function MyModal({
                       <TouchableOpacity
                         style={styles.actionButton}
                         onPress={() => onShare()}
-                      >
-                        <Icon name="share" size={25} color={"#000"} />
+                      ><Image
+                      source={require("./../image/share.png")}
+                      style={styles.actionButton}
+                    />
                       </TouchableOpacity>
                     </View>
                   </View>
                   <View style={styles.closeButton}>
                     <TouchableOpacity style={styles.button} onPress={onClose}>
-                      <Icon name="times" size={24} color="#000" />
+                      <Image
+                        source={require("./../image/Close.png")}
+                        style={styles.actionButton}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -405,7 +420,10 @@ export default function MyModal({
             <Text style={styles.userName}>投稿がありません</Text>
             <View style={styles.closeButton}>
               <TouchableOpacity style={styles.button} onPress={onClose}>
-                <Icon name="times" size={24} color="#000" />
+              <Image
+                        source={require("./../image/Close.png")}
+                        style={styles.actionButton}
+                      />
               </TouchableOpacity>
             </View>
           </View>
@@ -484,18 +502,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "90%",
     marginBottom: 10,
+  }, //インデックスバー上の画像
+  footerImage: {
+    width: 35,
+    height: 35,
+    alignSelf: "center",
   },
   actionButton: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     padding: 5,
+    margin: 5,
     display: "flex",
     flexDirection: "row",
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
   },
   likeNum: {
-    marginLeft: 10,
     fontSize: 16,
   },
   postText: {

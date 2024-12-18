@@ -19,8 +19,7 @@ import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import Icon from "react-native-vector-icons/FontAwesome5";
+import FirebaseAuth from "@react-native-firebase/auth";;
 
 const { width, height } = Dimensions.get("window");
 const imageWidth = width * 0.4;
@@ -443,8 +442,10 @@ export default function edit() {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => {
                   return (
-                    <TouchableOpacity style={styles.tagView}>
-                      <Icon name="tag" size={16} color={"#239D60"} />
+                    <TouchableOpacity style={styles.tagView}><Image
+                      source={require("./../image/Tag.png")}
+                      style={styles.TagButton}
+                    />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
                     </TouchableOpacity>
                   );
@@ -458,11 +459,11 @@ export default function edit() {
           </Pressable>
 
           <View style={styles.Back}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}
-            >
-              <Icon name="angle-left" size={24} color="#000" />
+            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+              <Image
+                source={require("./../image/Left_arrow.png")}
+                style={styles.actionButton}
+              />
             </TouchableOpacity>
           </View>
           <Modal
@@ -497,12 +498,16 @@ export default function edit() {
                           onPress={() => {
                             deleteTag(item);
                           }}
-                        >
-                          <Icon name="tag" size={16} color={"#239D60"} />
+                        ><Image
+                            source={require("./../image/Tag.png")}
+                            style={styles.TagButton}
+                          />
                           <Text>
                             {allTag.find((o) => o.tagId == item).tagName}
-                          </Text>
-                          <Icon name="times-circle" size={16} />
+                          </Text><Image
+                            source={require("./../image/Close.png")}
+                            style={styles.TagButton}
+                          />
                         </TouchableOpacity>
                       );
                     }}
@@ -528,8 +533,10 @@ export default function edit() {
                       <TouchableOpacity
                         style={styles.tagView}
                         onPress={() => addTag(item.tagId)}
-                      >
-                        <Icon name="tag" size={16} color={"#239D60"} />
+                      ><Image
+                          source={require("./../image/Tag.png")}
+                          style={styles.TagButton}
+                        />
                         <Text>{item.tagName}</Text>
                       </TouchableOpacity>
                     );
@@ -605,6 +612,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#239D60",
     textAlign: "center",
+  },
+  TagButton: {
+    width: 20,
+    height: 20,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   modalButtonTopLeft: {
     position: "absolute",
@@ -785,13 +800,22 @@ const styles = StyleSheet.create({
   allTagContainer: {
     // height: height * 0.4,
   },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",
