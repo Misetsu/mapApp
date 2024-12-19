@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -21,7 +21,6 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -70,8 +69,10 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
-  const [sorts,setsorts] = useState("timeStamp")
-  const [sortOption,setSortOption] = useState("desc")
+  const [sorts, setsorts] = useState("timeStamp");
+  const [sortOption, setSortOption] = useState("desc");
+  const mapRef = useRef(null);
+  const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
   const setmodal = (marker) => {
     try {
@@ -88,7 +89,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id,sorts,sortOption);
+        fetchPostData(marker.id, sorts, sortOption);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -96,7 +97,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id,sorts,sortOption);
+        fetchPostData(marker.id, sorts, sortOption);
         setmarkers(marker);
       }
     } catch (error) {
@@ -156,7 +157,7 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId,sort,sortOptions) => {
+  const fetchPostData = async (spotId, sort, sortOptions) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
@@ -719,6 +720,22 @@ export default function TrackUserMapView() {
     }
   };
 
+  // ズームイン関数
+  const zoomIn = () => {
+    mapRef.current.getCamera().then((camera) => {
+      camera.zoom += 0.75;
+      mapRef.current.animateCamera(camera, { duration: 400 });
+    });
+  };
+
+  // ズームアウト関数
+  const zoomOut = () => {
+    mapRef.current.getCamera().then((camera) => {
+      camera.zoom -= 0.75;
+      mapRef.current.animateCamera(camera, { duration: 400 });
+    });
+  };
+
   const fetchAllMarkerCord = async () => {
     if (!modalVisible) {
       let vivstedSpot = {};
@@ -1188,6 +1205,8 @@ export default function TrackUserMapView() {
       )}
       {initialRegion && (
         <MapView
+          toolbarEnabled={false} // Androidのボタンを無効化
+          ref={mapRef}
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
           style={[
             StyleSheet.absoluteFillObject,
@@ -1286,10 +1305,15 @@ export default function TrackUserMapView() {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity
-                style={styles.tag}
+                style={
+                  selectedTag == item.tagId ? styles.selectedTag : styles.tag
+                }
                 onPress={() => handleTagChoose(item.tagId)}
               >
-                <Icon name="tag" size={18} color={"#239D60"} />
+                <Image
+                  source={require("./../image/Tag.png")}
+                  style={styles.TagButton}
+                />
                 <Text>{item.tagName}</Text>
               </TouchableOpacity>
             );
@@ -1297,7 +1321,10 @@ export default function TrackUserMapView() {
         />
         {selectedTag == null ? null : (
           <TouchableOpacity onPress={handleCancelTag}>
-            <Icon name="times-circle" size={30} />
+            <Image
+              source={require("./../image/Close.png")}
+              style={styles.closeImage}
+            />
           </TouchableOpacity>
         )}
       </SafeAreaView>
@@ -1323,7 +1350,7 @@ export default function TrackUserMapView() {
           >
             <Image
               source={require("./../image/MapFixed.png")}
-              style={styles.footerImage}
+              style={styles.mapbuttonImage}
             />
           </TouchableOpacity>
         </View>
@@ -1335,7 +1362,7 @@ export default function TrackUserMapView() {
           >
             <Image
               source={require("./../image/MapUnFixed.png")}
-              style={styles.footerImage}
+              style={styles.mapbuttonImage}
             />
           </TouchableOpacity>
         </View>
@@ -1354,7 +1381,31 @@ export default function TrackUserMapView() {
         >
           <Image
             source={require("./../image/Location.png")}
-            style={styles.footerImage}
+            style={styles.mapbuttonImage}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.mapZoom}>
+        <TouchableOpacity
+          style={styles.mapbutton}
+          onPress={zoomIn} // 拡大
+        >
+          <Image
+            source={require("./../image/Plus.png")}
+            style={styles.mapbuttonImage}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.mapZoomout}>
+        <TouchableOpacity
+          style={styles.mapbutton}
+          onPress={zoomOut} // 縮小
+        >
+          <Image
+            source={require("./../image/Minus.png")}
+            style={styles.mapbuttonImage}
           />
         </TouchableOpacity>
       </View>
