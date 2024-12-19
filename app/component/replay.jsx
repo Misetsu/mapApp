@@ -359,6 +359,20 @@ const ReplyScreen = () => {
           count: parseInt(selectedPost.likeCount) - 1,
           [auth.currentUser.uid]: FieldValue.delete(),
         });
+
+        const querySnapshot = await firestore()
+        .collection('post') // post コレクション
+        .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+        .get();
+  
+        querySnapshot.forEach(async (doc) => {
+          await firestore()
+            .collection('post')
+            .doc(doc.id) // FirestoreのドキュメントID
+            .update({
+              likecount: tempObj2[postId], // likecount フィールドを更新
+            });
+          })
       setIsLiked(false);
     }
   };
@@ -379,6 +393,20 @@ const ReplyScreen = () => {
           count: parseInt(selectedPost.likeCount) + 1,
           [auth.currentUser.uid]: auth.currentUser.uid,
         });
+
+        const querySnapshot = await firestore()
+        .collection('post') // post コレクション
+        .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+        .get();
+  
+        querySnapshot.forEach(async (doc) => {
+          await firestore()
+            .collection('post')
+            .doc(doc.id) // FirestoreのドキュメントID
+            .update({
+              likecount: tempObj2[postId], // likecount フィールドを更新
+            });
+          })
       setIsLiked(true);
     }
   };
@@ -396,6 +424,20 @@ const ReplyScreen = () => {
         count: parseInt(selectedPost.likeCount),
         [auth.currentUser.uid]: FieldValue.delete(),
       });
+
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
     setIsLiked(false);
   };
 
@@ -412,6 +454,20 @@ const ReplyScreen = () => {
         count: parseInt(selectedPost.likeCount),
         [auth.currentUser.uid]: auth.currentUser.uid,
       });
+
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
     setIsLiked(true);
   };
 

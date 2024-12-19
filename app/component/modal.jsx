@@ -15,6 +15,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Share from "react-native-share";
+import { Picker } from '@react-native-picker/picker';
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
@@ -29,10 +30,27 @@ export default function MyModal({
   onClose,
   spotName,
   marker,
+  fetchPostData,
+
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
+  const [sortOption, setSortOption] = useState("timeStamp"); // 状態変数を初期化
 
+  const postsort = (itemValue) => {
+    if(itemValue == "newtimeStamp"){
+      fetchPostData(spotId,"timeStamp","desc")
+    }
+    else if(itemValue == "oldtimeStamp"){
+      fetchPostData(spotId,"timeStamp","asc")
+    }
+    else{
+      fetchPostData(spotId,itemValue,"desc")
+    }
+    setSortOption(itemValue)
+    
+
+  }
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
       ...prevLikes,
@@ -90,6 +108,19 @@ export default function MyModal({
           count: tempObj2[postId],
           [auth.currentUser.uid]: FieldValue.delete(),
         });
+        const querySnapshot = await firestore()
+        .collection('post') // post コレクション
+        .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+        .get();
+  
+        querySnapshot.forEach(async (doc) => {
+          await firestore()
+            .collection('post')
+            .doc(doc.id) // FirestoreのドキュメントID
+            .update({
+              likecount: tempObj2[postId], // likecount フィールドを更新
+            });
+          })
     }
   };
 
@@ -107,6 +138,20 @@ export default function MyModal({
         count: tempObj2[postId],
         [auth.currentUser.uid]: FieldValue.delete(),
       });
+      console.log(tempObj2[postId])
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
   };
 
   const handleLike = async (postId) => {
@@ -127,6 +172,21 @@ export default function MyModal({
           count: tempObj2[postId],
           [auth.currentUser.uid]: auth.currentUser.uid,
         });
+
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
+  
     }
   };
 
@@ -144,6 +204,20 @@ export default function MyModal({
         count: tempObj2[postId],
         [auth.currentUser.uid]: auth.currentUser.uid,
       });
+
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
   };
 
   const navigateProfile = (uid) => {
@@ -175,6 +249,15 @@ export default function MyModal({
           >
             <View style={styles.postView}>
               <Text style={styles.userName}>{spotName}</Text>
+              <Picker
+                  selectedValue={sortOption} // 名前が一致しているか確認
+                  onValueChange={(itemValue) => postsort(itemValue)}
+                  style={styles.picker}
+              >
+                <Picker.Item label="新しい順" value="newtimeStamp" />
+                <Picker.Item label="古い"     value="oldtimeStamp"/>
+                <Picker.Item label="いいね順" value="likecount" />
+              </Picker>
             </View>
             {postData.map((post) => {
               if (!post) return null; // postが未定義の場合はスキップ

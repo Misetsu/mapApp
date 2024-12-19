@@ -69,6 +69,8 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
+  const [sorts, setsorts] = useState("timeStamp");
+  const [sortOption, setSortOption] = useState("desc");
   const mapRef = useRef(null);
   const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
@@ -87,7 +89,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id);
+        fetchPostData(marker.id, sorts, sortOption);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -95,7 +97,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id);
+        fetchPostData(marker.id, sorts, sortOption);
         setmarkers(marker);
       }
     } catch (error) {
@@ -144,9 +146,9 @@ export default function TrackUserMapView() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -155,7 +157,7 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId) => {
+  const fetchPostData = async (spotId, sort, sortOptions) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
@@ -186,7 +188,7 @@ export default function TrackUserMapView() {
         const querySnapshot = await firestore()
           .collection("post")
           .where("spotId", "==", spotId)
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .limit(5)
           .get();
         if (!querySnapshot.empty) {
@@ -718,7 +720,6 @@ export default function TrackUserMapView() {
     }
   };
 
-
   // ズームイン関数
   const zoomIn = () => {
     mapRef.current.getCamera().then((camera) => {
@@ -773,13 +774,13 @@ export default function TrackUserMapView() {
             if (regions != null) {
               if (
                 item.mapLatitude >=
-                regions.latitude - regions.latitudeDelta / 2 &&
+                  regions.latitude - regions.latitudeDelta / 2 &&
                 item.mapLatitude <=
-                regions.latitude + regions.latitudeDelta / 2 &&
+                  regions.latitude + regions.latitudeDelta / 2 &&
                 item.mapLongitude >=
-                regions.longitude - regions.longitudeDelta / 2 &&
+                  regions.longitude - regions.longitudeDelta / 2 &&
                 item.mapLongitude <=
-                regions.longitude + regions.longitudeDelta / 2
+                  regions.longitude + regions.longitudeDelta / 2
               ) {
                 fetchResult.push(item);
               }
@@ -1308,7 +1309,8 @@ export default function TrackUserMapView() {
                   selectedTag == item.tagId ? styles.selectedTag : styles.tag
                 }
                 onPress={() => handleTagChoose(item.tagId)}
-              ><Image
+              >
+                <Image
                   source={require("./../image/Tag.png")}
                   style={styles.TagButton}
                 />
@@ -1337,6 +1339,7 @@ export default function TrackUserMapView() {
         onClose={() => setModalVisible(false)}
         spotName={spotName}
         marker={markers}
+        fetchPostData={fetchPostData}
       />
 
       {mapfixed ? (
@@ -1382,7 +1385,6 @@ export default function TrackUserMapView() {
           />
         </TouchableOpacity>
       </View>
-
 
       <View style={styles.mapZoom}>
         <TouchableOpacity
@@ -1448,11 +1450,11 @@ export default function TrackUserMapView() {
             onPress={() => {
               user
                 ? router.push({
-                  pathname: "/search",
-                })
+                    pathname: "/search",
+                  })
                 : router.push({
-                  pathname: "/loginForm",
-                });
+                    pathname: "/loginForm",
+                  });
             }}
           >
             <Image
