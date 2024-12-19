@@ -31,11 +31,27 @@ export default function MyModal({
   onClose,
   spotName,
   marker,
+  fetchPostData,
+
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
-  const [sortOption, setSortOption] = useState("date"); // 状態変数を初期化
+  const [sortOption, setSortOption] = useState("timeStamp"); // 状態変数を初期化
 
+  const postsort = (itemValue) => {
+    if(itemValue == "newtimeStamp"){
+      fetchPostData(spotId,"timeStamp","desc")
+    }
+    else if(itemValue == "oldtimeStamp"){
+      fetchPostData(spotId,"timeStamp","asc")
+    }
+    else{
+      fetchPostData(spotId,itemValue,"desc")
+    }
+    setSortOption(itemValue)
+    
+
+  }
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
       ...prevLikes,
@@ -93,6 +109,19 @@ export default function MyModal({
           count: tempObj2[postId],
           [auth.currentUser.uid]: FieldValue.delete(),
         });
+        const querySnapshot = await firestore()
+        .collection('post') // post コレクション
+        .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+        .get();
+  
+        querySnapshot.forEach(async (doc) => {
+          await firestore()
+            .collection('post')
+            .doc(doc.id) // FirestoreのドキュメントID
+            .update({
+              likecount: tempObj2[postId], // likecount フィールドを更新
+            });
+          })
     }
   };
 
@@ -110,6 +139,20 @@ export default function MyModal({
         count: tempObj2[postId],
         [auth.currentUser.uid]: FieldValue.delete(),
       });
+      console.log(tempObj2[postId])
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
   };
 
   const handleLike = async (postId) => {
@@ -130,6 +173,21 @@ export default function MyModal({
           count: tempObj2[postId],
           [auth.currentUser.uid]: auth.currentUser.uid,
         });
+
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
+  
     }
   };
 
@@ -147,6 +205,20 @@ export default function MyModal({
         count: tempObj2[postId],
         [auth.currentUser.uid]: auth.currentUser.uid,
       });
+
+      const querySnapshot = await firestore()
+      .collection('post') // post コレクション
+      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection('post')
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+        })
   };
 
   const navigateProfile = (uid) => {
@@ -180,11 +252,12 @@ export default function MyModal({
               <Text style={styles.userName}>{spotName}</Text>
               <Picker
                   selectedValue={sortOption} // 名前が一致しているか確認
-                  onValueChange={(itemValue) => setSortOption(itemValue)}
+                  onValueChange={(itemValue) => postsort(itemValue)}
                   style={styles.picker}
               >
-                <Picker.Item label="日付順" value="date" />
-                <Picker.Item label="いいね順" value="likes" />
+                <Picker.Item label="新しい順" value="newtimeStamp" />
+                <Picker.Item label="古い"     value="oldtimeStamp"/>
+                <Picker.Item label="いいね順" value="likecount" />
               </Picker>
             </View>
             {postData.map((post) => {

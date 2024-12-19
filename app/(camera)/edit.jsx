@@ -149,6 +149,7 @@ export default function edit() {
           spotId: maxId,
           userId: auth.currentUser.uid,
           timeStamp: currentTime,
+          likecount: 0
         })
         .catch((error) => console.log(error));
 
@@ -220,6 +221,7 @@ export default function edit() {
           spotId: parseInt(spotId),
           userId: auth.currentUser.uid,
           timeStamp: currentTime,
+          likecount: 0
         })
         .catch((error) => console.log(error));
 

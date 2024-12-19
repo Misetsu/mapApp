@@ -70,6 +70,8 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
+  const [sorts,setsorts] = useState("timeStamp")
+  const [sortOption,setSortOption] = useState("desc")
 
   const setmodal = (marker) => {
     try {
@@ -86,7 +88,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id);
+        fetchPostData(marker.id,sorts,sortOption);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -94,7 +96,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id);
+        fetchPostData(marker.id,sorts,sortOption);
         setmarkers(marker);
       }
     } catch (error) {
@@ -154,7 +156,7 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId) => {
+  const fetchPostData = async (spotId,sort,sortOptions) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
@@ -185,7 +187,7 @@ export default function TrackUserMapView() {
         const querySnapshot = await firestore()
           .collection("post")
           .where("spotId", "==", spotId)
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .limit(5)
           .get();
         if (!querySnapshot.empty) {
@@ -1310,6 +1312,7 @@ export default function TrackUserMapView() {
         onClose={() => setModalVisible(false)}
         spotName={spotName}
         marker={markers}
+        fetchPostData={fetchPostData}
       />
 
       {mapfixed ? (
