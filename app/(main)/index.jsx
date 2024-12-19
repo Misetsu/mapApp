@@ -347,7 +347,7 @@ export default function TrackUserMapView() {
           .collection("post")
           .where("spotId", "==", spotId)
           .where("userId", "==", chosenUser)
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .limit(5)
           .get();
 
@@ -471,7 +471,7 @@ export default function TrackUserMapView() {
           .collection("tagPost")
           .where("spotId", "==", spotId)
           .where("tagId", "==", parseInt(selectedTag))
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .limit(5)
           .get();
 
@@ -487,7 +487,7 @@ export default function TrackUserMapView() {
         const querySnapshot = await firestore()
           .collection("post")
           .where("id", "in", postIdList)
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .get();
 
         if (!querySnapshot.empty) {
