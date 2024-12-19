@@ -31,6 +31,7 @@ export default function MyModal({
   onClose,
   spotName,
   marker,
+  fetchPostData,
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
@@ -165,18 +166,7 @@ export default function MyModal({
   const fetchMorePosts = async () => {
   
     try {
-      const tuduki = "5"; // 何を指すか確認が必要
-      const kousin = await firestore()
-        .collection("post")
-        .where("spotId", "==", spotId)
-        .orderBy("timeStamp", "desc")
-        .startAfter(tuduki)
-        .limit(5)
-        .get();
-      console.log(kousin.docs[0]);
-
-    
-    
+      fetchPostData(spotId,postData)
     } catch (error) {
     console.error("追加データ取得エラー:", error);
     }

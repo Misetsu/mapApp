@@ -86,7 +86,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id);
+        fetchPostData(marker.id,[]);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -94,7 +94,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id);
+        fetchPostData(marker.id,[]);
         setmarkers(marker);
       }
     } catch (error) {
@@ -154,11 +154,30 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId) => {
+  const fetchPostData = async (spotId,PostDatas) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
+        
         const postArray = [];
+        
+        console.log(PostDatas[0])
+        let tuduki
+        if(PostDatas[0] != undefined){
+          console.log("A")
+          const Postsize = PostDatas.length
+          let postcnt = 0
+          console.log(Postsize)
+          while(Postsize > postcnt){
+          console.log(PostDatas[postcnt])
+          postArray.push(PostDatas[postcnt])
+          postcnt = postcnt + 1
+          }
+          
+          tuduki = PostDatas[postcnt - 1].timestamp
+        }
+
+    
         const friendList = [];
 
         setEmptyPost(true);
@@ -181,13 +200,27 @@ export default function TrackUserMapView() {
             }
           }
         }
-
-        const querySnapshot = await firestore()
+        let querySnapshot
+        if(PostDatas[0] == undefined){
+          console.log("A")
+          querySnapshot = await firestore()
           .collection("post")
           .where("spotId", "==", spotId)
           .orderBy("timeStamp", "desc")
           .limit(5)
           .get();
+        }
+        else
+        {
+          console.log("B")
+          querySnapshot = await firestore()
+          .collection("post")
+          .where("spotId", "==", spotId)
+          .orderBy("timeStamp", "desc")
+          .startAfter(tuduki)
+          .limit(5)
+          .get(); 
+        }
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
@@ -1310,6 +1343,7 @@ export default function TrackUserMapView() {
         onClose={() => setModalVisible(false)}
         spotName={spotName}
         marker={markers}
+        fetchPostData={fetchPostData}
       />
 
       {mapfixed ? (
