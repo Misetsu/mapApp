@@ -120,7 +120,7 @@ export const styles = StyleSheet.create({
     width: 35,
     height: 35,
     alignSelf: "center",
-  },//インデックスバー上の画像
+  }, //インデックスバー上の画像
   closeImage: {
     width: 30,
     height: 30,
@@ -128,9 +128,14 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#239D60",
     backgroundColor: "#f2f5c8",
-    margin:2,
-    marginLeft:5,
-    marginRight:5,
+    margin: 2,
+    marginLeft: 5,
+    marginRight: 5,
+  },
+  toolBar: {
+    position: "absolute",
+    top: 0,
+    right: 0,
   },
   mapfixed: {
     position: "absolute",
