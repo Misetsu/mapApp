@@ -84,7 +84,7 @@ const ReplyScreen = () => {
           selectedPost.postDetails.spotId
         ),
       });
-    } catch (warning) { }
+    } catch (warning) {}
   };
 
   const fetchData = async () => {
@@ -298,7 +298,7 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
-  useEffect(() => { }, [replies]);
+  useEffect(() => {}, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -351,28 +351,43 @@ const ReplyScreen = () => {
         .collection("like")
         .where("postId", "==", parseInt(postId))
         .get();
-      const queryId = querylike.docs[0].ref._documentPath._parts[1];
-      await firestore()
-        .collection("like")
-        .doc(queryId)
-        .update({
-          count: parseInt(selectedPost.likeCount) - 1,
-          [auth.currentUser.uid]: FieldValue.delete(),
-        });
+      querylike.forEach(async (doc) => {
+        await firestore()
+          .collection("like")
+          .doc(doc.id)
+          .update({
+            count: parseInt(selectedPost.likeCount) - 1,
+            [auth.currentUser.uid]: FieldValue.delete(),
+          });
+      });
 
-        const querySnapshot = await firestore()
-        .collection('post') // post コレクション
-        .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      const querySnapshot = await firestore()
+        .collection("post") // post コレクション
+        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
         .get();
-  
-        querySnapshot.forEach(async (doc) => {
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection("post")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: parseInt(selectedPost.likeCount) - 1, // likecount フィールドを更新
+          });
+      });
+
+      const queryTagPost = await firestore()
+        .collection("tagPost")
+        .where("postId", "==", parseInt(postId))
+        .get();
+      if (!queryTagPost.empty) {
+        queryTagPost.forEach(async (doc) => {
           await firestore()
-            .collection('post')
-            .doc(doc.id) // FirestoreのドキュメントID
+            .collection("tagPost")
+            .doc(doc.id)
             .update({
-              likecount: tempObj2[postId], // likecount フィールドを更新
+              likecount: parseInt(selectedPost.likeCount) - 1,
             });
-          })
+        });
+      }
       setIsLiked(false);
     }
   };
@@ -385,28 +400,43 @@ const ReplyScreen = () => {
         .collection("like")
         .where("postId", "==", parseInt(postId))
         .get();
-      const queryId = querylike.docs[0].ref._documentPath._parts[1];
-      await firestore()
-        .collection("like")
-        .doc(queryId)
-        .update({
-          count: parseInt(selectedPost.likeCount) + 1,
-          [auth.currentUser.uid]: auth.currentUser.uid,
-        });
+      querylike.forEach(async (doc) => {
+        await firestore()
+          .collection("like")
+          .doc(doc.id)
+          .update({
+            count: parseInt(selectedPost.likeCount) + 1,
+            [auth.currentUser.uid]: auth.currentUser.uid,
+          });
+      });
 
-        const querySnapshot = await firestore()
-        .collection('post') // post コレクション
-        .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+      const querySnapshot = await firestore()
+        .collection("post") // post コレクション
+        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
         .get();
-  
-        querySnapshot.forEach(async (doc) => {
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection("post")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: parseInt(selectedPost.likeCount) + 1, // likecount フィールドを更新
+          });
+      });
+
+      const queryTagPost = await firestore()
+        .collection("tagPost")
+        .where("postId", "==", parseInt(postId))
+        .get();
+      if (!queryTagPost.empty) {
+        queryTagPost.forEach(async (doc) => {
           await firestore()
-            .collection('post')
-            .doc(doc.id) // FirestoreのドキュメントID
+            .collection("tagPost")
+            .doc(doc.id)
             .update({
-              likecount: tempObj2[postId], // likecount フィールドを更新
+              likecount: parseInt(selectedPost.likeCount) + 1,
             });
-          })
+        });
+      }
       setIsLiked(true);
     }
   };
@@ -416,28 +446,43 @@ const ReplyScreen = () => {
       .collection("like")
       .where("postId", "==", parseInt(postId))
       .get();
-    const queryId = querylike.docs[0].ref._documentPath._parts[1];
-    await firestore()
-      .collection("like")
-      .doc(queryId)
-      .update({
-        count: parseInt(selectedPost.likeCount),
-        [auth.currentUser.uid]: FieldValue.delete(),
-      });
+    querylike.forEach(async (doc) => {
+      await firestore()
+        .collection("like")
+        .doc(doc.id)
+        .update({
+          count: parseInt(selectedPost.likeCount),
+          [auth.currentUser.uid]: FieldValue.delete(),
+        });
+    });
 
-      const querySnapshot = await firestore()
-      .collection('post') // post コレクション
-      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+    const querySnapshot = await firestore()
+      .collection("post") // post コレクション
+      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
       .get();
+    querySnapshot.forEach(async (doc) => {
+      await firestore()
+        .collection("post")
+        .doc(doc.id) // FirestoreのドキュメントID
+        .update({
+          likecount: parseInt(selectedPost.likeCount), // likecount フィールドを更新
+        });
+    });
 
-      querySnapshot.forEach(async (doc) => {
+    const queryTagPost = await firestore()
+      .collection("tagPost")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    if (!queryTagPost.empty) {
+      queryTagPost.forEach(async (doc) => {
         await firestore()
-          .collection('post')
-          .doc(doc.id) // FirestoreのドキュメントID
+          .collection("tagPost")
+          .doc(doc.id)
           .update({
-            likecount: tempObj2[postId], // likecount フィールドを更新
+            likecount: parseInt(selectedPost.likeCount),
           });
-        })
+      });
+    }
     setIsLiked(false);
   };
 
@@ -446,28 +491,43 @@ const ReplyScreen = () => {
       .collection("like")
       .where("postId", "==", parseInt(postId))
       .get();
-    const queryId = querylike.docs[0].ref._documentPath._parts[1];
-    await firestore()
-      .collection("like")
-      .doc(queryId)
-      .update({
-        count: parseInt(selectedPost.likeCount),
-        [auth.currentUser.uid]: auth.currentUser.uid,
-      });
+    querylike.forEach(async (doc) => {
+      await firestore()
+        .collection("like")
+        .doc(doc.id)
+        .update({
+          count: parseInt(selectedPost.likeCount),
+          [auth.currentUser.uid]: auth.currentUser.uid,
+        });
+    });
 
-      const querySnapshot = await firestore()
-      .collection('post') // post コレクション
-      .where('id', '==', parseInt(postId)) // id フィールドが postId と一致するものを検索
+    const querySnapshot = await firestore()
+      .collection("post") // post コレクション
+      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
       .get();
+    querySnapshot.forEach(async (doc) => {
+      await firestore()
+        .collection("post")
+        .doc(doc.id) // FirestoreのドキュメントID
+        .update({
+          likecount: parseInt(selectedPost.likeCount), // likecount フィールドを更新
+        });
+    });
 
-      querySnapshot.forEach(async (doc) => {
+    const queryTagPost = await firestore()
+      .collection("tagPost")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    if (!queryTagPost.empty) {
+      queryTagPost.forEach(async (doc) => {
         await firestore()
-          .collection('post')
-          .doc(doc.id) // FirestoreのドキュメントID
+          .collection("tagPost")
+          .doc(doc.id)
           .update({
-            likecount: tempObj2[postId], // likecount フィールドを更新
+            likecount: parseInt(selectedPost.likeCount),
           });
-        })
+      });
+    }
     setIsLiked(true);
   };
 
@@ -608,7 +668,8 @@ const ReplyScreen = () => {
                         });
                       }}
                       style={styles.actionButton}
-                    ><Image
+                    >
+                      <Image
                         source={require("./../image/Edit.png")}
                         style={styles.actionButton}
                       />
@@ -617,7 +678,8 @@ const ReplyScreen = () => {
                     <TouchableOpacity
                       onPress={handleDelete}
                       style={styles.actionButton}
-                    ><Image
+                    >
+                      <Image
                         source={require("./../image/Trash.png")}
                         style={styles.actionButton}
                       />
@@ -668,8 +730,8 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleUnlike(postId)
                         : () => {
-                          router.push("/loginForm");
-                        }
+                            router.push("/loginForm");
+                          }
                     }
                   >
                     <Image
@@ -694,8 +756,8 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleLike(postId)
                         : () => {
-                          router.push("/loginForm");
-                        }
+                            router.push("/loginForm");
+                          }
                     }
                   >
                     <Image
@@ -731,7 +793,8 @@ const ReplyScreen = () => {
                         },
                       });
                     }}
-                  ><Image
+                  >
+                    <Image
                       source={require("./../image/MixPhoto.png")}
                       style={styles.actionButton}
                     />
@@ -754,7 +817,8 @@ const ReplyScreen = () => {
                         },
                       });
                     }}
-                  ><Image
+                  >
+                    <Image
                       source={require("./../image/PinPhoto.png")}
                       style={styles.actionButton}
                     />
@@ -766,7 +830,8 @@ const ReplyScreen = () => {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => onShare()}
-                  ><Image
+                  >
+                    <Image
                       source={require("./../image/share.png")}
                       style={styles.actionButton}
                     />
@@ -778,7 +843,8 @@ const ReplyScreen = () => {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => saveImageToDevice()}
-                  ><Image
+                  >
+                    <Image
                       source={require("./../image/Download.png")}
                       style={styles.actionButton}
                     />
@@ -813,10 +879,11 @@ const ReplyScreen = () => {
                       showsHorizontalScrollIndicator={false}
                       renderItem={({ item }) => {
                         return (
-                          <View style={styles.selectedTagView}><Image
-                            source={require("./../image/Tag.png")}
-                            style={styles.TagButton}
-                          />
+                          <View style={styles.selectedTagView}>
+                            <Image
+                              source={require("./../image/Tag.png")}
+                              style={styles.TagButton}
+                            />
                             <Text>
                               {allTag.find((o) => o.tagId == item).tagName}
                             </Text>

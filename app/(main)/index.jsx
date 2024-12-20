@@ -1342,73 +1342,77 @@ export default function TrackUserMapView() {
         fetchPostData={fetchPostData}
       />
 
-      {mapfixed ? (
-        <View style={styles.mapfixed}>
-          <TouchableOpacity
-            style={styles.mapbutton}
-            onPress={() => setmapfixeds()}
-          >
-            <Image
-              source={require("./../image/MapFixed.png")}
-              style={styles.mapbuttonImage}
-            />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.mapfixed}>
-          <TouchableOpacity
-            style={styles.mapbutton}
-            onPress={() => setmapfixeds()}
-          >
-            <Image
-              source={require("./../image/MapUnFixed.png")}
-              style={styles.mapbuttonImage}
-            />
-          </TouchableOpacity>
+      {initialRegion && (
+        <View style={styles.toolBar}>
+          {mapfixed ? (
+            <View style={styles.mapfixed}>
+              <TouchableOpacity
+                style={styles.mapbutton}
+                onPress={() => setmapfixeds()}
+              >
+                <Image
+                  source={require("./../image/MapFixed.png")}
+                  style={styles.mapbuttonImage}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.mapfixed}>
+              <TouchableOpacity
+                style={styles.mapbutton}
+                onPress={() => setmapfixeds()}
+              >
+                <Image
+                  source={require("./../image/MapUnFixed.png")}
+                  style={styles.mapbuttonImage}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+          <View style={styles.defaultlocation}>
+            <TouchableOpacity
+              style={styles.mapbutton}
+              onPress={() =>
+                defaultlocation(
+                  position.latitude,
+                  position.longitude,
+                  LATITUDE_DELTA,
+                  LONGITUDE_DELTA
+                )
+              }
+            >
+              <Image
+                source={require("./../image/Location.png")}
+                style={styles.mapbuttonImage}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.mapZoom}>
+            <TouchableOpacity
+              style={styles.mapbutton}
+              onPress={zoomIn} // 拡大
+            >
+              <Image
+                source={require("./../image/Plus.png")}
+                style={styles.mapbuttonImage}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.mapZoomout}>
+            <TouchableOpacity
+              style={styles.mapbutton}
+              onPress={zoomOut} // 縮小
+            >
+              <Image
+                source={require("./../image/Minus.png")}
+                style={styles.mapbuttonImage}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
-      <View style={styles.defaultlocation}>
-        <TouchableOpacity
-          style={styles.mapbutton}
-          onPress={() =>
-            defaultlocation(
-              position.latitude,
-              position.longitude,
-              LATITUDE_DELTA,
-              LONGITUDE_DELTA
-            )
-          }
-        >
-          <Image
-            source={require("./../image/Location.png")}
-            style={styles.mapbuttonImage}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.mapZoom}>
-        <TouchableOpacity
-          style={styles.mapbutton}
-          onPress={zoomIn} // 拡大
-        >
-          <Image
-            source={require("./../image/Plus.png")}
-            style={styles.mapbuttonImage}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.mapZoomout}>
-        <TouchableOpacity
-          style={styles.mapbutton}
-          onPress={zoomOut} // 縮小
-        >
-          <Image
-            source={require("./../image/Minus.png")}
-            style={styles.mapbuttonImage}
-          />
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.footer}>
         {user ? (
