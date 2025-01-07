@@ -7,11 +7,7 @@
 	<key>REVERSED_CLIENT_ID</key>
 	<string>com.googleusercontent.apps.224298539879-2e3kf15bb1i8l94bq7tk7nia5jfuuca0</string>
 	<key>ANDROID_CLIENT_ID</key>
-<<<<<<< Updated upstream
-	<string>224298539879-jue627bd89eigtc80oq7i97aebfc06fm.apps.googleusercontent.com</string>
-=======
 	<string>224298539879-3653i1ep459fv67lscs8r0fgsb3avb79.apps.googleusercontent.com</string>
->>>>>>> Stashed changes
 	<key>API_KEY</key>
 	<string>AIzaSyBZSzeuHFiAd0kbgfWqgPp-XqiTKpn2P1k</string>
 	<key>GCM_SENDER_ID</key>
