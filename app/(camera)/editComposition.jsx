@@ -19,8 +19,7 @@ import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import Icon from "react-native-vector-icons/FontAwesome5";
+import FirebaseAuth from "@react-native-firebase/auth";;
 
 const { width, height } = Dimensions.get("window");
 const imageWidth = width * 0.4;
@@ -51,6 +50,15 @@ export default function edit() {
     topLeftdirection,
     bottomRightdirection,
     bottomLeftdirection,
+    leftFirstdirection,
+    leftSeconddirection,
+    rightThirddirection,
+    rightFourthdirection,
+    topFirstdirection,
+    topSeconddirection,
+    topThirddirection,
+    topFourthdirection,
+    postId,
   } = params;
 
   const uploadPost = async () => {
@@ -88,6 +96,7 @@ export default function edit() {
         spotId: parseInt(spotId),
         userId: auth.currentUser.uid,
         timeStamp: currentTime,
+        originalpostId: parseInt(postId),
       })
       .catch((error) => console.log(error));
 
@@ -100,6 +109,7 @@ export default function edit() {
         spotId: parseInt(spotId),
         userId: auth.currentUser.uid,
         timeStamp: currentTime,
+        likecount: 0
       })
       .catch((error) => console.log(error));
 
@@ -316,6 +326,78 @@ export default function edit() {
                 />
               </View>
             )}
+            {/* 左左 */}
+            {leftFirstdirection == "true" && (
+              <View style={styles.modalButtonLeftFirstQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.LeftFirstQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 左右 */}
+            {leftSeconddirection == "true" && (
+              <View style={styles.modalButtonLeftSecondQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.LeftSecondQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 右左 */}
+            {rightThirddirection == "true" && (
+              <View style={styles.modalButtonRightThirdQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.RightThirdQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 右右 */}
+            {rightFourthdirection == "true" && (
+              <View style={styles.modalButtonRightFourthQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.RightFourthQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 上上 */}
+            {topFirstdirection == "true" && (
+              <View style={styles.modalButtonTopFirstQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopFirstQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 上下 */}
+            {topSeconddirection == "true" && (
+              <View style={styles.modalButtonTopSecondQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopSecondQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 下上 */}
+            {topThirddirection == "true" && (
+              <View style={styles.modalButtonTopThirdQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopThirdQuarterDisplay}
+                />
+              </View>
+            )}
+            {/* 下下 */}
+            {topFourthdirection == "true" && (
+              <View style={styles.modalButtonTopFourthQuarter}>
+                <Image
+                  source={{ uri: Composition }}
+                  style={styles.TopFourthQuarterDisplay}
+                />
+              </View>
+            )}
           </ViewShot>
           {focusedInput !== "name" ? (
             <View>
@@ -361,8 +443,10 @@ export default function edit() {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => {
                   return (
-                    <TouchableOpacity style={styles.tagView}>
-                      <Icon name="tag" size={16} color={"#239D60"} />
+                    <TouchableOpacity style={styles.tagView}><Image
+                      source={require("./../image/Tag.png")}
+                      style={styles.TagButton}
+                    />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
                     </TouchableOpacity>
                   );
@@ -376,11 +460,11 @@ export default function edit() {
           </Pressable>
 
           <View style={styles.Back}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}
-            >
-              <Icon name="angle-left" size={24} color="#000" />
+            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+              <Image
+                source={require("./../image/Left_arrow.png")}
+                style={styles.actionButton}
+              />
             </TouchableOpacity>
           </View>
           <Modal
@@ -415,12 +499,16 @@ export default function edit() {
                           onPress={() => {
                             deleteTag(item);
                           }}
-                        >
-                          <Icon name="tag" size={16} color={"#239D60"} />
+                        ><Image
+                            source={require("./../image/Tag.png")}
+                            style={styles.TagButton}
+                          />
                           <Text>
                             {allTag.find((o) => o.tagId == item).tagName}
-                          </Text>
-                          <Icon name="times-circle" size={16} />
+                          </Text><Image
+                            source={require("./../image/Close.png")}
+                            style={styles.TagButton}
+                          />
                         </TouchableOpacity>
                       );
                     }}
@@ -446,8 +534,10 @@ export default function edit() {
                       <TouchableOpacity
                         style={styles.tagView}
                         onPress={() => addTag(item.tagId)}
-                      >
-                        <Icon name="tag" size={16} color={"#239D60"} />
+                      ><Image
+                          source={require("./../image/Tag.png")}
+                          style={styles.TagButton}
+                        />
                         <Text>{item.tagName}</Text>
                       </TouchableOpacity>
                     );
@@ -524,6 +614,14 @@ const styles = StyleSheet.create({
     color: "#239D60",
     textAlign: "center",
   },
+  TagButton: {
+    width: 20,
+    height: 20,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   modalButtonTopLeft: {
     position: "absolute",
     width: "50%",
@@ -552,6 +650,60 @@ const styles = StyleSheet.create({
     top: "50%",
     left: "50%",
   },
+  modalButtonLeftFirstQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+  },
+  modalButtonLeftSecondQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "25%",
+  },
+  modalButtonRightThirdQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "50%",
+  },
+  modalButtonRightFourthQuarter: {
+    position: "absolute",
+    width: "25%",
+    height: "100%",
+    overflow: "hidden",
+    left: "75%",
+  },
+  modalButtonTopFirstQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+  },
+  modalButtonTopSecondQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "25%",
+  },
+  modalButtonTopThirdQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "50%",
+  },
+  modalButtonTopFourthQuarter: {
+    position: "absolute",
+    width: "100%",
+    height: "25%",
+    overflow: "hidden",
+    top: "75%",
+  },
   topLeftDisplay: {
     width: imageWidth,
     height: imageHeight,
@@ -574,6 +726,44 @@ const styles = StyleSheet.create({
       { translateY: -imageHeight / 2 },
     ],
   },
+  LeftFirstQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+  },
+  LeftSecondQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateX: -imageWidth / 4 }],
+  },
+  RightThirdQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateX: -imageWidth / 2 }],
+  },
+  RightFourthQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateX: (-imageWidth / 4) * 3 }],
+  },
+  TopFirstQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+  },
+  TopSecondQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: -imageHeight / 4 }],
+  },
+  TopThirdQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: -imageHeight / 2 }],
+  },
+  TopFourthQuarterDisplay: {
+    width: imageWidth,
+    height: imageHeight,
+    transform: [{ translateY: (-imageHeight / 4) * 3 }],
+  },
   tagView: {
     paddingVertical: 5,
     paddingHorizontal: 10,
@@ -583,7 +773,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 5,
     marginHorizontal: 2,
-    backgroundColor: "#f2f5c8",
+    backgroundColor: "#F2F5C8",
   },
   selectedTagView: {
     marginHorizontal: 2,
@@ -611,13 +801,22 @@ const styles = StyleSheet.create({
   allTagContainer: {
     // height: height * 0.4,
   },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   backButton: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える
     alignItems: "center", // 画像をボタンの水平方向の中央に揃える
-    backgroundColor: "#F2F5C8",
     width: 70,
     height: 70,
-    marginTop: 5, // ボタン間にスペースを追加
+    marginTop: 3, // ボタン間にスペースを追加
   },
   Back: {
     position: "absolute",
@@ -657,7 +856,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 15,
     borderColor: "#239D60",
-    backgroundColor: "#f2f5c8",
+    backgroundColor: "#F2F5C8",
     justifyContent: "center",
     alignItems: "center",
   },

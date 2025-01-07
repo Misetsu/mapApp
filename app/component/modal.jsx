@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -14,8 +14,8 @@ import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import Share from "react-native-share";
+import { Picker } from "@react-native-picker/picker";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const auth = FirebaseAuth();
@@ -30,10 +30,22 @@ export default function MyModal({
   onClose,
   spotName,
   marker,
+  fetchPostData,
 }) {
   const router = useRouter();
   const [likes, setLikes] = useState({});
+  const [sortOption, setSortOption] = useState("newtimeStamp"); // 状態変数を初期化
 
+  const postsort = (itemValue) => {
+    if (itemValue == "newtimeStamp") {
+      fetchPostData(spotId, "timeStamp", "desc");
+    } else if (itemValue == "oldtimeStamp") {
+      fetchPostData(spotId, "timeStamp", "asc");
+    } else {
+      fetchPostData(spotId, itemValue, "desc");
+    }
+    setSortOption(itemValue);
+  };
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
       ...prevLikes,
@@ -46,6 +58,7 @@ export default function MyModal({
 
   postData.map((post) => {
     if (post) {
+      console.log(post.likeCount);
       tempObj1[post.postId] = post.likeFlag; // postIdをidに修正
       tempObj2[post.postId] = post.likeCount;
     }
@@ -79,18 +92,48 @@ export default function MyModal({
     } else {
       handleLikePress(postId);
       tempObj2[postId] = tempObj2[postId] - 1;
+
       const querylike = await firestore()
         .collection("like")
         .where("postId", "==", postId)
         .get();
-      const queryId = querylike.docs[0].ref._documentPath._parts[1];
-      await firestore()
-        .collection("like")
-        .doc(queryId)
-        .update({
-          count: tempObj2[postId],
-          [auth.currentUser.uid]: FieldValue.delete(),
+      querylike.forEach(async (doc) => {
+        await firestore()
+          .collection("like")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            count: tempObj2[postId],
+            [auth.currentUser.uid]: FieldValue.delete(),
+          });
+      });
+
+      const querySnapshot = await firestore()
+        .collection("post") // post コレクション
+        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+        .get();
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection("post")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+      });
+
+      const queryTagPost = await firestore()
+        .collection("tagPost")
+        .where("postId", "==", parseInt(postId))
+        .get();
+      if (!queryTagPost.empty) {
+        queryTagPost.forEach(async (doc) => {
+          await firestore()
+            .collection("tagPost")
+            .doc(doc.id) // FirestoreのドキュメントID
+            .update({
+              likecount: tempObj2[postId],
+            });
         });
+      }
     }
   };
 
@@ -100,14 +143,43 @@ export default function MyModal({
       .collection("like")
       .where("postId", "==", postId)
       .get();
-    const queryId = querylike.docs[0].ref._documentPath._parts[1];
-    await firestore()
-      .collection("like")
-      .doc(queryId)
-      .update({
-        count: tempObj2[postId],
-        [auth.currentUser.uid]: FieldValue.delete(),
+    querylike.forEach(async (doc) => {
+      await firestore()
+        .collection("like")
+        .doc(doc.id) // FirestoreのドキュメントID
+        .update({
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: FieldValue.delete(),
+        });
+    });
+
+    const querySnapshot = await firestore()
+      .collection("post") // post コレクション
+      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+    querySnapshot.forEach(async (doc) => {
+      await firestore()
+        .collection("post")
+        .doc(doc.id) // FirestoreのドキュメントID
+        .update({
+          likecount: tempObj2[postId], // likecount フィールドを更新
+        });
+    });
+
+    const queryTagPost = await firestore()
+      .collection("tagPost")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    if (!queryTagPost.empty) {
+      queryTagPost.forEach(async (doc) => {
+        await firestore()
+          .collection("tagPost")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId],
+          });
       });
+    }
   };
 
   const handleLike = async (postId) => {
@@ -116,18 +188,48 @@ export default function MyModal({
     } else {
       handleLikePress(postId);
       tempObj2[postId] = tempObj2[postId] + 1;
+
       const querylike = await firestore()
         .collection("like")
         .where("postId", "==", postId)
         .get();
-      const queryId = querylike.docs[0].ref._documentPath._parts[1];
-      await firestore()
-        .collection("like")
-        .doc(queryId)
-        .update({
-          count: tempObj2[postId],
-          [auth.currentUser.uid]: auth.currentUser.uid,
+      querylike.forEach(async (doc) => {
+        await firestore()
+          .collection("like")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            count: tempObj2[postId],
+            [auth.currentUser.uid]: auth.currentUser.uid,
+          });
+      });
+
+      const querySnapshot = await firestore()
+        .collection("post") // post コレクション
+        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+        .get();
+      querySnapshot.forEach(async (doc) => {
+        await firestore()
+          .collection("post")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId], // likecount フィールドを更新
+          });
+      });
+
+      const queryTagPost = await firestore()
+        .collection("tagPost")
+        .where("postId", "==", parseInt(postId))
+        .get();
+      if (!queryTagPost.empty) {
+        queryTagPost.forEach(async (doc) => {
+          await firestore()
+            .collection("tagPost")
+            .doc(doc.id) // FirestoreのドキュメントID
+            .update({
+              likecount: tempObj2[postId],
+            });
         });
+      }
     }
   };
 
@@ -137,14 +239,43 @@ export default function MyModal({
       .collection("like")
       .where("postId", "==", postId)
       .get();
-    const queryId = querylike.docs[0].ref._documentPath._parts[1];
-    await firestore()
-      .collection("like")
-      .doc(queryId)
-      .update({
-        count: tempObj2[postId],
-        [auth.currentUser.uid]: auth.currentUser.uid,
+    querylike.forEach(async (doc) => {
+      await firestore()
+        .collection("like")
+        .doc(doc.id) // FirestoreのドキュメントID
+        .update({
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: auth.currentUser.uid,
+        });
+    });
+
+    const querySnapshot = await firestore()
+      .collection("post") // post コレクション
+      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+      .get();
+    querySnapshot.forEach(async (doc) => {
+      await firestore()
+        .collection("post")
+        .doc(doc.id) // FirestoreのドキュメントID
+        .update({
+          likecount: tempObj2[postId], // likecount フィールドを更新
+        });
+    });
+
+    const queryTagPost = await firestore()
+      .collection("tagPost")
+      .where("postId", "==", parseInt(postId))
+      .get();
+    if (!queryTagPost.empty) {
+      queryTagPost.forEach(async (doc) => {
+        await firestore()
+          .collection("tagPost")
+          .doc(doc.id) // FirestoreのドキュメントID
+          .update({
+            likecount: tempObj2[postId],
+          });
       });
+    }
   };
 
   const navigateProfile = (uid) => {
@@ -154,6 +285,18 @@ export default function MyModal({
         uid: uid,
       },
     });
+  };
+
+  const closeModal = () => {
+    setLikes((prevState) => {
+      const nextState = {};
+      Object.keys(prevState).forEach((key) => {
+        nextState[key] = false;
+      });
+      return nextState;
+    });
+    setSortOption("newtimeStamp");
+    onClose();
   };
 
   return (
@@ -176,12 +319,24 @@ export default function MyModal({
           >
             <View style={styles.postView}>
               <Text style={styles.userName}>{spotName}</Text>
+              <Picker
+                selectedValue={sortOption} // 名前が一致しているか確認
+                onValueChange={(itemValue) => postsort(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="新しい順" value="newtimeStamp" />
+                <Picker.Item label="古い順" value="oldtimeStamp" />
+                <Picker.Item label="いいね順" value="likecount" />
+              </Picker>
             </View>
             {postData.map((post) => {
               if (!post) return null; // postが未定義の場合はスキップ
               const isLiked = likes[post.postId]; // idを使用する
               const flag = tempObj1[post.postId];
               const count = tempObj2[post.postId];
+              console.log(isLiked);
+              console.log(flag);
+              console.log(count);
               return (
                 <View key={post.postId} style={styles.postView}>
                   <TouchableOpacity
@@ -228,10 +383,13 @@ export default function MyModal({
                                     }
                               }
                             >
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#000" : "#f00"}
+                              <Image
+                                source={
+                                  isLiked
+                                    ? require("./../image/Heart.png")
+                                    : require("./../image/RedHeart.png")
+                                }
+                                style={styles.actionButton}
                               />
                               <Text
                                 style={[
@@ -253,10 +411,13 @@ export default function MyModal({
                                     }
                               }
                             >
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#f00" : "#000"}
+                              <Image
+                                source={
+                                  isLiked
+                                    ? require("./../image/RedHeart.png")
+                                    : require("./../image/Heart.png")
+                                }
+                                style={styles.actionButton}
                               />
                               <Text
                                 style={[
@@ -273,11 +434,17 @@ export default function MyModal({
                         <View>
                           {flag ? (
                             <TouchableOpacity style={styles.actionButton}>
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#000" : "#f00"}
-                              />
+                              {isLiked ? (
+                                <Image
+                                  source={require("./../image/RedHeart.png")}
+                                  style={styles.actionButton}
+                                />
+                              ) : (
+                                <Image
+                                  source={require("./../image/Heart.png")}
+                                  style={styles.actionButton}
+                                />
+                              )}
                               <Text
                                 style={{ color: isLiked ? "black" : "red" }}
                               >
@@ -286,11 +453,17 @@ export default function MyModal({
                             </TouchableOpacity>
                           ) : (
                             <TouchableOpacity style={styles.actionButton}>
-                              <Icon
-                                name="heart"
-                                size={25}
-                                color={isLiked ? "#f00" : "#000"}
-                              />
+                              {isLiked ? (
+                                <Image
+                                  source={require("./../image/RedHeart.png")}
+                                  style={styles.actionButton}
+                                />
+                              ) : (
+                                <Image
+                                  source={require("./../image/Heart.png")}
+                                  style={styles.actionButton}
+                                />
+                              )}
                               <Text
                                 style={{ color: isLiked ? "red" : "black" }}
                               >
@@ -312,8 +485,11 @@ export default function MyModal({
                           });
                         }}
                       >
-                        <Icon name="comment" size={25} color={"#000"} />
-                        <Text> {post.replyCount}</Text>
+                        <Image
+                          source={require("./../image/Comment.png")}
+                          style={styles.actionButton}
+                        />
+                        <Text style={styles.likeNum}>{post.replyCount}</Text>
                       </TouchableOpacity>
                       {postImage ? (
                         <TouchableOpacity
@@ -326,11 +502,15 @@ export default function MyModal({
                                 longitude: 0,
                                 spotId: spotId,
                                 photoUri: encodeURIComponent(post.photoUri),
+                                postId: post.postId,
                               },
                             });
                           }}
                         >
-                          <Icon name="images" size={25} color={"#000"} />
+                          <Image
+                            source={require("./../image/MixPhoto.png")}
+                            style={styles.actionButton}
+                          />
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
@@ -353,10 +533,9 @@ export default function MyModal({
                             });
                           }}
                         >
-                          <Icon
-                            name="map-marked-alt"
-                            size={25}
-                            color={"#000"}
+                          <Image
+                            source={require("./../image/PinPhoto.png")}
+                            style={styles.actionButton}
                           />
                         </TouchableOpacity>
                       ) : (
@@ -378,13 +557,22 @@ export default function MyModal({
                         style={styles.actionButton}
                         onPress={() => onShare()}
                       >
-                        <Icon name="share" size={25} color={"#000"} />
+                        <Image
+                          source={require("./../image/share.png")}
+                          style={styles.actionButton}
+                        />
                       </TouchableOpacity>
                     </View>
                   </View>
                   <View style={styles.closeButton}>
-                    <TouchableOpacity style={styles.button} onPress={onClose}>
-                      <Icon name="times" size={24} color="#000" />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={closeModal}
+                    >
+                      <Image
+                        source={require("./../image/Close.png")}
+                        style={styles.actionButton}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -404,7 +592,10 @@ export default function MyModal({
             <Text style={styles.userName}>投稿がありません</Text>
             <View style={styles.closeButton}>
               <TouchableOpacity style={styles.button} onPress={onClose}>
-                <Icon name="times" size={24} color="#000" />
+                <Image
+                  source={require("./../image/Close.png")}
+                  style={styles.actionButton}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -483,18 +674,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "90%",
     marginBottom: 10,
+  }, //インデックスバー上の画像
+  footerImage: {
+    width: 35,
+    height: 35,
+    alignSelf: "center",
   },
   actionButton: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     padding: 5,
+    margin: 5,
     display: "flex",
     flexDirection: "row",
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
   },
   likeNum: {
-    marginLeft: 10,
     fontSize: 16,
   },
   postText: {

@@ -17,8 +17,6 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { formatInTimeZone } from "date-fns-tz";
 import { useRouter } from "expo-router";
-import Icon from "react-native-vector-icons/FontAwesome5";
-
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得す
 
@@ -124,8 +122,10 @@ export default function ReplieModal({
         ) : (
           <View style={styles.postViewCentering}>
             <View style={styles.closeButton}>
-              <TouchableOpacity style={styles.button} onPress={onClose}>
-                <Icon name="times" size={24} color="#000" />
+              <TouchableOpacity style={styles.button} onPress={onClose}><Image
+                source={require("./../image/Close.png")}
+                style={styles.actionButton}
+              />
               </TouchableOpacity>
             </View>
             <FlatList
@@ -223,6 +223,16 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     justifyContent: "flex-end",
+  },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   replyTextinput: {
     justifyContent: "space-between",
