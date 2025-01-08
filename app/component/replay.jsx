@@ -22,6 +22,7 @@ import RNFS from "react-native-fs";
 import { PermissionsAndroid, Alert } from "react-native";
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import Share from "react-native-share";
+import Toast from 'react-native-simple-toast';
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -84,7 +85,7 @@ const ReplyScreen = () => {
           selectedPost.postDetails.spotId
         ),
       });
-    } catch (warning) {}
+    } catch (warning) { }
   };
 
   const fetchData = async () => {
@@ -298,7 +299,7 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
-  useEffect(() => {}, [replies]);
+  useEffect(() => { }, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -332,7 +333,7 @@ const ReplyScreen = () => {
           });
 
         setReplyText("");
-        Alert.alert("成功", "返信が送信されました。");
+        Toast.show("送信しました");
         fetchData();
         router.back();
       } catch (error) {
@@ -604,6 +605,7 @@ const ReplyScreen = () => {
             setLoading(false);
             router.back();
           }
+          Toast.show("投稿を削除しました");
         },
       },
     ]);
@@ -730,8 +732,8 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleUnlike(postId)
                         : () => {
-                            router.push("/loginForm");
-                          }
+                          router.push("/loginForm");
+                        }
                     }
                   >
                     <Image
@@ -756,8 +758,8 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleLike(postId)
                         : () => {
-                            router.push("/loginForm");
-                          }
+                          router.push("/loginForm");
+                        }
                     }
                   >
                     <Image

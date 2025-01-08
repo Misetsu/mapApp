@@ -17,6 +17,8 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { formatInTimeZone } from "date-fns-tz";
 import { useRouter } from "expo-router";
+import Toast from 'react-native-simple-toast';
+
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得す
 
@@ -60,7 +62,7 @@ export default function ReplieModal({
             hantei: 1,
           });
 
-        Alert.alert("成功", "返信が送信されました。");
+          Toast.show("送信しました");
         router.back();
       } catch (error) {
         Alert.alert(

@@ -15,6 +15,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
+import Toast from 'react-native-simple-toast';
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -169,6 +170,7 @@ const EditPostScreen = () => {
         });
     }
     router.back();
+    Toast.show("編集内容を保存しました");
   };
 
   useEffect(() => {
