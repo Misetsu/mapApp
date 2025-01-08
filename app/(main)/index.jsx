@@ -21,6 +21,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
+import Toast from 'react-native-simple-toast';
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -146,9 +147,9 @@ export default function TrackUserMapView() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-          Math.cos(toRadians(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -673,9 +674,11 @@ export default function TrackUserMapView() {
     if (mapfixed == true) {
       setregionflag(0);
       setmapfixed(false);
+      Toast.show('マップを固定しました');
     } else if (mapfixed == false) {
       setregionflag(1);
       setmapfixed(true);
+      Toast.show('マップ固定を解除しました');
     }
   };
 
@@ -715,6 +718,7 @@ export default function TrackUserMapView() {
           longitudeDelta: LONGITUDE_DELTA,
         });
       }
+      Toast.show('現在地はこちらです');
     } catch (error) {
       console.error("Error fetching documents:", error);
     }
@@ -774,13 +778,13 @@ export default function TrackUserMapView() {
             if (regions != null) {
               if (
                 item.mapLatitude >=
-                  regions.latitude - regions.latitudeDelta / 2 &&
+                regions.latitude - regions.latitudeDelta / 2 &&
                 item.mapLatitude <=
-                  regions.latitude + regions.latitudeDelta / 2 &&
+                regions.latitude + regions.latitudeDelta / 2 &&
                 item.mapLongitude >=
-                  regions.longitude - regions.longitudeDelta / 2 &&
+                regions.longitude - regions.longitudeDelta / 2 &&
                 item.mapLongitude <=
-                  regions.longitude + regions.longitudeDelta / 2
+                regions.longitude + regions.longitudeDelta / 2
               ) {
                 fetchResult.push(item);
               }
@@ -922,6 +926,7 @@ export default function TrackUserMapView() {
       setmapflag(true);
       setregions(saveregion);
       fetchAllMarkerCord();
+      Toast.show("すべてのピンを表示しています");
       if (indexStatus == "follow") {
         setIconName("users"); // アイコン名を "times" に変更
       } else {
@@ -931,10 +936,12 @@ export default function TrackUserMapView() {
       setIndexLoading(true);
       handleChangeIndex();
       setIconName("star"); // アイコン名を "times" に変更
+      Toast.show("お気に入り");
     } else {
       setIndexLoading(true);
       handleChangeIndex();
       setIconName("users");
+      Toast.show("フォロ―中");
     }
   };
 
@@ -982,6 +989,23 @@ export default function TrackUserMapView() {
     }
     setIconName("close");
     setChosenUser(userId);
+
+    try {
+      // userId を直接使ってユーザー情報を取得
+      const userDoc = await firestore().collection("users").doc(userId).get();
+
+      // データが存在するかチェック
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        const userName = userData.displayName; // 同じドキュメント内の displayName を取得
+        Toast.show(userName + 'さんが投稿しているピンを表示しています');
+      } else {
+        // Firestoreにデータがない場合
+        Toast.show("ユーザー情報が見つかりません");
+      }
+    } catch (error) {
+      Toast.show("ユーザー情報の取得に失敗しました");
+    }
   };
 
   const handleTagChoose = async (tagId) => {
@@ -1021,6 +1045,27 @@ export default function TrackUserMapView() {
     }
 
     setSelectedTag(parseInt(tagId));
+
+    try {
+      // tagId を直接使ってユーザー情報を取得
+      const tagQuery = await firestore().collection("tag").where("tagId", "==", tagId).get();
+
+      // データが存在するかチェック
+      if (!tagQuery.empty) {
+        // 最初の一致したドキュメントを取得
+        const tagDoc = tagQuery.docs[0];
+        const tagData = tagDoc.data();
+        const tagName = tagData.tagName;
+        Toast.show(tagName + 'タグの投稿があるピンを表示しています');
+      } else {
+        // Firestoreにデータがない場合
+        Toast.show('タグ情報が見つかりません');
+      }
+    } catch (error) {
+      Toast.show("タグ情報の取得に失敗しました");
+    }
+
+
   };
 
   const handleCancelTag = () => {
@@ -1028,6 +1073,8 @@ export default function TrackUserMapView() {
     setregions(saveregion);
     setSelectedTag(null);
     fetchAllMarkerCord();
+
+    Toast.show("すべてのピンを表示しています");
   };
 
   const handleChangeIndex = () => {
@@ -1454,11 +1501,11 @@ export default function TrackUserMapView() {
             onPress={() => {
               user
                 ? router.push({
-                    pathname: "/search",
-                  })
+                  pathname: "/search",
+                })
                 : router.push({
-                    pathname: "/loginForm",
-                  });
+                  pathname: "/loginForm",
+                });
             }}
           >
             <Image
