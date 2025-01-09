@@ -14,7 +14,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.mapApp"
+      "bundleIdentifier": "com.anonymous.mapApp",
+      "jsEngine": "jsc"
     },
     "android": {
       "jsEngine": "hermes",
