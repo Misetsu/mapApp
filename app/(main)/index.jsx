@@ -74,6 +74,15 @@ export default function TrackUserMapView() {
   const mapRef = useRef(null);
   const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
+  const now = new Date();
+
+  // 24時間前の時刻を計算
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  
+  // ISO形式で出力
+  const formattedTime = twentyFourHoursAgo.toISOString();
+  console.log(formattedTime);
+
   const setmodal = (marker) => {
     try {
       const distance = calculateDistance(
@@ -1272,10 +1281,17 @@ export default function TrackUserMapView() {
                 style={styles.listProfileSize}
                 onPress={() => handleUserChoose(item.userId)}
               >
+                {item.lastPostAt >= formattedTime ? (
                 <Image
+                  source={{ uri: item.userIcon }}
+                  style={styles.newlistProfileImage}
+                />
+                ) : (
+                  <Image
                   source={{ uri: item.userIcon }}
                   style={styles.listProfileImage}
                 />
+                )}
                 <Text style={styles.listProfileNameText} numberOfLines={1}>
                   {item.username}
                 </Text>

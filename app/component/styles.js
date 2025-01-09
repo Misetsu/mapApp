@@ -221,6 +221,16 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 5,
   },
+  newlistProfileImage:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignSelf: "center",
+    marginTop: 5,
+    borderColor: "green", // 縁の色を指定
+    borderWidth: 4, // 縁の幅を指定
+    borderStyle: "dotted", // 線のスタイル（デフォルトはsolid）
+  },
   //インデックスバーアイコンの幅
   listProfileNameText: {
     width: "100%",
