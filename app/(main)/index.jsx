@@ -81,7 +81,6 @@ export default function TrackUserMapView() {
   
   // ISO形式で出力
   const formattedTime = twentyFourHoursAgo.toISOString();
-  console.log(formattedTime);
 
   const setmodal = (marker) => {
     try {
