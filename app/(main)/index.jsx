@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
@@ -73,6 +73,14 @@ export default function TrackUserMapView() {
   const [sortOption, setSortOption] = useState("desc");
   const mapRef = useRef(null);
   const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
+
+  const now = new Date();
+
+  // 24時間前の時刻を計算
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  // ISO形式で出力
+  const formattedTime = twentyFourHoursAgo.toISOString();
 
   const setmodal = (marker) => {
     try {
@@ -1208,6 +1216,7 @@ export default function TrackUserMapView() {
           toolbarEnabled={false} // Androidのボタンを無効化
           ref={mapRef}
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
+          provider={PROVIDER_GOOGLE}
           style={[
             StyleSheet.absoluteFillObject,
             { marginTop: 85, marginBottom: 70 },
@@ -1271,10 +1280,17 @@ export default function TrackUserMapView() {
                 style={styles.listProfileSize}
                 onPress={() => handleUserChoose(item.userId)}
               >
-                <Image
-                  source={{ uri: item.userIcon }}
-                  style={styles.listProfileImage}
-                />
+                {item.lastPostAt >= formattedTime ? (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.newlistProfileImage}
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.listProfileImage}
+                  />
+                )}
                 <Text style={styles.listProfileNameText} numberOfLines={1}>
                   {item.username}
                 </Text>
