@@ -177,9 +177,7 @@ export default function TrackUserMapView() {
           tuduki = PostDatas[postcnt - 1].timestamp
         }
 
-    
         const friendList = [];
-
         setEmptyPost(true);
 
         if (auth.currentUser != null) {
@@ -221,6 +219,9 @@ export default function TrackUserMapView() {
           .limit(5)
           .get(); 
         }
+
+        console.log(PostDatas[0])
+        
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;

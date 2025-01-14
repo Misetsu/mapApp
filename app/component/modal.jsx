@@ -40,6 +40,7 @@ export default function MyModal({
     if (!loading && postData.length === 0) {
       fetchMorePosts(); // 初期データを読み込む
     }
+    console.log(postData.length)
   }, [loading, postData]);
 
   const handleLikePress = (postId) => {
@@ -166,12 +167,13 @@ export default function MyModal({
   const fetchMorePosts = async () => {
   
     try {
+      if(!empty && postData.length > 1){
       fetchPostData(spotId,postData)
+      }
     } catch (error) {
     console.error("追加データ取得エラー:", error);
     }
   };
-  
   
   
   return (
@@ -187,7 +189,7 @@ export default function MyModal({
             <ActivityIndicator size="large" color="#239D60" />
             <Text>読み込み中...</Text>
           </View>
-        ) : !empty && postData.length > 0 ? (
+        ) : postData.length > 0 ? (
           <FlatList
             data={postData}
             keyExtractor={(post) => post.postId.toString()}
@@ -202,7 +204,7 @@ export default function MyModal({
               // リストの末尾に到達したときに次のデータを読み込む
               fetchMorePosts();
             }}
-            onEndReachedThreshold={0.5} // 50% スクロールしたときにトリガー
+            onEndReachedThreshold={0} // 50% スクロールしたときにトリガー
             ListFooterComponent={
               loading && <ActivityIndicator size="small" color="#239D60" />
             }
