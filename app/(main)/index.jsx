@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
@@ -75,6 +75,14 @@ export default function TrackUserMapView() {
   const mapRef = useRef(null);
   const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
+  const now = new Date();
+
+  // 24時間前の時刻を計算
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  // ISO形式で出力
+  const formattedTime = twentyFourHoursAgo.toISOString();
+
   const setmodal = (marker) => {
     try {
       const distance = calculateDistance(
@@ -90,7 +98,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id, sorts, sortOption);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -98,7 +106,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id, sorts, sortOption);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       }
     } catch (error) {
@@ -158,13 +166,28 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId, sort, sortOptions) => {
+  const fetchPostData = async (spotId, sort, sortOptions, PostDatas) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
         const postArray = [];
-        const friendList = [];
 
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
+        const friendList = [];
         setEmptyPost(true);
 
         if (auth.currentUser != null) {
@@ -186,12 +209,24 @@ export default function TrackUserMapView() {
           }
         }
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
+
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
@@ -342,15 +377,42 @@ export default function TrackUserMapView() {
       try {
         const postArray = [];
 
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         setEmptyPost(true);
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .where("userId", "==", chosenUser)
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const queryUser = await firestore()
           .collection("users")
@@ -445,6 +507,22 @@ export default function TrackUserMapView() {
     } else {
       try {
         const postArray = [];
+
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         const friendList = [];
 
         setEmptyPost(true);
@@ -468,13 +546,25 @@ export default function TrackUserMapView() {
           }
         }
 
-        const postSnapshot = await firestore()
-          .collection("tagPost")
-          .where("spotId", "==", spotId)
-          .where("tagId", "==", parseInt(selectedTag))
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let postSnapshot;
+        if (PostDatas[0] == undefined) {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const postIdList = [];
 
@@ -1255,6 +1345,7 @@ export default function TrackUserMapView() {
           toolbarEnabled={false} // Androidのボタンを無効化
           ref={mapRef}
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
+          provider={PROVIDER_GOOGLE}
           style={[
             StyleSheet.absoluteFillObject,
             { marginTop: 85, marginBottom: 70 },
@@ -1318,10 +1409,17 @@ export default function TrackUserMapView() {
                 style={styles.listProfileSize}
                 onPress={() => handleUserChoose(item.userId)}
               >
-                <Image
-                  source={{ uri: item.userIcon }}
-                  style={styles.listProfileImage}
-                />
+                {item.lastPostAt >= formattedTime ? (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.newlistProfileImage}
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.listProfileImage}
+                  />
+                )}
                 <Text style={styles.listProfileNameText} numberOfLines={1}>
                   {item.username}
                 </Text>

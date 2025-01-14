@@ -21,7 +21,6 @@ import {
   Camera,
   useCameraFormat,
 } from "react-native-vision-camera";
-import * as ImagePicker from "expo-image-picker";
 import Reanimated, {
   useAnimatedProps,
   useSharedValue,
@@ -136,6 +135,8 @@ export default function CameraScreen() {
   const [isCrosshair, setIsCrosshair] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [showSlider, setShowSlider] = useState(false); // スライダーの表示状態を管理するステート
+  const [key, setKey] = useState(0); // 強制リロード用のキー
+
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
@@ -190,10 +191,19 @@ export default function CameraScreen() {
   );
 
   useEffect(() => {
-    if (!hasPermission) {
-      requestPermission();
-    }
-  }, [hasPermission]);
+    const initializeCamera = async () => {
+      if (!hasPermission) {
+        await requestPermission();
+      }
+
+      // カメラ権限が付与され、デバイスが利用可能になったときに再レンダリング
+      if (hasPermission && device) {
+        setKey((prevKey) => prevKey + 1);
+      }
+    };
+
+    initializeCamera();
+  }, [hasPermission, device]);
 
   const onTakePicturePressed = async () => {
     try {
@@ -229,25 +239,6 @@ export default function CameraScreen() {
     }
   };
 
-  async function pickImage() {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      router.navigate({
-        pathname: "/editComposition",
-        params: {
-          imageUri: result.assets[0].uri,
-          latitude: latitude,
-          longitude: longitude,
-          spotId: spotId,
-        },
-      });
-    }
-  }
   //exposuer slider
   const exposureValue = useDerivedValue(() => {
     if (device == null) return 0;
@@ -495,6 +486,7 @@ export default function CameraScreen() {
         <View style={styles.cameraContainer}>
           <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
             <ReanimatedCamera
+              key={key}
               ref={cameraRef}
               style={styles.camera}
               device={device}
@@ -684,13 +676,13 @@ export default function CameraScreen() {
             }}
             showsHorizontalScrollIndicator={false}
           />
-
         </View>
         {/* 詳細選択ボタンの追加 */}
         <TouchableOpacity
           onPress={toggleModalVisibility}
           style={styles.colonButton}
-        ><Image
+        >
+          <Image
             source={require("./../image/CameraMenu.png")}
             style={styles.CameraMenu}
           />
@@ -699,7 +691,11 @@ export default function CameraScreen() {
         {/* 十字線切り替えボタン */}
         <TouchableOpacity style={styles.switchButton} onPress={toggleGrid}>
           <Image
-            source={isCrosshair ? require("./../image/Grigline3.png") : require("./../image/Grigline2.png")}
+            source={
+              isCrosshair
+                ? require("./../image/Grigline3.png")
+                : require("./../image/Grigline2.png")
+            }
             style={styles.CameraButton}
           />
         </TouchableOpacity>
@@ -707,7 +703,8 @@ export default function CameraScreen() {
         <TouchableOpacity
           style={styles.switchCameraButton}
           onPress={toggleCamera}
-        ><Image
+        >
+          <Image
             source={require("./../image/Camerachange.png")}
             style={styles.CameraButton}
           />
@@ -721,7 +718,8 @@ export default function CameraScreen() {
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
-        ><Image
+        >
+          <Image
             source={require("./../image/Brightness.png")}
             style={styles.Brightness}
           />

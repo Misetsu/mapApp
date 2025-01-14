@@ -19,7 +19,8 @@ import ViewShot from "react-native-view-shot";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";;
+import FirebaseAuth from "@react-native-firebase/auth";
+import Toast from "react-native-simple-toast";
 
 const { width, height } = Dimensions.get("window");
 const imageWidth = width * 0.4;
@@ -109,7 +110,7 @@ export default function edit() {
         spotId: parseInt(spotId),
         userId: auth.currentUser.uid,
         timeStamp: currentTime,
-        likecount: 0
+        likecount: 0,
       })
       .catch((error) => console.log(error));
 
@@ -140,6 +141,8 @@ export default function edit() {
 
     setIsoading(false);
     router.navigate("/");
+
+    Toast.show("投稿しました");
   };
 
   const handleVisitState = async (spotId) => {
@@ -443,10 +446,11 @@ export default function edit() {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => {
                   return (
-                    <TouchableOpacity style={styles.tagView}><Image
-                      source={require("./../image/Tag.png")}
-                      style={styles.TagButton}
-                    />
+                    <TouchableOpacity style={styles.tagView}>
+                      <Image
+                        source={require("./../image/Tag.png")}
+                        style={styles.TagButton}
+                      />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
                     </TouchableOpacity>
                   );
@@ -460,7 +464,10 @@ export default function edit() {
           </Pressable>
 
           <View style={styles.Back}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}
+            >
               <Image
                 source={require("./../image/Left_arrow.png")}
                 style={styles.actionButton}
@@ -499,13 +506,15 @@ export default function edit() {
                           onPress={() => {
                             deleteTag(item);
                           }}
-                        ><Image
+                        >
+                          <Image
                             source={require("./../image/Tag.png")}
                             style={styles.TagButton}
                           />
                           <Text>
                             {allTag.find((o) => o.tagId == item).tagName}
-                          </Text><Image
+                          </Text>
+                          <Image
                             source={require("./../image/Close.png")}
                             style={styles.TagButton}
                           />
@@ -534,7 +543,8 @@ export default function edit() {
                       <TouchableOpacity
                         style={styles.tagView}
                         onPress={() => addTag(item.tagId)}
-                      ><Image
+                      >
+                        <Image
                           source={require("./../image/Tag.png")}
                           style={styles.TagButton}
                         />
