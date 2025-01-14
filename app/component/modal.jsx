@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
-  ScrollView,
+  FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { formatInTimeZone } from "date-fns-tz";
@@ -38,14 +38,22 @@ export default function MyModal({
 
   const postsort = (itemValue) => {
     if (itemValue == "newtimeStamp") {
-      fetchPostData(spotId, "timeStamp", "desc");
+      fetchPostData(spotId, "timeStamp", "desc", []);
     } else if (itemValue == "oldtimeStamp") {
-      fetchPostData(spotId, "timeStamp", "asc");
+      fetchPostData(spotId, "timeStamp", "asc", []);
     } else {
-      fetchPostData(spotId, itemValue, "desc");
+      fetchPostData(spotId, itemValue, "desc", []);
     }
     setSortOption(itemValue);
   };
+
+  // 初回ロード後に呼び出すロジック
+  useEffect(() => {
+    if (!loading && postData.length === 0) {
+      fetchMorePosts(); // 初期データを読み込む
+    }
+  }, [loading, postData]);
+
   const handleLikePress = (postId) => {
     setLikes((prevLikes) => ({
       ...prevLikes,
@@ -58,7 +66,6 @@ export default function MyModal({
 
   postData.map((post) => {
     if (post) {
-      console.log(post.likeCount);
       tempObj1[post.postId] = post.likeFlag; // postIdをidに修正
       tempObj2[post.postId] = post.likeCount;
     }
@@ -287,6 +294,22 @@ export default function MyModal({
     });
   };
 
+  const fetchMorePosts = async () => {
+    try {
+      if (!empty && postData.length > 1) {
+        if (sortOption == "newtimeStamp") {
+          fetchPostData(spotId, "timeStamp", "desc", postData);
+        } else if (sortOption == "oldtimeStamp") {
+          fetchPostData(spotId, "timeStamp", "asc", postData);
+        } else {
+          fetchPostData(spotId, sortOption, "desc", postData);
+        }
+      }
+    } catch (error) {
+      console.error("追加データ取得エラー:", error);
+    }
+  };
+
   const closeModal = () => {
     setLikes((prevState) => {
       const nextState = {};
@@ -312,38 +335,45 @@ export default function MyModal({
             <ActivityIndicator size="large" color="#239D60" />
             <Text>読み込み中...</Text>
           </View>
-        ) : !empty && postData.length > 0 ? (
-          <ScrollView
+        ) : postData.length > 0 ? (
+          <FlatList
+            data={postData}
+            keyExtractor={(post) => post.postId.toString()}
             showsVerticalScrollIndicator={false}
             style={styles.modalView}
-          >
-            <View style={styles.postView}>
-              <Text style={styles.userName}>{spotName}</Text>
-              <Picker
-                selectedValue={sortOption} // 名前が一致しているか確認
-                onValueChange={(itemValue) => postsort(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="新しい順" value="newtimeStamp" />
-                <Picker.Item label="古い順" value="oldtimeStamp" />
-                <Picker.Item label="いいね順" value="likecount" />
-              </Picker>
-            </View>
-            {postData.map((post) => {
-              if (!post) return null; // postが未定義の場合はスキップ
-              const isLiked = likes[post.postId]; // idを使用する
+            ListHeaderComponent={
+              <View style={styles.postView}>
+                <Text style={styles.userName}>{spotName}</Text>
+                <Picker
+                  selectedValue={sortOption} // 名前が一致しているか確認
+                  onValueChange={(itemValue) => postsort(itemValue)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="新しい順" value="newtimeStamp" />
+                  <Picker.Item label="古い順" value="oldtimeStamp" />
+                  <Picker.Item label="いいね順" value="likecount" />
+                </Picker>
+              </View>
+            }
+            onEndReached={() => {
+              // リストの末尾に到達したときに次のデータを読み込む
+              fetchMorePosts();
+            }}
+            onEndReachedThreshold={0} // 50% スクロールしたときにトリガー
+            ListFooterComponent={
+              loading && <ActivityIndicator size="small" color="#239D60" />
+            }
+            renderItem={({ item: post }) => {
+              if (!post) return null;
+              const isLiked = likes[post.postId];
               const flag = tempObj1[post.postId];
               const count = tempObj2[post.postId];
-              console.log(isLiked);
-              console.log(flag);
-              console.log(count);
+
               return (
                 <View key={post.postId} style={styles.postView}>
                   <TouchableOpacity
                     style={styles.profileBar}
-                    onPress={() => {
-                      navigateProfile(post.userId);
-                    }}
+                    onPress={() => navigateProfile(post.userId)}
                   >
                     <Image
                       source={{ uri: post.userIcon }}
@@ -367,7 +397,6 @@ export default function MyModal({
                         <Text style={styles.areaLabel}>現在範囲外にいます</Text>
                       </View>
                     )}
-
                     <View style={styles.LikeCommentRow}>
                       {/* いいねボタン */}
                       {postImage ? (
@@ -475,15 +504,15 @@ export default function MyModal({
                       )}
                       <TouchableOpacity
                         style={styles.actionButton}
-                        onPress={() => {
+                        onPress={() =>
                           router.push({
                             pathname: "/component/replay",
                             params: {
                               postId: post.postId,
                               showImage: postImage,
-                            }, // idを使用
-                          });
-                        }}
+                            },
+                          })
+                        }
                       >
                         <Image
                           source={require("./../image/Comment.png")}
@@ -494,7 +523,7 @@ export default function MyModal({
                       {postImage ? (
                         <TouchableOpacity
                           style={styles.actionButton}
-                          onPress={() => {
+                          onPress={() =>
                             router.push({
                               pathname: "/cameraComposition",
                               params: {
@@ -504,8 +533,8 @@ export default function MyModal({
                                 photoUri: encodeURIComponent(post.photoUri),
                                 postId: post.postId,
                               },
-                            });
-                          }}
+                            })
+                          }
                         >
                           <Image
                             source={require("./../image/MixPhoto.png")}
@@ -520,7 +549,7 @@ export default function MyModal({
                       {postImage ? (
                         <TouchableOpacity
                           style={styles.actionButton}
-                          onPress={() => {
+                          onPress={() =>
                             router.push({
                               pathname: "/camera",
                               params: {
@@ -530,8 +559,8 @@ export default function MyModal({
                                 point: 0,
                                 spotNo: 0,
                               },
-                            });
-                          }}
+                            })
+                          }
                         >
                           <Image
                             source={require("./../image/PinPhoto.png")}
@@ -577,8 +606,8 @@ export default function MyModal({
                   </View>
                 </View>
               );
-            })}
-          </ScrollView>
+            }}
+          />
         ) : (
           <View style={styles.postViewCentering}>
             <Text

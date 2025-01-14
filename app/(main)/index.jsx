@@ -97,7 +97,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id, sorts, sortOption);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -105,7 +105,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id, sorts, sortOption);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       }
     } catch (error) {
@@ -165,13 +165,28 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId, sort, sortOptions) => {
+  const fetchPostData = async (spotId, sort, sortOptions, PostDatas) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
         const postArray = [];
-        const friendList = [];
 
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
+        const friendList = [];
         setEmptyPost(true);
 
         if (auth.currentUser != null) {
@@ -193,12 +208,24 @@ export default function TrackUserMapView() {
           }
         }
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
+
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
@@ -349,15 +376,42 @@ export default function TrackUserMapView() {
       try {
         const postArray = [];
 
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         setEmptyPost(true);
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .where("userId", "==", chosenUser)
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const queryUser = await firestore()
           .collection("users")
@@ -452,6 +506,22 @@ export default function TrackUserMapView() {
     } else {
       try {
         const postArray = [];
+
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         const friendList = [];
 
         setEmptyPost(true);
@@ -475,13 +545,25 @@ export default function TrackUserMapView() {
           }
         }
 
-        const postSnapshot = await firestore()
-          .collection("tagPost")
-          .where("spotId", "==", spotId)
-          .where("tagId", "==", parseInt(selectedTag))
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let postSnapshot;
+        if (PostDatas[0] == undefined) {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const postIdList = [];
 
