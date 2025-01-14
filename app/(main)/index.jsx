@@ -175,13 +175,15 @@ export default function TrackUserMapView() {
         if (PostDatas[0] != undefined) {
           const Postsize = PostDatas.length;
           let postcnt = 0;
-          console.log(Postsize);
           while (Postsize > postcnt) {
-            console.log(PostDatas[postcnt]);
             postArray.push(PostDatas[postcnt]);
             postcnt = postcnt + 1;
           }
-          tuduki = PostDatas[postcnt - 1].timestamp;
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
         }
 
         const friendList = [];
@@ -205,6 +207,7 @@ export default function TrackUserMapView() {
             }
           }
         }
+
         let querySnapshot;
         if (PostDatas[0] == undefined) {
           querySnapshot = await firestore()
@@ -222,8 +225,6 @@ export default function TrackUserMapView() {
             .limit(5)
             .get();
         }
-
-        console.log(PostDatas[0]);
 
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
@@ -375,15 +376,42 @@ export default function TrackUserMapView() {
       try {
         const postArray = [];
 
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         setEmptyPost(true);
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .where("userId", "==", chosenUser)
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const queryUser = await firestore()
           .collection("users")
@@ -478,6 +506,22 @@ export default function TrackUserMapView() {
     } else {
       try {
         const postArray = [];
+
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         const friendList = [];
 
         setEmptyPost(true);
@@ -501,13 +545,25 @@ export default function TrackUserMapView() {
           }
         }
 
-        const postSnapshot = await firestore()
-          .collection("tagPost")
-          .where("spotId", "==", spotId)
-          .where("tagId", "==", parseInt(selectedTag))
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let postSnapshot;
+        if (PostDatas[0] == undefined) {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const postIdList = [];
 

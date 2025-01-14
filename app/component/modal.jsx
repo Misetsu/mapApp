@@ -38,11 +38,11 @@ export default function MyModal({
 
   const postsort = (itemValue) => {
     if (itemValue == "newtimeStamp") {
-      fetchPostData(spotId, "timeStamp", "desc");
+      fetchPostData(spotId, "timeStamp", "desc", []);
     } else if (itemValue == "oldtimeStamp") {
-      fetchPostData(spotId, "timeStamp", "asc");
+      fetchPostData(spotId, "timeStamp", "asc", []);
     } else {
-      fetchPostData(spotId, itemValue, "desc");
+      fetchPostData(spotId, itemValue, "desc", []);
     }
     setSortOption(itemValue);
   };
@@ -52,7 +52,6 @@ export default function MyModal({
     if (!loading && postData.length === 0) {
       fetchMorePosts(); // 初期データを読み込む
     }
-    console.log(postData.length);
   }, [loading, postData]);
 
   const handleLikePress = (postId) => {
@@ -67,7 +66,6 @@ export default function MyModal({
 
   postData.map((post) => {
     if (post) {
-      console.log(post.likeCount);
       tempObj1[post.postId] = post.likeFlag; // postIdをidに修正
       tempObj2[post.postId] = post.likeCount;
     }
@@ -295,10 +293,17 @@ export default function MyModal({
       },
     });
   };
+
   const fetchMorePosts = async () => {
     try {
       if (!empty && postData.length > 1) {
-        fetchPostData(spotId, postData);
+        if (sortOption == "newtimeStamp") {
+          fetchPostData(spotId, "timeStamp", "desc", postData);
+        } else if (sortOption == "oldtimeStamp") {
+          fetchPostData(spotId, "timeStamp", "asc", postData);
+        } else {
+          fetchPostData(spotId, sortOption, "desc", postData);
+        }
       }
     } catch (error) {
       console.error("追加データ取得エラー:", error);
