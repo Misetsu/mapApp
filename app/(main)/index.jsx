@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -15,13 +15,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
-import Icon from "react-native-vector-icons/FontAwesome5";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -70,6 +69,18 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
+  const [sorts, setsorts] = useState("timeStamp");
+  const [sortOption, setSortOption] = useState("desc");
+  const mapRef = useRef(null);
+  const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
+
+  const now = new Date();
+
+  // 24時間前の時刻を計算
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  // ISO形式で出力
+  const formattedTime = twentyFourHoursAgo.toISOString();
 
   const setmodal = (marker) => {
     try {
@@ -86,7 +97,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id,[]);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -94,7 +105,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id,[]);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       }
     } catch (error) {
@@ -154,27 +165,23 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId,PostDatas) => {
+  const fetchPostData = async (spotId, sort, sortOptions, PostDatas) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
-        
         const postArray = [];
-        
-        console.log(PostDatas[0])
-        let tuduki
-        if(PostDatas[0] != undefined){
-          console.log("A")
-          const Postsize = PostDatas.length
-          let postcnt = 0
-          console.log(Postsize)
-          while(Postsize > postcnt){
-          console.log(PostDatas[postcnt])
-          postArray.push(PostDatas[postcnt])
-          postcnt = postcnt + 1
+
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          console.log(Postsize);
+          while (Postsize > postcnt) {
+            console.log(PostDatas[postcnt]);
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
           }
-          
-          tuduki = PostDatas[postcnt - 1].timestamp
+          tuduki = PostDatas[postcnt - 1].timestamp;
         }
 
         const friendList = [];
@@ -198,30 +205,26 @@ export default function TrackUserMapView() {
             }
           }
         }
-        let querySnapshot
-        if(PostDatas[0] == undefined){
-          console.log("A")
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
           querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .orderBy("timeStamp", "desc")
-          .limit(5)
-          .get();
-        }
-        else
-        {
-          console.log("B")
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
           querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .orderBy("timeStamp", "desc")
-          .startAfter(tuduki)
-          .limit(5)
-          .get(); 
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
         }
 
-        console.log(PostDatas[0])
-        
+        console.log(PostDatas[0]);
+
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
@@ -378,7 +381,7 @@ export default function TrackUserMapView() {
           .collection("post")
           .where("spotId", "==", spotId)
           .where("userId", "==", chosenUser)
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .limit(5)
           .get();
 
@@ -502,7 +505,7 @@ export default function TrackUserMapView() {
           .collection("tagPost")
           .where("spotId", "==", spotId)
           .where("tagId", "==", parseInt(selectedTag))
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .limit(5)
           .get();
 
@@ -518,7 +521,7 @@ export default function TrackUserMapView() {
         const querySnapshot = await firestore()
           .collection("post")
           .where("id", "in", postIdList)
-          .orderBy("timeStamp", "desc")
+          .orderBy(sort, sortOptions)
           .get();
 
         if (!querySnapshot.empty) {
@@ -749,6 +752,22 @@ export default function TrackUserMapView() {
     } catch (error) {
       console.error("Error fetching documents:", error);
     }
+  };
+
+  // ズームイン関数
+  const zoomIn = () => {
+    mapRef.current.getCamera().then((camera) => {
+      camera.zoom += 0.75;
+      mapRef.current.animateCamera(camera, { duration: 400 });
+    });
+  };
+
+  // ズームアウト関数
+  const zoomOut = () => {
+    mapRef.current.getCamera().then((camera) => {
+      camera.zoom -= 0.75;
+      mapRef.current.animateCamera(camera, { duration: 400 });
+    });
   };
 
   const fetchAllMarkerCord = async () => {
@@ -1220,7 +1239,10 @@ export default function TrackUserMapView() {
       )}
       {initialRegion && (
         <MapView
+          toolbarEnabled={false} // Androidのボタンを無効化
+          ref={mapRef}
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
+          provider={PROVIDER_GOOGLE}
           style={[
             StyleSheet.absoluteFillObject,
             { marginTop: 85, marginBottom: 70 },
@@ -1284,10 +1306,17 @@ export default function TrackUserMapView() {
                 style={styles.listProfileSize}
                 onPress={() => handleUserChoose(item.userId)}
               >
-                <Image
-                  source={{ uri: item.userIcon }}
-                  style={styles.listProfileImage}
-                />
+                {item.lastPostAt >= formattedTime ? (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.newlistProfileImage}
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.listProfileImage}
+                  />
+                )}
                 <Text style={styles.listProfileNameText} numberOfLines={1}>
                   {item.username}
                 </Text>
@@ -1318,10 +1347,15 @@ export default function TrackUserMapView() {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity
-                style={styles.tag}
+                style={
+                  selectedTag == item.tagId ? styles.selectedTag : styles.tag
+                }
                 onPress={() => handleTagChoose(item.tagId)}
               >
-                <Icon name="tag" size={18} color={"#239D60"} />
+                <Image
+                  source={require("./../image/Tag.png")}
+                  style={styles.TagButton}
+                />
                 <Text>{item.tagName}</Text>
               </TouchableOpacity>
             );
@@ -1329,7 +1363,10 @@ export default function TrackUserMapView() {
         />
         {selectedTag == null ? null : (
           <TouchableOpacity onPress={handleCancelTag}>
-            <Icon name="times-circle" size={30} />
+            <Image
+              source={require("./../image/Close.png")}
+              style={styles.closeImage}
+            />
           </TouchableOpacity>
         )}
       </SafeAreaView>
@@ -1347,49 +1384,77 @@ export default function TrackUserMapView() {
         fetchPostData={fetchPostData}
       />
 
-      {mapfixed ? (
-        <View style={styles.mapfixed}>
-          <TouchableOpacity
-            style={styles.mapbutton}
-            onPress={() => setmapfixeds()}
-          >
-            <Image
-              source={require("./../image/MapFixed.png")}
-              style={styles.footerImage}
-            />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.mapfixed}>
-          <TouchableOpacity
-            style={styles.mapbutton}
-            onPress={() => setmapfixeds()}
-          >
-            <Image
-              source={require("./../image/MapUnFixed.png")}
-              style={styles.footerImage}
-            />
-          </TouchableOpacity>
+      {initialRegion && (
+        <View style={styles.toolBar}>
+          {mapfixed ? (
+            <View style={styles.mapfixed}>
+              <TouchableOpacity
+                style={styles.mapbutton}
+                onPress={() => setmapfixeds()}
+              >
+                <Image
+                  source={require("./../image/MapFixed.png")}
+                  style={styles.mapbuttonImage}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.mapfixed}>
+              <TouchableOpacity
+                style={styles.mapbutton}
+                onPress={() => setmapfixeds()}
+              >
+                <Image
+                  source={require("./../image/MapUnFixed.png")}
+                  style={styles.mapbuttonImage}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+          <View style={styles.defaultlocation}>
+            <TouchableOpacity
+              style={styles.mapbutton}
+              onPress={() =>
+                defaultlocation(
+                  position.latitude,
+                  position.longitude,
+                  LATITUDE_DELTA,
+                  LONGITUDE_DELTA
+                )
+              }
+            >
+              <Image
+                source={require("./../image/Location.png")}
+                style={styles.mapbuttonImage}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.mapZoom}>
+            <TouchableOpacity
+              style={styles.mapbutton}
+              onPress={zoomIn} // 拡大
+            >
+              <Image
+                source={require("./../image/Plus.png")}
+                style={styles.mapbuttonImage}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.mapZoomout}>
+            <TouchableOpacity
+              style={styles.mapbutton}
+              onPress={zoomOut} // 縮小
+            >
+              <Image
+                source={require("./../image/Minus.png")}
+                style={styles.mapbuttonImage}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
-      <View style={styles.defaultlocation}>
-        <TouchableOpacity
-          style={styles.mapbutton}
-          onPress={() =>
-            defaultlocation(
-              position.latitude,
-              position.longitude,
-              LATITUDE_DELTA,
-              LONGITUDE_DELTA
-            )
-          }
-        >
-          <Image
-            source={require("./../image/Location.png")}
-            style={styles.footerImage}
-          />
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.footer}>
         {user ? (

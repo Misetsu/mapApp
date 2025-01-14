@@ -11,7 +11,6 @@ import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ImageResizer from "react-native-image-resizer";
 
@@ -144,15 +143,20 @@ export default function UserPosts() {
             style={styles.arrowleft}
             onPress={() => paging("left")}
           >
-            <Icon name="arrow-left" size={24} color="#000" />
+            <Image
+              source={require("./../image/Left_arrow.png")}
+              style={styles.actionButton}
+            />
           </TouchableOpacity>
         )}
         {endpage < len && (
           <TouchableOpacity
             style={styles.arrowright}
             onPress={() => paging("right")}
-          >
-            <Icon name="arrow-right" size={24} color="#000" />
+          ><Image
+              source={require("./../image/Right_arrow.png")}
+              style={styles.actionButton}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -236,6 +240,16 @@ const styles = StyleSheet.create({
     color: "#000000",
     textAlign: "center",
     fontWeight: "300",
+  },
+  actionButton: {
+    width: 30,
+    height: 30,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
   },
   arrow: {
     flexDirection: "row", // 子要素を横並びに配置
