@@ -14,6 +14,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
+import Toast from 'react-native-simple-toast';
 
 const auth = FirebaseAuth();
 const reference = storage();
@@ -59,6 +60,7 @@ export default function myPage() {
       await auth.currentUser.updateProfile({ displayName: displayName });
       router.back();
     }
+    Toast.show("プロフィールを保存しました");
   };
 
   // 画像ピッカーを開いて画像を選択する関数

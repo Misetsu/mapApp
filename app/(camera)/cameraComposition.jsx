@@ -21,7 +21,6 @@ import {
   Camera,
   useCameraFormat,
 } from "react-native-vision-camera";
-import * as ImagePicker from "expo-image-picker";
 import Reanimated, {
   useAnimatedProps,
   useSharedValue,
@@ -38,8 +37,6 @@ import {
 import Slider from "@react-native-community/slider";
 import FirebaseAuth from "@react-native-firebase/auth";
 import { TouchableOpacity } from "react-native";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import Icon from "react-native-vector-icons/Entypo";
 
 const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
@@ -138,6 +135,8 @@ export default function CameraScreen() {
   const [isCrosshair, setIsCrosshair] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [showSlider, setShowSlider] = useState(false); // スライダーの表示状態を管理するステート
+  const [key, setKey] = useState(0); // 強制リロード用のキー
+
   const format = useCameraFormat(device, [{ photoAspectRatio: 4 / 3 }]);
 
   const params = useLocalSearchParams();
@@ -192,10 +191,19 @@ export default function CameraScreen() {
   );
 
   useEffect(() => {
-    if (!hasPermission) {
-      requestPermission();
-    }
-  }, [hasPermission]);
+    const initializeCamera = async () => {
+      if (!hasPermission) {
+        await requestPermission();
+      }
+
+      // カメラ権限が付与され、デバイスが利用可能になったときに再レンダリング
+      if (hasPermission && device) {
+        setKey((prevKey) => prevKey + 1);
+      }
+    };
+
+    initializeCamera();
+  }, [hasPermission, device]);
 
   const onTakePicturePressed = async () => {
     try {
@@ -231,25 +239,6 @@ export default function CameraScreen() {
     }
   };
 
-  async function pickImage() {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      router.navigate({
-        pathname: "/editComposition",
-        params: {
-          imageUri: result.assets[0].uri,
-          latitude: latitude,
-          longitude: longitude,
-          spotId: spotId,
-        },
-      });
-    }
-  }
   //exposuer slider
   const exposureValue = useDerivedValue(() => {
     if (device == null) return 0;
@@ -497,6 +486,7 @@ export default function CameraScreen() {
         <View style={styles.cameraContainer}>
           <GestureDetector gesture={Gesture.Race(pinchGesture, tapGesture)}>
             <ReanimatedCamera
+              key={key}
               ref={cameraRef}
               style={styles.camera}
               device={device}
@@ -663,7 +653,6 @@ export default function CameraScreen() {
         </View>
 
         <View style={styles.chooseHarfDisplayContainer}>
-          <TouchableOpacity style={styles.colonButton}></TouchableOpacity>
           <FlatList
             ref={flatListRef}
             data={data}
@@ -687,22 +676,27 @@ export default function CameraScreen() {
             }}
             showsHorizontalScrollIndicator={false}
           />
-
-          {/* 詳細選択ボタンの追加 */}
-          <TouchableOpacity
-            onPress={toggleModalVisibility}
-            style={styles.colonButton}
-          >
-            <FontAwesome5 name="ellipsis-v" size={30} color="#FFF" />
-          </TouchableOpacity>
         </View>
+        {/* 詳細選択ボタンの追加 */}
+        <TouchableOpacity
+          onPress={toggleModalVisibility}
+          style={styles.colonButton}
+        >
+          <Image
+            source={require("./../image/CameraMenu.png")}
+            style={styles.CameraMenu}
+          />
+        </TouchableOpacity>
 
         {/* 十字線切り替えボタン */}
         <TouchableOpacity style={styles.switchButton} onPress={toggleGrid}>
-          <FontAwesome5
-            name={isCrosshair ? "th-large" : "th"}
-            size={35}
-            color="#FFF"
+          <Image
+            source={
+              isCrosshair
+                ? require("./../image/Grigline3.png")
+                : require("./../image/Grigline2.png")
+            }
+            style={styles.CameraButton}
           />
         </TouchableOpacity>
         {/* カメラ切り替えボタン */}
@@ -710,7 +704,10 @@ export default function CameraScreen() {
           style={styles.switchCameraButton}
           onPress={toggleCamera}
         >
-          <FontAwesome5 name="sync" size={35} color="#FFF" />
+          <Image
+            source={require("./../image/Camerachange.png")}
+            style={styles.CameraButton}
+          />
         </TouchableOpacity>
 
         <Pressable
@@ -722,7 +719,10 @@ export default function CameraScreen() {
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
         >
-          <Icon name="light-up" size={24} color="#FFF" />
+          <Image
+            source={require("./../image/Brightness.png")}
+            style={styles.Brightness}
+          />
         </Pressable>
       </View>
       <Modal animationType="fade" transparent={true} visible={isModalVisible}>
@@ -753,13 +753,14 @@ export default function CameraScreen() {
               onPress={() => toggleDisplay("bottomRight")}
             />
           </View>
-
-          {/* モーダルの右上に「:」アイコン */}
           <TouchableOpacity
             onPress={toggleModalVisibility}
             style={styles.modalColonButton}
           >
-            <FontAwesome5 name="times" size={30} color="#FFF" />
+            <Image
+              source={require("./../image/Close.png")}
+              style={styles.actionButton}
+            />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -838,6 +839,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 20,
   },
+  colonButton: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    width: 40,
+    height: 40,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   exposureButtonText: {
     color: "white",
     fontSize: 16,
@@ -845,21 +856,18 @@ const styles = StyleSheet.create({
   chooseHarfDisplayContainer: {
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     position: "absolute",
-    paddingTop: 5,
     paddingHorizontal: 10,
     flexDirection: "row",
     justifyContent: "space-around",
     height: 50,
     bottom: wholeHeight * 0.22,
     width: "100%",
-    borderRadius: 30,
   },
   chooseDisplayButton: {
-    //backgroundColor: "purple",
     justifyContent: "center",
     alignItems: "center",
-    height: 40,
-    width: 40,
+    height: 50,
+    width: 50,
   },
   crosshairContainer: {
     position: "absolute",
@@ -913,26 +921,14 @@ const styles = StyleSheet.create({
   switchButton: {
     position: "absolute",
     bottom: 45,
-    left: 60,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    left: 40,
+    borderRadius: 35,
   },
   switchCameraButton: {
     position: "absolute",
     bottom: 45,
-    right: 50,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  colonButton: {
-    // chooseHarfDisplayContainer内の「:」ボタンのスタイル
-    justifyContent: "center",
-    alignItems: "center",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    right: 40,
+    borderRadius: 35,
   },
   modalOverlay: {
     flex: 1,
@@ -952,14 +948,21 @@ const styles = StyleSheet.create({
     right: 20, // colonButtonと同じ位置に合わせる
     justifyContent: "center",
     alignItems: "center",
-    width: 40,
-    height: 40,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 20,
   },
+  actionButton: {
+    width: 40,
+    height: 40,
+    padding: 5,
+    margin: 5,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center", // ボタン内のテキストを中央に配置
+    alignItems: "center",
+  },
   selectedButton: {
     backgroundColor: "rgba(255, 255, 255, 0.3)", // 選択されたアイテムの背景色（薄灰色）
-    borderRadius: 15,
   },
   modalButtonTopLeft: {
     position: "absolute",
@@ -1100,9 +1103,21 @@ const styles = StyleSheet.create({
     height: height,
     transform: [{ translateY: (-height / 4) * 3 }],
   },
+  CameraButton: {
+    width: 60,
+    height: 60,
+  },
+  Brightness: {
+    width: 40,
+    height: 40,
+  },
+  CameraMenu: {
+    width: 40,
+    height: 40,
+  },
   image: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
     alignSelf: "center",
   },
 });

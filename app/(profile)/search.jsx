@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
+import Toast from 'react-native-simple-toast';
 
 // Firebaseの認証とルーターを初期化
 const auth = FirebaseAuth();
@@ -269,6 +270,7 @@ export default function SearchScreen() {
                   console.error("フォロー解除エラー:", error);
                 } finally {
                   setIsProcessing(false); // 処理完了後にフラグ解除
+                  Toast.show("フォロー解除しました");
                 }
               },
             },

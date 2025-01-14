@@ -61,6 +61,7 @@
     "react-native-simple-toast": "^3.3.2",
     "react-native-svg": "^15.7.1",
     "react-native-switch-with-icons": "^3.0.1",
+    "react-native-toast-message": "^2.2.1",
     "react-native-vector-icons": "^10.1.0",
     "react-native-view-shot": "^3.8.0",
     "react-native-vision-camera": "^4.3.2",

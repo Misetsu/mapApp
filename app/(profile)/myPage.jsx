@@ -17,6 +17,7 @@ import LikedPosts from "./LikedPosts";
 import SwitchWithIcons from "react-native-switch-with-icons";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Alert } from "react-native";
+import Toast from 'react-native-simple-toast';
 
 const auth = FirebaseAuth();
 
@@ -131,12 +132,14 @@ export default function myPage() {
         .doc(auth.currentUser.uid)
         .update({ publicStatus: 0 });
       setUserStatus(0); // 公開状態に設定
+      Toast.show("投稿を公開に設定しました");
     } else {
       await firestore()
         .collection("users")
         .doc(auth.currentUser.uid)
         .update({ publicStatus: 1 });
       setUserStatus(1); // 非公開状態に設定
+      Toast.show("投稿を非公開に設定しました");
     }
   };
 
@@ -178,6 +181,7 @@ export default function myPage() {
       GoogleSignin.revokeAccess();
     });
     router.replace({ pathname: "/" });
+    Toast.show("ログアウトしました");
   };
 
   const toggleDeleteModal = () => {
@@ -210,6 +214,8 @@ export default function myPage() {
       GoogleSignin.revokeAccess();
       router.replace("/");
     });
+
+    Toast.show("アカウントを削除しました");
   };
 
   const deleteSubcollection = async (parentDocId, subcollectionName) => {

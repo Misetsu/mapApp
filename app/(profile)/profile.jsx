@@ -14,6 +14,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import UserPosts from "./othersPosts";
+import Toast from 'react-native-simple-toast';
 
 const auth = FirebaseAuth();
 
@@ -193,7 +194,7 @@ export default function profile() {
                 const docId = queryStatus.docs[0].id;
                 await firestore().collection("follow").doc(docId).delete();
                 setIsFollowing(false);
-
+                Toast.show("フォロー解除しました");
                 if (isFav) {
                   await firestore()
                     .collection("star")
@@ -237,6 +238,7 @@ export default function profile() {
             [uid]: FieldValue.delete(),
           });
         setIsFav(false);
+        Toast.show("お気に入り解除しました");
       } else {
         firestore()
           .collection("star")
@@ -245,6 +247,7 @@ export default function profile() {
             [uid]: uid,
           });
         setIsFav(true);
+        Toast.show("お気に入りしました");
       }
     }
   };

@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import Toast from 'react-native-simple-toast';
 
 const auth = FirebaseAuth();
 
@@ -51,7 +52,7 @@ export default function LoginScreen() {
         .collection("users")
         .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
         .get();
-
+        Toast.show("ログインしました");
       if (querySnapshot.empty) {
         router.push({
           pathname: "/signupFormGoogle",
@@ -76,6 +77,7 @@ export default function LoginScreen() {
           .signInWithEmailAndPassword(userEmail, userPassword)
           .then(() => {
             router.replace({ pathname: "/" });
+            Toast.show("ログインしました");
           })
           .catch((error) => {
             console.log(error);
