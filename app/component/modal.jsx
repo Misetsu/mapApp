@@ -355,6 +355,19 @@ export default function MyModal({
                 </Picker>
               </View>
             }
+            getItemLayout={(data, index) => ({
+              length: 660,
+              offset: 660 * index,
+              index,
+            })}
+            initialScrollIndex={
+              postData.length > 5
+                ? postData.length % 5 == 0
+                  ? (Math.floor(postData.length / 5) - 1) * 5
+                  : Math.floor(postData.length / 5) * 5
+                : 0
+            }
+            onScrollToIndexFailed={() => {}}
             onEndReached={() => {
               // リストの末尾に到達したときに次のデータを読み込む
               fetchMorePosts();
@@ -363,7 +376,7 @@ export default function MyModal({
             ListFooterComponent={
               loading && <ActivityIndicator size="small" color="#239D60" />
             }
-            renderItem={({ item: post }) => {
+            renderItem={({ item: post, index }) => {
               if (!post) return null;
               const isLiked = likes[post.postId];
               const flag = tempObj1[post.postId];
