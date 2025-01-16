@@ -363,8 +363,8 @@ export default function MyModal({
             initialScrollIndex={
               postData.length > 5
                 ? postData.length % 5 == 0
-                  ? (Math.floor(postData.length / 5) - 1) * 5
-                  : Math.floor(postData.length / 5) * 5
+                  ? (Math.floor(postData.length / 5) - 1) * 7
+                  : Math.floor(postData.length / 5) * 7
                 : 0
             }
             onScrollToIndexFailed={() => {}}
@@ -384,239 +384,329 @@ export default function MyModal({
 
               return (
                 <View key={post.postId} style={styles.postView}>
-                  <TouchableOpacity
-                    style={styles.profileBar}
-                    onPress={() => navigateProfile(post.userId)}
-                  >
-                    <Image
-                      source={{ uri: post.userIcon }}
-                      style={styles.userIcon}
-                    />
-                    <Text style={styles.userName}>{post.username}</Text>
-                  </TouchableOpacity>
-                  <View style={styles.postDetail}>
-                    {postImage ? (
-                      <Image
-                        source={{ uri: post.photoUri }}
-                        style={styles.postImage}
-                      />
-                    ) : (
-                      <View style={{ justifyContent: "center" }}>
+                  {post.postId == 0 ? (
+                    <View>
+                      <TouchableOpacity
+                        style={styles.profileBar}
+                        onPress={() => navigateProfile(post.userId)}
+                      >
+                        <Image
+                          source={{ uri: post.userIcon }}
+                          style={styles.userIcon}
+                        />
+                        <Text style={styles.userName}>{post.username}</Text>
+                      </TouchableOpacity>
+                      <View style={styles.postDetail}>
                         <Image
                           source={{ uri: post.photoUri }}
                           style={styles.postImage}
-                          blurRadius={50}
                         />
-                        <Text style={styles.areaLabel}>現在範囲外にいます</Text>
+
+                        <View style={styles.LikeCommentRow}>
+                          <TouchableOpacity style={styles.actionButton}>
+                            <Image
+                              source={require("./../image/Heart.png")}
+                              style={styles.actionButton}
+                            />
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.actionButton}>
+                            <Image
+                              source={require("./../image/Comment.png")}
+                              style={styles.actionButton}
+                            />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={styles.actionButton}
+                          ></TouchableOpacity>
+
+                          {postImage ? (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                              onPress={() =>
+                                router.push({
+                                  pathname: "/camera",
+                                  params: {
+                                    latitude: 0,
+                                    longitude: 0,
+                                    spotId: spotId,
+                                    point: 0,
+                                    spotNo: 0,
+                                  },
+                                })
+                              }
+                            >
+                              <Image
+                                source={require("./../image/PinPhoto.png")}
+                                style={styles.actionButton}
+                              />
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                            ></TouchableOpacity>
+                          )}
+                        </View>
+                        <View style={styles.postText}>
+                          <Text>{post.postText}</Text>
+                          <TouchableOpacity
+                            style={styles.actionButton}
+                          ></TouchableOpacity>
+                        </View>
                       </View>
-                    )}
-                    <View style={styles.LikeCommentRow}>
-                      {/* いいねボタン */}
-                      {postImage ? (
-                        <View>
-                          {flag ? (
-                            <TouchableOpacity
-                              style={styles.actionButton}
-                              onPress={
-                                auth.currentUser
-                                  ? () => handleUnlike(post.postId)
-                                  : () => {
-                                      router.push("/loginForm");
-                                    }
-                              }
-                            >
-                              <Image
-                                source={
-                                  isLiked
-                                    ? require("./../image/Heart.png")
-                                    : require("./../image/RedHeart.png")
-                                }
-                                style={styles.actionButton}
-                              />
-                              <Text
-                                style={[
-                                  { color: isLiked ? "black" : "red" },
-                                  styles.likeNum,
-                                ]}
-                              >
-                                {isLiked ? count - 1 : count}
-                              </Text>
-                            </TouchableOpacity>
-                          ) : (
-                            <TouchableOpacity
-                              style={styles.actionButton}
-                              onPress={
-                                auth.currentUser
-                                  ? () => handleLike(post.postId)
-                                  : () => {
-                                      router.push("/loginForm");
-                                    }
-                              }
-                            >
-                              <Image
-                                source={
-                                  isLiked
-                                    ? require("./../image/RedHeart.png")
-                                    : require("./../image/Heart.png")
-                                }
-                                style={styles.actionButton}
-                              />
-                              <Text
-                                style={[
-                                  { color: isLiked ? "red" : "black" },
-                                  styles.likeNum,
-                                ]}
-                              >
-                                {isLiked ? count + 1 : count}
-                              </Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                      ) : (
-                        <View>
-                          {flag ? (
-                            <TouchableOpacity style={styles.actionButton}>
-                              {isLiked ? (
-                                <Image
-                                  source={require("./../image/RedHeart.png")}
-                                  style={styles.actionButton}
-                                />
-                              ) : (
-                                <Image
-                                  source={require("./../image/Heart.png")}
-                                  style={styles.actionButton}
-                                />
-                              )}
-                              <Text
-                                style={{ color: isLiked ? "black" : "red" }}
-                              >
-                                {isLiked ? count - 1 : count}
-                              </Text>
-                            </TouchableOpacity>
-                          ) : (
-                            <TouchableOpacity style={styles.actionButton}>
-                              {isLiked ? (
-                                <Image
-                                  source={require("./../image/RedHeart.png")}
-                                  style={styles.actionButton}
-                                />
-                              ) : (
-                                <Image
-                                  source={require("./../image/Heart.png")}
-                                  style={styles.actionButton}
-                                />
-                              )}
-                              <Text
-                                style={{ color: isLiked ? "red" : "black" }}
-                              >
-                                {isLiked ? count + 1 : count}
-                              </Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                      )}
+                      <View style={styles.closeButton}>
+                        <TouchableOpacity
+                          style={styles.button}
+                          onPress={closeModal}
+                        >
+                          <Image
+                            source={require("./../image/Close.png")}
+                            style={styles.actionButton}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ) : (
+                    <View>
                       <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() =>
-                          router.push({
-                            pathname: "/component/replay",
-                            params: {
-                              postId: post.postId,
-                              showImage: postImage,
-                            },
-                          })
-                        }
+                        style={styles.profileBar}
+                        onPress={() => navigateProfile(post.userId)}
                       >
                         <Image
-                          source={require("./../image/Comment.png")}
-                          style={styles.actionButton}
+                          source={{ uri: post.userIcon }}
+                          style={styles.userIcon}
                         />
-                        <Text style={styles.likeNum}>{post.replyCount}</Text>
+                        <Text style={styles.userName}>{post.username}</Text>
                       </TouchableOpacity>
-                      {postImage ? (
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() =>
-                            router.push({
-                              pathname: "/cameraComposition",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                                photoUri: encodeURIComponent(post.photoUri),
-                                postId: post.postId,
-                              },
-                            })
-                          }
-                        >
+                      <View style={styles.postDetail}>
+                        {postImage ? (
                           <Image
-                            source={require("./../image/MixPhoto.png")}
-                            style={styles.actionButton}
+                            source={{ uri: post.photoUri }}
+                            style={styles.postImage}
                           />
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                        ></TouchableOpacity>
-                      )}
-                      {postImage ? (
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() =>
-                            router.push({
-                              pathname: "/camera",
-                              params: {
-                                latitude: 0,
-                                longitude: 0,
-                                spotId: spotId,
-                                point: 0,
-                                spotNo: 0,
-                              },
-                            })
-                          }
-                        >
-                          <Image
-                            source={require("./../image/PinPhoto.png")}
-                            style={styles.actionButton}
-                          />
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                        ></TouchableOpacity>
-                      )}
-                    </View>
-                    <View style={styles.postText}>
-                      <Text>{post.postText}</Text>
-                      <Text style={{ fontSize: 10, color: "#4d4d4d" }}>
-                        {formatInTimeZone(
-                          new Date(post.timestamp),
-                          "Asia/Tokyo",
-                          "yyyy年MM月dd日 HH:mm"
+                        ) : (
+                          <View style={{ justifyContent: "center" }}>
+                            <Image
+                              source={{ uri: post.photoUri }}
+                              style={styles.postImage}
+                              blurRadius={50}
+                            />
+                            <Text style={styles.areaLabel}>
+                              現在範囲外にいます
+                            </Text>
+                          </View>
                         )}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => onShare()}
-                      >
-                        <Image
-                          source={require("./../image/share.png")}
-                          style={styles.actionButton}
-                        />
-                      </TouchableOpacity>
+                        <View style={styles.LikeCommentRow}>
+                          {/* いいねボタン */}
+                          {postImage ? (
+                            <View>
+                              {flag ? (
+                                <TouchableOpacity
+                                  style={styles.actionButton}
+                                  onPress={
+                                    auth.currentUser
+                                      ? () => handleUnlike(post.postId)
+                                      : () => {
+                                          router.push("/loginForm");
+                                        }
+                                  }
+                                >
+                                  <Image
+                                    source={
+                                      isLiked
+                                        ? require("./../image/Heart.png")
+                                        : require("./../image/RedHeart.png")
+                                    }
+                                    style={styles.actionButton}
+                                  />
+                                  <Text
+                                    style={[
+                                      { color: isLiked ? "black" : "red" },
+                                      styles.likeNum,
+                                    ]}
+                                  >
+                                    {isLiked ? count - 1 : count}
+                                  </Text>
+                                </TouchableOpacity>
+                              ) : (
+                                <TouchableOpacity
+                                  style={styles.actionButton}
+                                  onPress={
+                                    auth.currentUser
+                                      ? () => handleLike(post.postId)
+                                      : () => {
+                                          router.push("/loginForm");
+                                        }
+                                  }
+                                >
+                                  <Image
+                                    source={
+                                      isLiked
+                                        ? require("./../image/RedHeart.png")
+                                        : require("./../image/Heart.png")
+                                    }
+                                    style={styles.actionButton}
+                                  />
+                                  <Text
+                                    style={[
+                                      { color: isLiked ? "red" : "black" },
+                                      styles.likeNum,
+                                    ]}
+                                  >
+                                    {isLiked ? count + 1 : count}
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
+                            </View>
+                          ) : (
+                            <View>
+                              {flag ? (
+                                <TouchableOpacity style={styles.actionButton}>
+                                  {isLiked ? (
+                                    <Image
+                                      source={require("./../image/RedHeart.png")}
+                                      style={styles.actionButton}
+                                    />
+                                  ) : (
+                                    <Image
+                                      source={require("./../image/Heart.png")}
+                                      style={styles.actionButton}
+                                    />
+                                  )}
+                                  <Text
+                                    style={{ color: isLiked ? "black" : "red" }}
+                                  >
+                                    {isLiked ? count - 1 : count}
+                                  </Text>
+                                </TouchableOpacity>
+                              ) : (
+                                <TouchableOpacity style={styles.actionButton}>
+                                  {isLiked ? (
+                                    <Image
+                                      source={require("./../image/RedHeart.png")}
+                                      style={styles.actionButton}
+                                    />
+                                  ) : (
+                                    <Image
+                                      source={require("./../image/Heart.png")}
+                                      style={styles.actionButton}
+                                    />
+                                  )}
+                                  <Text
+                                    style={{ color: isLiked ? "red" : "black" }}
+                                  >
+                                    {isLiked ? count + 1 : count}
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
+                            </View>
+                          )}
+                          <TouchableOpacity
+                            style={styles.actionButton}
+                            onPress={() =>
+                              router.push({
+                                pathname: "/component/replay",
+                                params: {
+                                  postId: post.postId,
+                                  showImage: postImage,
+                                },
+                              })
+                            }
+                          >
+                            <Image
+                              source={require("./../image/Comment.png")}
+                              style={styles.actionButton}
+                            />
+                            <Text style={styles.likeNum}>
+                              {post.replyCount}
+                            </Text>
+                          </TouchableOpacity>
+                          {postImage ? (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                              onPress={() =>
+                                router.push({
+                                  pathname: "/cameraComposition",
+                                  params: {
+                                    latitude: 0,
+                                    longitude: 0,
+                                    spotId: spotId,
+                                    photoUri: encodeURIComponent(post.photoUri),
+                                    postId: post.postId,
+                                  },
+                                })
+                              }
+                            >
+                              <Image
+                                source={require("./../image/MixPhoto.png")}
+                                style={styles.actionButton}
+                              />
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                            ></TouchableOpacity>
+                          )}
+                          {postImage ? (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                              onPress={() =>
+                                router.push({
+                                  pathname: "/camera",
+                                  params: {
+                                    latitude: 0,
+                                    longitude: 0,
+                                    spotId: spotId,
+                                    point: 0,
+                                    spotNo: 0,
+                                  },
+                                })
+                              }
+                            >
+                              <Image
+                                source={require("./../image/PinPhoto.png")}
+                                style={styles.actionButton}
+                              />
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                            ></TouchableOpacity>
+                          )}
+                        </View>
+                        <View style={styles.postText}>
+                          <Text>{post.postText}</Text>
+                          <Text style={{ fontSize: 10, color: "#4d4d4d" }}>
+                            {formatInTimeZone(
+                              new Date(post.timestamp),
+                              "Asia/Tokyo",
+                              "yyyy年MM月dd日 HH:mm"
+                            )}
+                          </Text>
+                          <TouchableOpacity
+                            style={styles.actionButton}
+                            onPress={() => onShare()}
+                          >
+                            <Image
+                              source={require("./../image/share.png")}
+                              style={styles.actionButton}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                      <View style={styles.closeButton}>
+                        <TouchableOpacity
+                          style={styles.button}
+                          onPress={closeModal}
+                        >
+                          <Image
+                            source={require("./../image/Close.png")}
+                            style={styles.actionButton}
+                          />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                  </View>
-                  <View style={styles.closeButton}>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={closeModal}
-                    >
-                      <Image
-                        source={require("./../image/Close.png")}
-                        style={styles.actionButton}
-                      />
-                    </TouchableOpacity>
-                  </View>
+                  )}
                 </View>
               );
             }}
