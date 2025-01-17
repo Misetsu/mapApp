@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import FirebaseAuth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { formatInTimeZone } from "date-fns-tz";
 import { useRouter } from "expo-router";
-import Toast from 'react-native-simple-toast';
+import Toast from "react-native-simple-toast";
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得す
@@ -62,7 +62,7 @@ export default function ReplieModal({
             hantei: 1,
           });
 
-          Toast.show("送信しました");
+        Toast.show("送信しました");
         router.back();
       } catch (error) {
         Alert.alert(
@@ -124,10 +124,11 @@ export default function ReplieModal({
         ) : (
           <View style={styles.postViewCentering}>
             <View style={styles.closeButton}>
-              <TouchableOpacity style={styles.button} onPress={onClose}><Image
-                source={require("./../image/Close.png")}
-                style={styles.actionButton}
-              />
+              <TouchableOpacity style={styles.button} onPress={onClose}>
+                <Image
+                  source={require("./../image/Close.png")}
+                  style={styles.actionButton}
+                />
               </TouchableOpacity>
             </View>
             <FlatList

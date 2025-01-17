@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  TextInput,
   Dimensions,
   StyleSheet,
   Text,
@@ -12,12 +11,11 @@ import {
   FlatList, // ScrollViewからFlatListに変更
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import firestore, { FieldValue } from "@react-native-firebase/firestore";
+import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
-import Toast from 'react-native-simple-toast';
+import Toast from "react-native-simple-toast";
 
-const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 
 const EditPostScreen = () => {
@@ -234,7 +232,8 @@ const EditPostScreen = () => {
                               onPress={() => {
                                 deleteTag(item);
                               }}
-                            ><Image
+                            >
+                              <Image
                                 source={require("./../image/Tag.png")}
                                 style={styles.TagButton}
                               />
@@ -271,7 +270,8 @@ const EditPostScreen = () => {
                           <TouchableOpacity
                             style={styles.tagView}
                             onPress={() => addTag(item.tagId)}
-                          ><Image
+                          >
+                            <Image
                               source={require("./../image/Tag.png")}
                               style={styles.TagButton}
                             />
@@ -288,7 +288,8 @@ const EditPostScreen = () => {
               </>
             )}
           </>
-        )}<View style={styles.Back}>
+        )}
+        <View style={styles.Back}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Image
               source={require("./../image/Left_arrow.png")}

@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  Modal,
   Image,
   StyleSheet,
   TouchableOpacity,
@@ -14,7 +13,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import FirebaseAuth from "@react-native-firebase/auth";
 import * as ImagePicker from "expo-image-picker";
-import Toast from 'react-native-simple-toast';
+import Toast from "react-native-simple-toast";
 
 const auth = FirebaseAuth();
 const reference = storage();

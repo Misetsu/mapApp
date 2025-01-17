@@ -8,7 +8,7 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  FlatList, // ScrollViewからFlatListに変更z
+  FlatList,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -22,7 +22,7 @@ import RNFS from "react-native-fs";
 import { PermissionsAndroid, Alert } from "react-native";
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import Share from "react-native-share";
-import Toast from 'react-native-simple-toast';
+import Toast from "react-native-simple-toast";
 
 const auth = FirebaseAuth();
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -85,7 +85,7 @@ const ReplyScreen = () => {
           selectedPost.postDetails.spotId
         ),
       });
-    } catch (warning) { }
+    } catch (warning) {}
   };
 
   const fetchData = async () => {
@@ -299,7 +299,7 @@ const ReplyScreen = () => {
     fetchData();
   }, [postId]);
 
-  useEffect(() => { }, [replies]);
+  useEffect(() => {}, [replies]);
 
   const handleReplySubmit = async () => {
     const currentTime = new Date().toISOString();
@@ -732,8 +732,8 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleUnlike(postId)
                         : () => {
-                          router.push("/loginForm");
-                        }
+                            router.push("/loginForm");
+                          }
                     }
                   >
                     <Image
@@ -758,8 +758,8 @@ const ReplyScreen = () => {
                       auth.currentUser
                         ? () => handleLike(postId)
                         : () => {
-                          router.push("/loginForm");
-                        }
+                            router.push("/loginForm");
+                          }
                     }
                   >
                     <Image
