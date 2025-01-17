@@ -383,7 +383,8 @@ export default function TrackUserMapView() {
           tempObj[secondKey] = "Pocape公式";
           tempObj[thirdKey] =
             "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto173431670103632?alt=media&token=1bedc16b-1ffe-4c39-9ba5-95ce6314b693";
-          tempObj[forthKey] = tutorialQuery.docs[0].data().id;
+          tempObj[forthKey] =
+            PostDatas.length / 6 + tutorialQuery.docs[0].data().id;
           tempObj[fifthKey] = tutorialQuery.docs[0].data().postTxt;
           tempObj[sixthKey] = photoUri;
           tempObj[seventhKey] = "0";
@@ -524,6 +525,35 @@ export default function TrackUserMapView() {
 
             cnt = cnt + 1;
           }
+          const tutorialNum = Math.floor(Math.random() * 3);
+          const tutorialQuery = await firestore()
+            .collection("tutorial")
+            .where("id", "==", "00" + tutorialNum)
+            .get();
+          let tempObj = {};
+          let photoUri = "";
+
+          const url = await storage()
+            .ref()
+            .child(tutorialQuery.docs[0].data().imagePath)
+            .getDownloadURL();
+          photoUri = url;
+
+          tempObj[firstKey] = "ro12arSIsugfifCz5BABmvOUZVR2";
+          tempObj[secondKey] = "Pocape公式";
+          tempObj[thirdKey] =
+            "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto173431670103632?alt=media&token=1bedc16b-1ffe-4c39-9ba5-95ce6314b693";
+          tempObj[forthKey] =
+            PostDatas.length / 6 + tutorialQuery.docs[0].data().id;
+          tempObj[fifthKey] = tutorialQuery.docs[0].data().postTxt;
+          tempObj[sixthKey] = photoUri;
+          tempObj[seventhKey] = "0";
+          tempObj[eighthKey] = 0;
+          tempObj[ninthKey] = false;
+          tempObj[tenthKey] = 0;
+
+          postArray.push(tempObj);
+
           setPostData(postArray);
           setLoading(false);
         } else {
@@ -747,6 +777,35 @@ export default function TrackUserMapView() {
 
             cnt = cnt + 1;
           }
+          const tutorialNum = Math.floor(Math.random() * 3);
+          const tutorialQuery = await firestore()
+            .collection("tutorial")
+            .where("id", "==", "00" + tutorialNum)
+            .get();
+          let tempObj = {};
+          let photoUri = "";
+
+          const url = await storage()
+            .ref()
+            .child(tutorialQuery.docs[0].data().imagePath)
+            .getDownloadURL();
+          photoUri = url;
+
+          tempObj[firstKey] = "ro12arSIsugfifCz5BABmvOUZVR2";
+          tempObj[secondKey] = "Pocape公式";
+          tempObj[thirdKey] =
+            "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto173431670103632?alt=media&token=1bedc16b-1ffe-4c39-9ba5-95ce6314b693";
+          tempObj[forthKey] =
+            PostDatas.length / 6 + tutorialQuery.docs[0].data().id;
+          tempObj[fifthKey] = tutorialQuery.docs[0].data().postTxt;
+          tempObj[sixthKey] = photoUri;
+          tempObj[seventhKey] = "0";
+          tempObj[eighthKey] = 0;
+          tempObj[ninthKey] = false;
+          tempObj[tenthKey] = 0;
+
+          postArray.push(tempObj);
+
           setPostData(postArray);
           setLoading(false);
         } else {
