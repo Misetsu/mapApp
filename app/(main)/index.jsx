@@ -22,6 +22,7 @@ import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Toast from "react-native-simple-toast";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -732,30 +733,34 @@ export default function TrackUserMapView() {
   };
 
   const getPinColor = (marker) => {
-    const distance = calculateDistance(
-      position.latitude,
-      position.longitude,
-      marker.mapLatitude,
-      marker.mapLongitude
-    );
-
-    if (distance < marker.areaRadius) {
-      if (marker.visited < marker.lastUpdateAt) {
-        return require("../image/ActionPin_New.png");
-      } else {
-        return require("../image/ActionPin.png");
-      }
-    } else if (marker.visited == "") {
-      if (marker.lastUpdateAt == "") {
-        return require("../image/UnvisitedPin.png");
-      } else {
-        return require("../image/UnvisitedPin_New.png");
-      }
+    if (marker.id == 2) {
+      return require("../image/PortTower.png");
     } else {
-      if (marker.visited < marker.lastUpdateAt) {
-        return require("../image/UnvisitedPin_New.png");
+      const distance = calculateDistance(
+        position.latitude,
+        position.longitude,
+        marker.mapLatitude,
+        marker.mapLongitude
+      );
+
+      if (distance < marker.areaRadius) {
+        if (marker.visited < marker.lastUpdateAt) {
+          return require("../image/ActionPin_New.png");
+        } else {
+          return require("../image/ActionPin.png");
+        }
+      } else if (marker.visited == "") {
+        if (marker.lastUpdateAt == "") {
+          return require("../image/UnvisitedPin.png");
+        } else {
+          return require("../image/UnvisitedPin_New.png");
+        }
       } else {
-        return require("../image/UnvisitedPin.png");
+        if (marker.visited < marker.lastUpdateAt) {
+          return require("../image/UnvisitedPin_New.png");
+        } else {
+          return require("../image/UnvisitedPin.png");
+        }
       }
     }
   };
@@ -1389,7 +1394,7 @@ export default function TrackUserMapView() {
             >
               <Image
                 source={getPinColor(marker)}
-                style={styles.markerImage} //ピンの色
+                style={styles.markerImage}
                 visible={true}
               />
             </Marker>
@@ -1473,6 +1478,21 @@ export default function TrackUserMapView() {
             />
           </TouchableOpacity>
         )}
+      </SafeAreaView>
+
+      <SafeAreaView>
+        <TouchableOpacity style={styles.mapbutton}>
+          <Image
+            source={require("./../image/Brightness.png")}
+            style={styles.mapbuttonImage}
+          />
+        </TouchableOpacity>
+        <Animated.View
+          entering={FadeIn.duration(300)}
+          exiting={FadeOut.duration(300)}
+        >
+          <Image source={require("./../image/android_neutral_sq_Sl.png")} />
+        </Animated.View>
       </SafeAreaView>
 
       <MyModal
