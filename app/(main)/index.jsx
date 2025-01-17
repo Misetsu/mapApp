@@ -21,6 +21,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
+import Toast from "react-native-simple-toast";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -74,6 +75,14 @@ export default function TrackUserMapView() {
   const mapRef = useRef(null);
   const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
+  const now = new Date();
+
+  // 24時間前の時刻を計算
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  // ISO形式で出力
+  const formattedTime = twentyFourHoursAgo.toISOString();
+
   const setmodal = (marker) => {
     try {
       const distance = calculateDistance(
@@ -89,7 +98,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id, sorts, sortOption);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -97,7 +106,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id, sorts, sortOption);
+        fetchPostData(marker.id, sorts, sortOption, []);
         setmarkers(marker);
       }
     } catch (error) {
@@ -157,13 +166,28 @@ export default function TrackUserMapView() {
     }
   }
 
-  const fetchPostData = async (spotId, sort, sortOptions) => {
+  const fetchPostData = async (spotId, sort, sortOptions, PostDatas) => {
     setLoading(true);
     if (chosenUser == null && selectedTag == null) {
       try {
         const postArray = [];
-        const friendList = [];
 
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
+        const friendList = [];
         setEmptyPost(true);
 
         if (auth.currentUser != null) {
@@ -185,12 +209,24 @@ export default function TrackUserMapView() {
           }
         }
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
+
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
           let cnt = 0;
@@ -341,15 +377,42 @@ export default function TrackUserMapView() {
       try {
         const postArray = [];
 
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         setEmptyPost(true);
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("spotId", "==", spotId)
-          .where("userId", "==", chosenUser)
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let querySnapshot;
+        if (PostDatas[0] == undefined) {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          querySnapshot = await firestore()
+            .collection("post")
+            .where("spotId", "==", spotId)
+            .where("userId", "==", chosenUser)
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const queryUser = await firestore()
           .collection("users")
@@ -444,6 +507,22 @@ export default function TrackUserMapView() {
     } else {
       try {
         const postArray = [];
+
+        let tuduki;
+        if (PostDatas[0] != undefined) {
+          const Postsize = PostDatas.length;
+          let postcnt = 0;
+          while (Postsize > postcnt) {
+            postArray.push(PostDatas[postcnt]);
+            postcnt = postcnt + 1;
+          }
+          if (sort == "timeStamp") {
+            tuduki = PostDatas[postcnt - 1].timestamp;
+          } else {
+            tuduki = PostDatas[postcnt - 1].likeCount;
+          }
+        }
+
         const friendList = [];
 
         setEmptyPost(true);
@@ -467,13 +546,25 @@ export default function TrackUserMapView() {
           }
         }
 
-        const postSnapshot = await firestore()
-          .collection("tagPost")
-          .where("spotId", "==", spotId)
-          .where("tagId", "==", parseInt(selectedTag))
-          .orderBy(sort, sortOptions)
-          .limit(5)
-          .get();
+        let postSnapshot;
+        if (PostDatas[0] == undefined) {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .limit(5)
+            .get();
+        } else {
+          postSnapshot = await firestore()
+            .collection("tagPost")
+            .where("spotId", "==", spotId)
+            .where("tagId", "==", parseInt(selectedTag))
+            .orderBy(sort, sortOptions)
+            .startAfter(tuduki)
+            .limit(5)
+            .get();
+        }
 
         const postIdList = [];
 
@@ -673,9 +764,11 @@ export default function TrackUserMapView() {
     if (mapfixed == true) {
       setregionflag(0);
       setmapfixed(false);
+      Toast.show("マップを固定しました");
     } else if (mapfixed == false) {
       setregionflag(1);
       setmapfixed(true);
+      Toast.show("マップ固定を解除しました");
     }
   };
 
@@ -715,6 +808,7 @@ export default function TrackUserMapView() {
           longitudeDelta: LONGITUDE_DELTA,
         });
       }
+      Toast.show("現在地はこちらです");
     } catch (error) {
       console.error("Error fetching documents:", error);
     }
@@ -922,6 +1016,7 @@ export default function TrackUserMapView() {
       setmapflag(true);
       setregions(saveregion);
       fetchAllMarkerCord();
+      Toast.show("すべてのピンを表示しています");
       if (indexStatus == "follow") {
         setIconName("users"); // アイコン名を "times" に変更
       } else {
@@ -931,10 +1026,12 @@ export default function TrackUserMapView() {
       setIndexLoading(true);
       handleChangeIndex();
       setIconName("star"); // アイコン名を "times" に変更
+      Toast.show("お気に入り");
     } else {
       setIndexLoading(true);
       handleChangeIndex();
       setIconName("users");
+      Toast.show("フォロ―中");
     }
   };
 
@@ -982,6 +1079,23 @@ export default function TrackUserMapView() {
     }
     setIconName("close");
     setChosenUser(userId);
+
+    try {
+      // userId を直接使ってユーザー情報を取得
+      const userDoc = await firestore().collection("users").doc(userId).get();
+
+      // データが存在するかチェック
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        const userName = userData.displayName; // 同じドキュメント内の displayName を取得
+        Toast.show(userName + "さんが投稿しているピンを表示しています");
+      } else {
+        // Firestoreにデータがない場合
+        Toast.show("ユーザー情報が見つかりません");
+      }
+    } catch (error) {
+      Toast.show("ユーザー情報の取得に失敗しました");
+    }
   };
 
   const handleTagChoose = async (tagId) => {
@@ -1021,6 +1135,28 @@ export default function TrackUserMapView() {
     }
 
     setSelectedTag(parseInt(tagId));
+
+    try {
+      // tagId を直接使ってユーザー情報を取得
+      const tagQuery = await firestore()
+        .collection("tag")
+        .where("tagId", "==", tagId)
+        .get();
+
+      // データが存在するかチェック
+      if (!tagQuery.empty) {
+        // 最初の一致したドキュメントを取得
+        const tagDoc = tagQuery.docs[0];
+        const tagData = tagDoc.data();
+        const tagName = tagData.tagName;
+        Toast.show(tagName + "タグの投稿があるピンを表示しています");
+      } else {
+        // Firestoreにデータがない場合
+        Toast.show("タグ情報が見つかりません");
+      }
+    } catch (error) {
+      Toast.show("タグ情報の取得に失敗しました");
+    }
   };
 
   const handleCancelTag = () => {
@@ -1028,6 +1164,8 @@ export default function TrackUserMapView() {
     setregions(saveregion);
     setSelectedTag(null);
     fetchAllMarkerCord();
+
+    Toast.show("すべてのピンを表示しています");
   };
 
   const handleChangeIndex = () => {
@@ -1272,10 +1410,17 @@ export default function TrackUserMapView() {
                 style={styles.listProfileSize}
                 onPress={() => handleUserChoose(item.userId)}
               >
-                <Image
-                  source={{ uri: item.userIcon }}
-                  style={styles.listProfileImage}
-                />
+                {item.lastPostAt >= formattedTime ? (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.newlistProfileImage}
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: item.userIcon }}
+                    style={styles.listProfileImage}
+                  />
+                )}
                 <Text style={styles.listProfileNameText} numberOfLines={1}>
                   {item.username}
                 </Text>

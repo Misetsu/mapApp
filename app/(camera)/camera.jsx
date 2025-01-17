@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions, Text } from "react-native";
+import { View, StyleSheet, Pressable, Dimensions, Text, Image } from "react-native";
 import { useFocusEffect, router, useLocalSearchParams } from "expo-router";
 import {
   useCameraPermission,
@@ -22,8 +22,6 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider"; // スライダー用ライブラリをインポート
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import Icon from "react-native-vector-icons/Entypo";
 import { TouchableOpacity } from "react-native";
 
 const width = Dimensions.get("window").width;
@@ -224,26 +222,29 @@ export default function CameraScreen() {
         />
         {/* 十字線切り替えボタン */}
         <TouchableOpacity style={styles.switchButton} onPress={toggleGrid}>
-          <FontAwesome5
-            name={isCrosshair ? "th-large" : "th"}
-            size={35}
-            color="#FFF"
+          <Image
+            source={isCrosshair ? require("./../image/Grigline3.png") : require("./../image/Grigline2.png")}
+            style={styles.CameraButton}
           />
         </TouchableOpacity>
         {/* カメラ切り替えボタン */}
         <TouchableOpacity
           style={styles.switchCameraButton}
           onPress={toggleCamera}
-        >
-          <FontAwesome5 name="sync" size={35} color="#FFF" />
+        ><Image
+            source={require("./../image/Camerachange.png")}
+            style={styles.CameraButton}
+          />
         </TouchableOpacity>
 
         <Pressable
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
-        >
-          <Icon name="light-up" size={24} color="#FFF" />
+        ><Image
+            source={require("./../image/Brightness.png")}
+            style={styles.Brightness}
+          />
         </Pressable>
       </View>
     </GestureHandlerRootView>
@@ -313,10 +314,8 @@ const styles = StyleSheet.create({
   },
   exposureButton: {
     position: "absolute",
-    top: 20,
+    top: 25,
     right: 20,
-    width: 50,
-    height: 40,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
@@ -377,18 +376,22 @@ const styles = StyleSheet.create({
   },
   switchButton: {
     position: "absolute",
-    bottom: 25,
-    left: 60,
-    width: 70,
-    height: 70,
+    bottom: 45,
+    left: 40,
     borderRadius: 35,
   },
   switchCameraButton: {
     position: "absolute",
-    bottom: 25,
-    right: 25,
-    width: 70,
-    height: 70,
+    bottom: 45,
+    right: 40,
     borderRadius: 35,
   },
+  CameraButton: {
+    width: 60,
+    height: 60,
+  },
+  Brightness:{
+    width: 40,
+    height: 40,
+  }
 });

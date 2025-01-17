@@ -23,6 +23,7 @@ import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import FirebaseAuth from "@react-native-firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from 'react-native-simple-toast';
 
 const { width, height } = Dimensions.get("window");
 const imageWidth = width * 0.5;
@@ -252,6 +253,8 @@ export default function edit() {
 
     setIsoading(false);
     router.navigate("/");
+
+    Toast.show("投稿しました");
   };
 
   const GetImageuri = async () => {
