@@ -73,6 +73,7 @@ export default function TrackUserMapView() {
   const [regionflag, setregionflag] = useState(0);
   const [sorts, setsorts] = useState("timeStamp");
   const [sortOption, setSortOption] = useState("desc");
+  const [eventVisible, setEventVisible] = useState(true);
   const mapRef = useRef(null);
   const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
@@ -1480,19 +1481,30 @@ export default function TrackUserMapView() {
         )}
       </SafeAreaView>
 
-      <SafeAreaView>
-        <TouchableOpacity style={styles.mapbutton}>
+      <SafeAreaView style={styles.eventContainer}>
+        <TouchableOpacity
+          style={styles.mapbutton}
+          onPress={() => {
+            setEventVisible(!eventVisible);
+          }}
+        >
           <Image
-            source={require("./../image/Brightness.png")}
+            source={require("./../image/PortTower.png")}
             style={styles.mapbuttonImage}
           />
         </TouchableOpacity>
-        <Animated.View
-          entering={FadeIn.duration(300)}
-          exiting={FadeOut.duration(300)}
-        >
-          <Image source={require("./../image/android_neutral_sq_Sl.png")} />
-        </Animated.View>
+        {eventVisible && (
+          <Animated.View
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(300)}
+            style={{ width: 300, height: 70, backgroundColor: "red" }}
+          >
+            <Image
+              source={require("./../image/android_neutral_sq_SI.png")}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </Animated.View>
+        )}
       </SafeAreaView>
 
       <MyModal
