@@ -361,10 +361,10 @@ export default function MyModal({
               index,
             })}
             initialScrollIndex={
-              postData.length > 5
-                ? postData.length % 5 == 0
-                  ? (Math.floor(postData.length / 5) - 1) * 7
-                  : Math.floor(postData.length / 5) * 7
+              postData.length > 6
+                ? postData.length % 6 == 0
+                  ? (Math.floor(postData.length / 6) - 1) * 6
+                  : Math.floor(postData.length / 6) * 6
                 : 0
             }
             onScrollToIndexFailed={() => {}}
@@ -384,7 +384,7 @@ export default function MyModal({
 
               return (
                 <View key={post.postId} style={styles.postView}>
-                  {post.postId == 0 ? (
+                  {post.timestamp == "0" ? (
                     <View>
                       <TouchableOpacity
                         style={styles.profileBar}
@@ -831,8 +831,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    top: 0,
+    right: 0,
   },
   button: {
     justifyContent: "center", // 画像をボタンの垂直方向の中央に揃える

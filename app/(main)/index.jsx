@@ -181,9 +181,9 @@ export default function TrackUserMapView() {
             postcnt = postcnt + 1;
           }
           if (sort == "timeStamp") {
-            tuduki = PostDatas[postcnt - 1].timestamp;
+            tuduki = PostDatas[postcnt - 2].timestamp;
           } else {
-            tuduki = PostDatas[postcnt - 1].likeCount;
+            tuduki = PostDatas[postcnt - 2].likeCount;
           }
         }
 
@@ -365,12 +365,11 @@ export default function TrackUserMapView() {
 
             cnt = cnt + 1;
           }
-          const tutorialNum = Math.floor(Math.random() * 10);
+          const tutorialNum = Math.floor(Math.random() * 3);
           const tutorialQuery = await firestore()
             .collection("tutorial")
-            .where("id", "==", tutorialNum)
+            .where("id", "==", "00" + tutorialNum)
             .get();
-
           let tempObj = {};
           let photoUri = "";
 
@@ -384,8 +383,8 @@ export default function TrackUserMapView() {
           tempObj[secondKey] = "Pocape公式";
           tempObj[thirdKey] =
             "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto173431670103632?alt=media&token=1bedc16b-1ffe-4c39-9ba5-95ce6314b693";
-          tempObj[forthKey] = 0;
-          tempObj[fifthKey] = tutorialQuery.postTxt;
+          tempObj[forthKey] = tutorialQuery.docs[0].data().id;
+          tempObj[fifthKey] = tutorialQuery.docs[0].data().postTxt;
           tempObj[sixthKey] = photoUri;
           tempObj[seventhKey] = "0";
           tempObj[eighthKey] = 0;
