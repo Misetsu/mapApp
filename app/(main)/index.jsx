@@ -734,34 +734,30 @@ export default function TrackUserMapView() {
   };
 
   const getPinColor = (marker) => {
-    if (marker.id == 2) {
-      return require("../image/PortTower.png");
-    } else {
-      const distance = calculateDistance(
-        position.latitude,
-        position.longitude,
-        marker.mapLatitude,
-        marker.mapLongitude
-      );
+    const distance = calculateDistance(
+      position.latitude,
+      position.longitude,
+      marker.mapLatitude,
+      marker.mapLongitude
+    );
 
-      if (distance < marker.areaRadius) {
-        if (marker.visited < marker.lastUpdateAt) {
-          return require("../image/ActionPin_New.png");
-        } else {
-          return require("../image/ActionPin.png");
-        }
-      } else if (marker.visited == "") {
-        if (marker.lastUpdateAt == "") {
-          return require("../image/UnvisitedPin.png");
-        } else {
-          return require("../image/UnvisitedPin_New.png");
-        }
+    if (distance < marker.areaRadius) {
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/ActionPin_New.png");
       } else {
-        if (marker.visited < marker.lastUpdateAt) {
-          return require("../image/UnvisitedPin_New.png");
-        } else {
-          return require("../image/UnvisitedPin.png");
-        }
+        return require("../image/ActionPin.png");
+      }
+    } else if (marker.visited == "") {
+      if (marker.lastUpdateAt == "") {
+        return require("../image/UnvisitedPin.png");
+      } else {
+        return require("../image/UnvisitedPin_New.png");
+      }
+    } else {
+      if (marker.visited < marker.lastUpdateAt) {
+        return require("../image/UnvisitedPin_New.png");
+      } else {
+        return require("../image/UnvisitedPin.png");
       }
     }
   };
@@ -1393,11 +1389,19 @@ export default function TrackUserMapView() {
               title={marker.name}
               onPress={() => setmodal(marker)}
             >
-              <Image
-                source={getPinColor(marker)}
-                style={styles.markerImage}
-                visible={true}
-              />
+              {marker.id == 2 ? (
+                <Image
+                  source={require("../image/PortTower.png")}
+                  style={{ width: 100, height: 100 }}
+                  visible={true}
+                />
+              ) : (
+                <Image
+                  source={getPinColor(marker)}
+                  style={styles.markerImage}
+                  visible={true}
+                />
+              )}
             </Marker>
           ))}
         </MapView>
@@ -1497,7 +1501,7 @@ export default function TrackUserMapView() {
           <Animated.View
             entering={FadeIn.duration(300)}
             exiting={FadeOut.duration(300)}
-            style={{ width: 300, height: 70, backgroundColor: "red" }}
+            style={{ width: 300, height: 70 }}
           >
             <Image
               source={require("./../image/android_neutral_sq_SI.png")}
