@@ -1392,7 +1392,7 @@ export default function TrackUserMapView() {
               {marker.id == 2 ? (
                 <Image
                   source={require("../image/PortTower.png")}
-                  style={{ width: 100, height: 100 }}
+                  style={{ width: 80, height: 80 }}
                   visible={true}
                 />
               ) : (
