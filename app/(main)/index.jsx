@@ -70,10 +70,7 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
-  const [sorts, setsorts] = useState("timeStamp");
-  const [sortOption, setSortOption] = useState("desc");
   const mapRef = useRef(null);
-  const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
 
   const now = new Date();
 
@@ -98,7 +95,7 @@ export default function TrackUserMapView() {
         setModalVisible(true);
         setPostImage(true);
         handleVisitState(marker.id);
-        fetchPostData(marker.id, sorts, sortOption, []);
+        fetchPostData(marker.id, "timeStamp", "desc", []);
         setmarkers(marker);
       } else {
         setPostData([]);
@@ -106,7 +103,7 @@ export default function TrackUserMapView() {
         setspotName(marker.name);
         setModalVisible(true);
         setPostImage(false);
-        fetchPostData(marker.id, sorts, sortOption, []);
+        fetchPostData(marker.id, "timeStamp", "desc", []);
         setmarkers(marker);
       }
     } catch (error) {

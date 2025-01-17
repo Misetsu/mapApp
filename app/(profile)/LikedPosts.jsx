@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Text,
   ActivityIndicator,
-  Modal,
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -167,7 +166,8 @@ export default function UserLikedPosts() {
           <TouchableOpacity
             style={styles.arrowleft}
             onPress={() => paging("left")}
-          ><Image
+          >
+            <Image
               source={require("./../image/Left_arrow.png")}
               style={styles.actionButton}
             />
@@ -177,7 +177,8 @@ export default function UserLikedPosts() {
           <TouchableOpacity
             style={styles.arrowright}
             onPress={() => paging("right")}
-          ><Image
+          >
+            <Image
               source={require("./../image/Right_arrow.png")}
               style={styles.actionButton}
             />
