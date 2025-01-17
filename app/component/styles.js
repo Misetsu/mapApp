@@ -209,6 +209,15 @@ export const styles = StyleSheet.create({
     justifyContent: "center", // ボタン内のテキストを中央に配置
     alignItems: "center",
   },
+  eventContainer: {
+    position: "absolute",
+    top: 130,
+    width: "80%",
+    paddingTop: 5,
+    paddingBottom: 5,
+    justifyContent: "flex-start",
+    flexDirection: "row",
+  },
   userList: {
     display: "flex",
     flexDirection: "column",
