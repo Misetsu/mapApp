@@ -35,10 +35,8 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Slider from "@react-native-community/slider";
-import FirebaseAuth from "@react-native-firebase/auth";
 import { TouchableOpacity } from "react-native";
 
-const auth = FirebaseAuth();
 const width = Dimensions.get("window").width;
 const wholeHeight = Dimensions.get("window").height;
 const height = (width / 3) * 4;
