@@ -362,7 +362,7 @@ export default function TrackUserMapView() {
 
             cnt = cnt + 1;
           }
-          const tutorialNum = Math.floor(Math.random() * 3);
+          const tutorialNum = Math.floor(Math.random() * 10);
           const tutorialQuery = await firestore()
             .collection("tutorial")
             .where("id", "==", "00" + tutorialNum)
