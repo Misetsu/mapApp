@@ -70,8 +70,34 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
+  const [tutorial, settutorial] = useState(1);
   const mapRef = useRef(null);
-
+  const tutorialImages = [
+    require("../tutorial/tutorial1.png"),
+    require("../tutorial/tutorial2.png"),
+    require("../tutorial/tutorial3.png"),
+    require("../tutorial/tutorial4.png"),
+    require("../tutorial/tutorial5.png"),
+    require("../tutorial/tutorial6.png"),
+    require("../tutorial/tutorial7.png"),
+    require("../tutorial/tutorial8.png"),
+    require("../tutorial/tutorial9.png"),
+    require("../tutorial/tutorial10.png"),
+    require("../tutorial/tutorial11.png"),
+    require("../tutorial/tutorial12.png"),
+    require("../tutorial/tutorial13.png"),
+    require("../tutorial/tutorial14.png"),
+    require("../tutorial/tutorial15.png"),
+    require("../tutorial/tutorial16.png"),
+    require("../tutorial/tutorial17.png"),
+    require("../tutorial/tutorial18.png"),
+    require("../tutorial/tutorial19.png"),
+    require("../tutorial/tutorial20.png"),
+    require("../tutorial/tutorial21.png"),
+    require("../tutorial/tutorial22.png"),
+    require("../tutorial/tutorial23.png"),
+    require("../tutorial/tutorial24.png"),
+  ];
   const now = new Date();
 
   // 24時間前の時刻を計算
@@ -1413,12 +1439,20 @@ export default function TrackUserMapView() {
   useEffect(() => {
     fetchAllMarkerCord();
   }, [regions]);
+  useEffect(() => {
+    settutorial(Math.floor(Math.random() * 24))
+  },[])
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
       <StatusBar barStyle={"dark-content"}></StatusBar>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
+      <Text style={{ fontSize: 18, fontWeight: "bold" }}>読み込み中...</Text>
+        <Image source={tutorialImages[tutorial]}
+        style={{
+          width: 320,
+          height: 180,
+          borderRadius: 20}}/>
       </View>
       {error && (
         <View style={styles.errorContainer}>
