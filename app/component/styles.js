@@ -157,6 +157,11 @@ export const styles = StyleSheet.create({
     top: 305,
     right: 0,
   },
+  Eventpussy: {
+    position: "absolute",
+    top: 365,
+    right: 0,
+  },
   indexContainer: {
     position: "absolute",
     top: 0,

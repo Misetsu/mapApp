@@ -12,6 +12,7 @@ import {
   Linking,
   ActivityIndicator,
   StatusBar,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Geolocation from "@react-native-community/geolocation";
@@ -26,6 +27,22 @@ const { width, height } = Dimensions.get("window"); //デバイスの幅と高�
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+const AccountModal = ({ isPopupVisible, closePopup }) => {
+  const [accountInfo, setAccountInfo] = useState(null);
+
+  useEffect(() => {
+    const targetUid = '2tjGBOa6snXpIpxb2drbSvUAmb83'; // 対象のUID
+    const currentUser = auth().currentUser;
+
+    if (currentUser && currentUser.uid === targetUid) {
+      setAccountInfo({
+        email: currentUser.email,
+        uid: currentUser.uid,
+      });
+    } else {
+      setAccountInfo({ error: '該当するアカウントが見つかりません。' });
+    }
+  }, []);}
 
 const auth = FirebaseAuth();
 
@@ -73,6 +90,8 @@ export default function TrackUserMapView() {
   const [sortOption, setSortOption] = useState("desc");
   const mapRef = useRef(null);
   const [zoomLevel, setZoomLevel] = useState(10); // 初期ズームレベル
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  
 
   const now = new Date();
 
@@ -744,6 +763,32 @@ export default function TrackUserMapView() {
     });
   };
 
+  // ポップアップを開く関数
+  const eventpopup = () => {
+    console.log("Event popup opened");
+    setPopupVisible(true);
+  };
+
+  // ポップアップを閉じる関数
+  const closePopup = () => {
+    console.log("Event popup closed");
+    setPopupVisible(false);
+  };
+  <View style={styles.container}>
+  {/* マップボタン */}
+  <View style={styles.eventpopup}>
+    <TouchableOpacity style={styles.mapbutton} onPress={eventpopup}>
+      <Image
+        source={require("./../image/秦泉寺.png")}
+        style={styles.mapbuttonImage}
+      />
+    </TouchableOpacity>
+  </View>
+
+  {/* ポップアップモーダル */}
+  
+</View>
+
   const fetchAllMarkerCord = async () => {
     if (!modalVisible) {
       let vivstedSpot = {};
@@ -1358,6 +1403,45 @@ export default function TrackUserMapView() {
         fetchPostData={fetchPostData}
       />
 
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={isPopupVisible}
+  onRequestClose={closePopup}
+>
+  <View style={popupStyles.centeredView}>
+    <View style={popupStyles.modalView}>
+      {/* 右上のバツボタン */}
+      <TouchableOpacity style={popupStyles.closeIcon} onPress={closePopup}>
+        <Text style={popupStyles.closeIconText}>×</Text>
+      </TouchableOpacity>
+
+      {/* タイトル */}
+      <Text style={popupStyles.titleText}>KOBE PORT TOWER</Text>
+
+      {/* PR画像 */}
+      <Image
+        source={require('./../image/ポートタワー.png')} // 適切な画像パスに変更してください
+        style={popupStyles.prImage}
+      />
+
+      {/* PR文章 */}
+      <Text style={popupStyles.prText}>
+        神戸の象徴「ポートタワー」は、夜景や港を一望できる観光名所です。
+        <Text style={{ fontWeight: 'bold' }}>ぜひお越しください！</Text>
+      </Text>
+
+      {/* リンクボタン */}
+      <TouchableOpacity
+        style={popupStyles.linkButton}
+        onPress={() => Linking.openURL('https://www.kobe-port-tower.com/')}
+      >
+        <Text style={popupStyles.linkText}>公式サイトを見る</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
       {initialRegion && (
         <View style={styles.toolBar}>
           {mapfixed ? (
@@ -1423,6 +1507,18 @@ export default function TrackUserMapView() {
             >
               <Image
                 source={require("./../image/Minus.png")}
+                style={styles.mapbuttonImage}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.Eventpussy}>
+            <TouchableOpacity
+              style={styles.mapbutton}
+              onPress={eventpopup} //イベント
+            >
+              <Image
+                source={require("./../image/秦泉寺.png")}
                 style={styles.mapbuttonImage}
               />
             </TouchableOpacity>
@@ -1531,3 +1627,75 @@ export default function TrackUserMapView() {
     </SafeAreaView>
   );
 }
+
+const popupStyles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 半透明の背景
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    width: '90%', // 幅を広げてポップアップを大きくする
+    backgroundColor: '#E8E8A6', // ポップアップ背景色を変更
+    borderRadius: 15,
+    padding: 30, // パディングを増やして内部に余裕を持たせる
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    position: 'relative', // バツボタンの配置用
+  },
+  closeIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 15,
+    backgroundColor: '#239d60', // 赤色の背景
+  },
+  closeIconText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '', // ポートタワーの赤
+    marginBottom: 15,
+  },
+  prImage: {
+    width: '100%',
+    height: undefined,
+    aspectRatio: 720 / 960, // 画像のアスペクト比を保持
+    resizeMode: 'contain', // 画像が表示領域に収まるように
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  prText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  linkButton: {
+    backgroundColor: '#A3DE83', // ボタン背景色を変更
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  linkText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
