@@ -221,7 +221,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (12.0.7):
     - ExpoModulesCore
-  - ExpoHead (3.5.16):
+  - ExpoHead (3.5.24):
     - ExpoModulesCore
   - ExpoKeepAwake (13.0.2):
     - ExpoModulesCore
@@ -252,7 +252,7 @@ PODS:
     - ExpoModulesCore
   - ExpoWebBrowser (13.0.3):
     - ExpoModulesCore
-  - EXSplashScreen (0.27.5):
+  - EXSplashScreen (0.27.7):
     - DoubleConversion
     - ExpoModulesCore
     - glog
@@ -1823,12 +1823,12 @@ SPEC CHECKSUMS:
   ExpoAsset: 0c3a543254ff2d7f54c2f69318c625ce44c1f8af
   ExpoFileSystem: 2988caaf68b7cb706e36d382829d99811d9d76a5
   ExpoFont: 094e8eca3a55613658c0635dc071fa7d2c837436
-  ExpoHead: c91882d6ec5bce4ff400b55e30af9b40e31e0a78
+  ExpoHead: 1a1b30c6c1d125e9b8a199ca305c16a1dc041624
   ExpoKeepAwake: dd02e65d49f1cfd9194640028ae2857e536eb1c9
   ExpoModulesCore: f75436e1eaf022f678ef4625eccf14b41fa3c921
   ExpoSystemUI: 7189f4dae664642408d9c619e5bd70669a2bde48
   ExpoWebBrowser: cf10afe886891ab495877dada977fe6c269614a4
-  EXSplashScreen: ef80a68c7a3cb558ada862de6dab5120bf3a5b7a
+  EXSplashScreen: 02d4bb2d7a6b05b4434126e01ee2e6872088f4ae
   EXUpdatesInterface: c3a9494c2173db6442c7d5ad4e5b984972760fd3
   FBLazyVector: 4bc164e5b5e6cfc288d2b5ff28643ea15fa1a589
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
