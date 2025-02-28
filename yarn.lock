@@ -8156,6 +8156,11 @@ react-native-simple-toast@^3.3.2:
   resolved "https://registry.npmjs.org/react-native-simple-toast/-/react-native-simple-toast-3.3.2.tgz"
   integrity sha512-jtZa5VXLDc3Rr+1a2eYyviakxOXP8U9AFYp1VWlslApi0wkiNeyAQ4yLZbIY8nayrbHTUSkERiDzKoCsy9v7Dw==
 
+react-native-switch-with-icons@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/react-native-switch-with-icons/-/react-native-switch-with-icons-3.0.1.tgz"
+  integrity sha512-OzhUWNn1RNcaER6TmKD+XeD3cL0xEa/MMHrggTm5WIhiy6q27dThlkFTdelpttAp6HVy1e5+qM1iyFwc+ZHLyA==
+
 react-native-view-shot@^4.0.3:
   version "4.0.3"
   resolved "https://registry.npmjs.org/react-native-view-shot/-/react-native-view-shot-4.0.3.tgz"
