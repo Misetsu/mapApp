@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "date-fns-tz";
 import React, { useState } from "react";
 import {
   View,
@@ -7,9 +8,18 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { formatInTimeZone } from "date-fns-tz";
-import firestore from "@react-native-firebase/firestore";
+
+import {
+  getFirestore,
+  collection,
+  where,
+  orderBy,
+  getDocs,
+} from "@react-native-firebase/firestore";
+
 import ReplieModal from "./repliemodal";
+
+const db = getFirestore();
 
 const RepliesList = ({ replies, navigateProfile, postId }) => {
   const [modalVisible, setmodalVisible] = useState(false);
@@ -24,19 +34,20 @@ const RepliesList = ({ replies, navigateProfile, postId }) => {
   const fetchData = async (item) => {
     setLoading(true);
     try {
-      const repliesSnapshot = await firestore()
-        .collection("replies")
-        .where("postId", "==", parseInt(postId))
-        .where("parentReplyId", "==", parseInt(item.parentReplyId))
-        .orderBy("timestamp", "asc")
-        .get();
+      const repliesSnapshot = await getDocs(
+        query(
+          collection("replies"),
+          where("postId", "==", parseInt(postId)),
+          where("parentReplyId", "==", parseInt(item.parentReplyId)),
+          orderBy("timestamp", "asc")
+        )
+      );
 
       const repliesData = await Promise.all(
         repliesSnapshot.docs.map(async (doc) => {
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", doc.data().userId)
-            .get();
+          const queryUser = await getDocs(
+            query(collection("users"), where("uid", "==", doc.data().userId))
+          );
 
           const userData = queryUser.docs[0].data();
           return {

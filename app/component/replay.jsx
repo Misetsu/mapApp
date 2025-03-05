@@ -1,3 +1,5 @@
+import { formatInTimeZone } from "date-fns-tz";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -11,21 +13,40 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  PermissionsAndroid,
+  Alert,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { formatInTimeZone } from "date-fns-tz";
-import firestore, { FieldValue } from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import storage from "@react-native-firebase/storage";
-import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
 import RNFS from "react-native-fs";
-import { PermissionsAndroid, Alert } from "react-native";
-import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import Share from "react-native-share";
 import Toast from "react-native-simple-toast";
 
-const auth = FirebaseAuth();
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  FieldValue,
+  getFirestore,
+  query,
+  collection,
+  where,
+  orderBy,
+  getDocs,
+  addDoc,
+  updateDoc,
+  addDoc,
+  doc,
+} from "@react-native-firebase/firestore";
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+} from "@react-native-firebase/storage";
+
+import RepliesList from "./RepliesList"; // RepliesList コンポーネントをインポート
+
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 const ReplyScreen = () => {
   const router = useRouter();
@@ -90,60 +111,61 @@ const ReplyScreen = () => {
 
   const fetchData = async () => {
     try {
-      const photoQuerySnapshot = await firestore()
-        .collection("photo")
-        .where("postId", "==", parseInt(postId))
-        .get();
+      const photoQuerySnapshot = await getDocs(
+        query(collection(db, "photo"), where("postId", "==", parseInt(postId)))
+      );
 
       if (!photoQuerySnapshot.empty) {
         const photoDoc = photoQuerySnapshot.docs[0].data();
         if (photoDoc.imagePath) {
-          const url = await storage().ref(photoDoc.imagePath).getDownloadURL();
+          const url = await getDownloadURL(ref(storage, photoDoc.imagePath));
           setPhotoUri(url);
 
           if (photoDoc.originalpostId) {
-            const originalphotoQuerySnapshot = await firestore()
-              .collection("photo")
-              .where("postId", "==", parseInt(photoDoc.originalpostId))
-              .get();
+            const originalphotoQuerySnapshot = await getDocs(
+              query(
+                collection(db, "photo"),
+                where("postId", "==", parseInt(photoDoc.originalpostId))
+              )
+            );
 
             if (!originalphotoQuerySnapshot.empty) {
               const originalphotoDoc =
                 originalphotoQuerySnapshot.docs[0].data();
               if (originalphotoDoc.imagePath) {
-                const originalurl = await storage()
-                  .ref(originalphotoDoc.imagePath)
-                  .getDownloadURL();
+                const originalurl = await getDownloadURL(
+                  ref(storage, originalphotoDoc.imagePath)
+                );
                 setoriginalphoto(originalurl);
                 setoriginalpostId(photoDoc.originalpostId);
               }
             }
           }
 
-          const postSnapshot = await firestore()
-            .collection("post")
-            .where("id", "==", photoDoc.postId)
-            .get();
+          const postSnapshot = await getDocs(
+            query(collection(db, "post"), where("id", "==", photoDoc.postId))
+          );
 
           let postDetails = null;
           if (!postSnapshot.empty) {
             postDetails = postSnapshot.docs[0].data();
           }
 
-          const userSnapshot = await firestore()
-            .collection("users")
-            .where("uid", "==", postDetails.userId)
-            .get();
+          const userSnapshot = await getDocs(
+            query(
+              collection(db, "users"),
+              where("uid", "==", postDetails.userId)
+            )
+          );
 
           let userDetails = null;
           if (!userSnapshot.empty) {
             userDetails = userSnapshot.docs[0].data();
           }
 
-          const spotSnapshot = await firestore()
-            .collection("spot")
-            .where("id", "==", photoDoc.spotId)
-            .get();
+          const spotSnapshot = await getDocs(
+            query(collection(db, "spot"), where("id", "==", photoDoc.spotId))
+          );
 
           let spotName = null;
           let latitude = null;
@@ -154,10 +176,12 @@ const ReplyScreen = () => {
             longitude = spotSnapshot.docs[0].data().mapLongitude;
           }
 
-          const likeSnapShot = await firestore()
-            .collection("like")
-            .where("postId", "==", parseInt(postId))
-            .get();
+          const likeSnapShot = await getDocs(
+            query(
+              collection(db, "like"),
+              where("postId", "==", parseInt(postId))
+            )
+          );
 
           const likeData = likeSnapShot.docs[0].data();
           const likeCount = likeData.count;
@@ -170,10 +194,12 @@ const ReplyScreen = () => {
 
           const fetchResult = [];
 
-          const tagSnapshot = await firestore()
-            .collection("tagPost")
-            .where("postId", "==", parseInt(postId))
-            .get();
+          const tagSnapshot = await getDocs(
+            query(
+              collection("tagPost"),
+              where("postId", "==", parseInt(postId))
+            )
+          );
           if (!tagSnapshot.empty) {
             tagSnapshot.forEach(async (docs) => {
               const item = docs.data();
@@ -198,19 +224,20 @@ const ReplyScreen = () => {
         setPhotoUri(null);
       }
 
-      const repliesSnapshot = await firestore()
-        .collection("replies")
-        .where("postId", "==", parseInt(postId))
-        .orderBy("parentReplyId", "asc") // parentReplyIdでソート
-        .orderBy("timestamp", "asc")
-        .get();
+      const repliesSnapshot = await getDocs(
+        query(
+          collection("replies"),
+          where("postId", "==", parseInt(postId)),
+          orderBy("parentReplyId", "asc"), // parentReplyIdでソート
+          orderBy("timestamp", "asc")
+        )
+      );
 
       const repliesData = await Promise.all(
         repliesSnapshot.docs.map(async (doc) => {
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", doc.data().userId)
-            .get();
+          const queryUser = await getDocs(
+            query(collection("users"), where("uid", "==", doc.data().userId))
+          );
           const userData = queryUser.docs[0].data();
           return {
             id: doc.id,
@@ -277,10 +304,9 @@ const ReplyScreen = () => {
 
   const fetchAllTag = async () => {
     try {
-      const tagSnapshot = await firestore()
-        .collection("tag")
-        .orderBy("tagId", "asc")
-        .get();
+      const tagSnapshot = await getDocs(
+        query(collection("tag"), orderBy("tagId", "asc"))
+      );
       const fetchResult = [];
       if (!tagSnapshot.empty) {
         tagSnapshot.forEach((docs) => {
@@ -311,26 +337,23 @@ const ReplyScreen = () => {
       }
       const userId = auth.currentUser.uid;
 
-      const querySnapshot = await firestore()
-        .collection("replies")
-        .orderBy("parentReplyId", "desc")
-        .get();
+      const querySnapshot = await getDocs(
+        query(collection("replies"), orderBy("parentReplyId", "desc"))
+      );
 
       const maxId = querySnapshot.empty
         ? 1
         : querySnapshot.docs[0].data().parentReplyId + 1;
 
       try {
-        await firestore()
-          .collection("replies")
-          .add({
-            postId: parseInt(postId),
-            parentReplyId: maxId,
-            userId: userId,
-            text: replyText,
-            timestamp: currentTime,
-            hantei: 0,
-          });
+        await addDoc(collection(db, "replies"), {
+          postId: parseInt(postId),
+          parentReplyId: maxId,
+          userId: userId,
+          text: replyText,
+          timestamp: currentTime,
+          hantei: 0,
+        });
 
         setReplyText("");
         Toast.show("送信しました");
@@ -348,45 +371,36 @@ const ReplyScreen = () => {
     if (selectedPost.likeFlag == false) {
       handleSimpleUnlike(postId);
     } else {
-      const querylike = await firestore()
-        .collection("like")
-        .where("postId", "==", parseInt(postId))
-        .get();
-      querylike.forEach(async (doc) => {
-        await firestore()
-          .collection("like")
-          .doc(doc.id)
-          .update({
-            count: parseInt(selectedPost.likeCount) - 1,
-            [auth.currentUser.uid]: FieldValue.delete(),
-          });
+      const querylike = await getDocs(
+        query(collection("like"), where("postId", "==", parseInt(postId)))
+      );
+      querylike.forEach(async (document) => {
+        await updateDoc(doc(db, "like", document.id), {
+          count: parseInt(selectedPost.likeCount) - 1,
+          [auth.currentUser.uid]: FieldValue.delete(),
+        });
       });
 
-      const querySnapshot = await firestore()
-        .collection("post") // post コレクション
-        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-        .get();
-      querySnapshot.forEach(async (doc) => {
-        await firestore()
-          .collection("post")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            likecount: parseInt(selectedPost.likeCount) - 1, // likecount フィールドを更新
-          });
+      const querySnapshot = await getDocs(
+        query(
+          collection("post"),
+          where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+        )
+      );
+      querySnapshot.forEach(async (document) => {
+        await updateDoc(doc(db, "post", document.id), {
+          likecount: parseInt(selectedPost.likeCount) - 1,
+        });
       });
 
-      const queryTagPost = await firestore()
-        .collection("tagPost")
-        .where("postId", "==", parseInt(postId))
-        .get();
+      const queryTagPost = await getDocs(
+        query(collection("tagPost"), where("postId", "==", parseInt(postId)))
+      );
       if (!queryTagPost.empty) {
-        queryTagPost.forEach(async (doc) => {
-          await firestore()
-            .collection("tagPost")
-            .doc(doc.id)
-            .update({
-              likecount: parseInt(selectedPost.likeCount) - 1,
-            });
+        queryTagPost.forEach(async (document) => {
+          await updateDoc(doc(db, "tagPost", document.id), {
+            likecount: parseInt(selectedPost.likeCount) - 1,
+          });
         });
       }
       setIsLiked(false);
@@ -397,45 +411,36 @@ const ReplyScreen = () => {
     if (selectedPost.likeFlag) {
       handleSimpleLike(postId);
     } else {
-      const querylike = await firestore()
-        .collection("like")
-        .where("postId", "==", parseInt(postId))
-        .get();
-      querylike.forEach(async (doc) => {
-        await firestore()
-          .collection("like")
-          .doc(doc.id)
-          .update({
-            count: parseInt(selectedPost.likeCount) + 1,
-            [auth.currentUser.uid]: auth.currentUser.uid,
-          });
+      const querylike = await getDocs(
+        query(collection("like"), where("postId", "==", parseInt(postId)))
+      );
+      querylike.forEach(async (document) => {
+        await updateDoc(doc(db, "like", document.id), {
+          count: parseInt(selectedPost.likeCount) + 1,
+          [auth.currentUser.uid]: auth.currentUser.uid,
+        });
       });
 
-      const querySnapshot = await firestore()
-        .collection("post") // post コレクション
-        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-        .get();
-      querySnapshot.forEach(async (doc) => {
-        await firestore()
-          .collection("post")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            likecount: parseInt(selectedPost.likeCount) + 1, // likecount フィールドを更新
-          });
+      const querySnapshot = await getDocs(
+        query(
+          collection("post"),
+          where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+        )
+      );
+      querySnapshot.forEach(async (document) => {
+        await updateDoc(doc(db, "post", document.id), {
+          likecount: parseInt(selectedPost.likeCount) + 1,
+        });
       });
 
-      const queryTagPost = await firestore()
-        .collection("tagPost")
-        .where("postId", "==", parseInt(postId))
-        .get();
+      const queryTagPost = await getDocs(
+        query(collection("tagPost"), where("postId", "==", parseInt(postId)))
+      );
       if (!queryTagPost.empty) {
-        queryTagPost.forEach(async (doc) => {
-          await firestore()
-            .collection("tagPost")
-            .doc(doc.id)
-            .update({
-              likecount: parseInt(selectedPost.likeCount) + 1,
-            });
+        queryTagPost.forEach(async (document) => {
+          await updateDoc(doc(db, "tagPost", document.id), {
+            likecount: parseInt(selectedPost.likeCount) + 1,
+          });
         });
       }
       setIsLiked(true);
@@ -443,90 +448,72 @@ const ReplyScreen = () => {
   };
 
   const handleSimpleUnlike = async (postId) => {
-    const querylike = await firestore()
-      .collection("like")
-      .where("postId", "==", parseInt(postId))
-      .get();
-    querylike.forEach(async (doc) => {
-      await firestore()
-        .collection("like")
-        .doc(doc.id)
-        .update({
-          count: parseInt(selectedPost.likeCount),
-          [auth.currentUser.uid]: FieldValue.delete(),
-        });
+    const querylike = await getDocs(
+      query(collection("like"), where("postId", "==", parseInt(postId)))
+    );
+    querylike.forEach(async (document) => {
+      await updateDoc(doc(db, "like", document.id), {
+        count: parseInt(selectedPost.likeCount),
+        [auth.currentUser.uid]: FieldValue.delete(),
+      });
     });
 
-    const querySnapshot = await firestore()
-      .collection("post") // post コレクション
-      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-      .get();
-    querySnapshot.forEach(async (doc) => {
-      await firestore()
-        .collection("post")
-        .doc(doc.id) // FirestoreのドキュメントID
-        .update({
-          likecount: parseInt(selectedPost.likeCount), // likecount フィールドを更新
-        });
+    const querySnapshot = await getDocs(
+      query(
+        collection("post"),
+        where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+      )
+    );
+    querySnapshot.forEach(async (document) => {
+      await updateDoc(doc(db, "post", document.id), {
+        likecount: parseInt(selectedPost.likeCount),
+      });
     });
 
-    const queryTagPost = await firestore()
-      .collection("tagPost")
-      .where("postId", "==", parseInt(postId))
-      .get();
+    const queryTagPost = await getDocs(
+      query(collection("tagPost"), where("postId", "==", parseInt(postId)))
+    );
     if (!queryTagPost.empty) {
-      queryTagPost.forEach(async (doc) => {
-        await firestore()
-          .collection("tagPost")
-          .doc(doc.id)
-          .update({
-            likecount: parseInt(selectedPost.likeCount),
-          });
+      queryTagPost.forEach(async (document) => {
+        await updateDoc(doc(db, "tagPost", document.id), {
+          likecount: parseInt(selectedPost.likeCount),
+        });
       });
     }
     setIsLiked(false);
   };
 
   const handleSimpleLike = async (postId) => {
-    const querylike = await firestore()
-      .collection("like")
-      .where("postId", "==", parseInt(postId))
-      .get();
-    querylike.forEach(async (doc) => {
-      await firestore()
-        .collection("like")
-        .doc(doc.id)
-        .update({
-          count: parseInt(selectedPost.likeCount),
-          [auth.currentUser.uid]: auth.currentUser.uid,
-        });
+    const querylike = await getDocs(
+      query(collection("like"), where("postId", "==", parseInt(postId)))
+    );
+    querylike.forEach(async (document) => {
+      await updateDoc(doc(db, "like", document.id), {
+        count: parseInt(selectedPost.likeCount),
+        [auth.currentUser.uid]: auth.currentUser.uid,
+      });
     });
 
-    const querySnapshot = await firestore()
-      .collection("post") // post コレクション
-      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-      .get();
-    querySnapshot.forEach(async (doc) => {
-      await firestore()
-        .collection("post")
-        .doc(doc.id) // FirestoreのドキュメントID
-        .update({
-          likecount: parseInt(selectedPost.likeCount), // likecount フィールドを更新
-        });
+    const querySnapshot = await getDocs(
+      query(
+        collection("post"),
+        where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
+      )
+    );
+    querySnapshot.forEach(async (document) => {
+      await updateDoc(doc(db, "post", document.id), {
+        likecount: parseInt(selectedPost.likeCount),
+      });
     });
 
-    const queryTagPost = await firestore()
-      .collection("tagPost")
-      .where("postId", "==", parseInt(postId))
-      .get();
+    const queryTagPost = await getDocs(
+      query(collection("tagPost"), where("postId", "==", parseInt(postId)))
+    );
     if (!queryTagPost.empty) {
-      queryTagPost.forEach(async (doc) => {
-        await firestore()
-          .collection("tagPost")
-          .doc(doc.id)
-          .update({
-            likecount: parseInt(selectedPost.likeCount),
-          });
+      queryTagPost.forEach(async (document) => {
+        await updateDoc(doc(db, "tagPost", document.id), {
+          likecount: parseInt(selectedPost.likeCount),
+        });
       });
     }
     setIsLiked(true);
@@ -543,63 +530,58 @@ const ReplyScreen = () => {
         onPress: async () => {
           setLoading(true);
           try {
-            let batch = firestore().batch();
+            let batch = db.batch();
 
-            await firestore()
-              .collection("post")
-              .where("id", "==", parseInt(postId))
-              .get()
-              .then((snapshot) => {
-                snapshot.docs.forEach((doc) => {
-                  batch.delete(doc.ref);
-                });
+            await getDocs(
+              query(collection("post"), where("id", "==", parseInt(postId)))
+            ).then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
               });
+            });
 
-            await firestore()
-              .collection("photo")
-              .where("postId", "==", parseInt(postId))
-              .get()
-              .then((snapshot) => {
-                snapshot.docs.forEach(async (doc) => {
-                  batch.delete(doc.ref);
-                });
+            await getDocs(
+              query(
+                collection("photo"),
+                where("postId", "==", parseInt(postId))
+              )
+            ).then((snapshot) => {
+              snapshot.docs.forEach(async (doc) => {
+                batch.delete(doc.ref);
               });
+            });
 
-            await firestore()
-              .collection("like")
-              .where("postId", "==", parseInt(postId))
-              .get()
-              .then((snapshot) => {
-                snapshot.docs.forEach((doc) => {
-                  batch.delete(doc.ref);
-                });
+            await getDocs(
+              query(collection("like"), where("postId", "==", parseInt(postId)))
+            ).then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
               });
+            });
 
-            await firestore()
-              .collection("replies")
-              .where("postId", "==", parseInt(postId))
-              .get()
-              .then((snapshot) => {
-                snapshot.docs.forEach((doc) => {
-                  batch.delete(doc.ref);
-                });
+            await getDocs(
+              query(
+                collection("replies"),
+                where("postId", "==", parseInt(postId))
+              )
+            ).then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
               });
+            });
 
-            await firestore()
-              .collection("tagPost")
-              .where("postId", "==", parseInt(postId))
-              .get()
-              .then((snapshot) => {
-                snapshot.docs.forEach((doc) => {
-                  batch.delete(doc.ref);
-                });
+            await getDocs(
+              query(
+                collection("tagPost"),
+                where("postId", "==", parseInt(postId))
+              )
+            ).then((snapshot) => {
+              snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
               });
+            });
 
             await batch.commit();
-            // const photoRef = storage().child(
-            //   selectedPost.photoDoc.imagePath + ".jpg"
-            // );
-            // await photoRef.delete();
           } catch (error) {
           } finally {
             setLoading(false);

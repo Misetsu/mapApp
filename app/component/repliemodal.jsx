@@ -1,3 +1,5 @@
+import { formatInTimeZone } from "date-fns-tz";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   View,
@@ -9,18 +11,23 @@ import {
   Dimensions,
   TextInput,
   Alert,
-  FlatList, // ScrollViewからFlatListに変更z
+  FlatList,
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
-import FirebaseAuth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
-import { formatInTimeZone } from "date-fns-tz";
-import { useRouter } from "expo-router";
 import Toast from "react-native-simple-toast";
 
-const auth = FirebaseAuth();
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+} from "@react-native-firebase/firestore";
+
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得す
+
+const auth = getAuth();
+const db = getFirestore();
 
 export default function ReplieModal({
   visible,
@@ -51,16 +58,14 @@ export default function ReplieModal({
       const userId = auth.currentUser.uid;
 
       try {
-        await firestore()
-          .collection("replies")
-          .add({
-            postId: parseInt(postId),
-            parentReplyId: parentReplyId,
-            userId: userId,
-            text: newReplyText,
-            timestamp: currentTime,
-            hantei: 1,
-          });
+        await addDoc(collection(db, "replies"), {
+          postId: parseInt(postId),
+          parentReplyId: parentReplyId,
+          userId: userId,
+          text: newReplyText,
+          timestamp: currentTime,
+          hantei: 1,
+        });
 
         Toast.show("送信しました");
         router.back();
