@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
   },
   errorContainer: {
     position: "absolute",
-    top: 85,
+    top: 125,
     left: 0,
     right: 0,
     backgroundColor: "red",

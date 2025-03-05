@@ -14,6 +14,8 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
 
+  // [GMSServices provideAPIKey:@"AIzaSyByc7tWI-J5LzQOd5FQaLB0EPVRouiINe8"]
+
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 

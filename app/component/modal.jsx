@@ -1,3 +1,5 @@
+import { formatInTimeZone } from "date-fns-tz";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -10,15 +12,24 @@ import {
   Dimensions,
   FlatList,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { formatInTimeZone } from "date-fns-tz";
-import FirebaseAuth from "@react-native-firebase/auth";
-import firestore, { FieldValue } from "@react-native-firebase/firestore";
 import Share from "react-native-share";
+
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  FieldValue,
+  getFirestore,
+  query,
+  collection,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+} from "@react-native-firebase/firestore";
 import { Picker } from "@react-native-picker/picker";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
-const auth = FirebaseAuth();
+const auth = getAuth();
+const db = getFirestore();
 
 export default function MyModal({
   visible,
@@ -100,45 +111,36 @@ export default function MyModal({
       handleLikePress(postId);
       tempObj2[postId] = tempObj2[postId] - 1;
 
-      const querylike = await firestore()
-        .collection("like")
-        .where("postId", "==", postId)
-        .get();
-      querylike.forEach(async (doc) => {
-        await firestore()
-          .collection("like")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            count: tempObj2[postId],
-            [auth.currentUser.uid]: FieldValue.delete(),
-          });
+      const querylike = await getDocs(
+        query(collection(db, "like"), where("postId", "==", postId))
+      );
+      querylike.forEach(async (document) => {
+        await updateDoc(doc(db, "like", document.id), {
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: FieldValue.delete(),
+        });
       });
 
-      const querySnapshot = await firestore()
-        .collection("post") // post コレクション
-        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-        .get();
-      querySnapshot.forEach(async (doc) => {
-        await firestore()
-          .collection("post")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            likecount: tempObj2[postId], // likecount フィールドを更新
-          });
+      const querySnapshot = await getDocs(
+        query(collection(db, "post"), where("id", "==", parseInt(postId)))
+      );
+      querySnapshot.forEach(async (document) => {
+        await updateDoc(doc(db, "post", document.id), {
+          likecount: tempObj2[postId],
+        });
       });
 
-      const queryTagPost = await firestore()
-        .collection("tagPost")
-        .where("postId", "==", parseInt(postId))
-        .get();
+      const queryTagPost = await getDocs(
+        query(
+          collection(db, "tagPost"),
+          where("postId", "==", parseInt(postId))
+        )
+      );
       if (!queryTagPost.empty) {
-        queryTagPost.forEach(async (doc) => {
-          await firestore()
-            .collection("tagPost")
-            .doc(doc.id) // FirestoreのドキュメントID
-            .update({
-              likecount: tempObj2[postId],
-            });
+        queryTagPost.forEach(async (document) => {
+          await updateDoc(doc(db, "tagPost", document.id), {
+            likecount: tempObj2[postId],
+          });
         });
       }
     }
@@ -146,45 +148,33 @@ export default function MyModal({
 
   const handleSimpleUnlike = async (postId) => {
     handleLikePress(postId);
-    const querylike = await firestore()
-      .collection("like")
-      .where("postId", "==", postId)
-      .get();
-    querylike.forEach(async (doc) => {
-      await firestore()
-        .collection("like")
-        .doc(doc.id) // FirestoreのドキュメントID
-        .update({
-          count: tempObj2[postId],
-          [auth.currentUser.uid]: FieldValue.delete(),
-        });
+    const querylike = await getDocs(
+      query(collection(db, "like"), where("postId", "==", postId))
+    );
+    querylike.forEach(async (document) => {
+      await updateDoc(doc(db, "like", document.id), {
+        count: tempObj2[postId],
+        [auth.currentUser.uid]: FieldValue.delete(),
+      });
     });
 
-    const querySnapshot = await firestore()
-      .collection("post") // post コレクション
-      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-      .get();
-    querySnapshot.forEach(async (doc) => {
-      await firestore()
-        .collection("post")
-        .doc(doc.id) // FirestoreのドキュメントID
-        .update({
-          likecount: tempObj2[postId], // likecount フィールドを更新
-        });
+    const querySnapshot = await getDocs(
+      query(collection(db, "post"), where("id", "==", parseInt(postId)))
+    );
+    querySnapshot.forEach(async (document) => {
+      await updateDoc(doc(db, "post", document.id), {
+        likecount: tempObj2[postId],
+      });
     });
 
-    const queryTagPost = await firestore()
-      .collection("tagPost")
-      .where("postId", "==", parseInt(postId))
-      .get();
+    const queryTagPost = await getDocs(
+      query(collection(db, "tagPost"), where("postId", "==", parseInt(postId)))
+    );
     if (!queryTagPost.empty) {
-      queryTagPost.forEach(async (doc) => {
-        await firestore()
-          .collection("tagPost")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            likecount: tempObj2[postId],
-          });
+      queryTagPost.forEach(async (document) => {
+        await updateDoc(doc(db, "tagPost", document.id), {
+          likecount: tempObj2[postId],
+        });
       });
     }
   };
@@ -196,45 +186,36 @@ export default function MyModal({
       handleLikePress(postId);
       tempObj2[postId] = tempObj2[postId] + 1;
 
-      const querylike = await firestore()
-        .collection("like")
-        .where("postId", "==", postId)
-        .get();
-      querylike.forEach(async (doc) => {
-        await firestore()
-          .collection("like")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            count: tempObj2[postId],
-            [auth.currentUser.uid]: auth.currentUser.uid,
-          });
+      const querylike = await getDocs(
+        query(collection(db, "like"), where("postId", "==", postId))
+      );
+      querylike.forEach(async (document) => {
+        await updateDoc(doc(db, "like", document.id), {
+          count: tempObj2[postId],
+          [auth.currentUser.uid]: auth.currentUser.uid,
+        });
       });
 
-      const querySnapshot = await firestore()
-        .collection("post") // post コレクション
-        .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-        .get();
-      querySnapshot.forEach(async (doc) => {
-        await firestore()
-          .collection("post")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            likecount: tempObj2[postId], // likecount フィールドを更新
-          });
+      const querySnapshot = await getDocs(
+        query(collection(db, "post"), where("id", "==", parseInt(postId)))
+      );
+      querySnapshot.forEach(async (document) => {
+        await updateDoc(doc(db, "post", document.id), {
+          likecount: tempObj2[postId],
+        });
       });
 
-      const queryTagPost = await firestore()
-        .collection("tagPost")
-        .where("postId", "==", parseInt(postId))
-        .get();
+      const queryTagPost = await getDocs(
+        query(
+          collection(db, "tagPost"),
+          where("postId", "==", parseInt(postId))
+        )
+      );
       if (!queryTagPost.empty) {
-        queryTagPost.forEach(async (doc) => {
-          await firestore()
-            .collection("tagPost")
-            .doc(doc.id) // FirestoreのドキュメントID
-            .update({
-              likecount: tempObj2[postId],
-            });
+        queryTagPost.forEach(async (document) => {
+          await updateDoc(doc(db, "tagPost", document.id), {
+            likecount: tempObj2[postId],
+          });
         });
       }
     }
@@ -242,45 +223,33 @@ export default function MyModal({
 
   const handleSimpleLike = async (postId) => {
     handleLikePress(postId);
-    const querylike = await firestore()
-      .collection("like")
-      .where("postId", "==", postId)
-      .get();
-    querylike.forEach(async (doc) => {
-      await firestore()
-        .collection("like")
-        .doc(doc.id) // FirestoreのドキュメントID
-        .update({
-          count: tempObj2[postId],
-          [auth.currentUser.uid]: auth.currentUser.uid,
-        });
+    const querylike = await getDocs(
+      query(collection(db, "like"), where("postId", "==", postId))
+    );
+    querylike.forEach(async (document) => {
+      await updateDoc(doc(db, "like", document.id), {
+        count: tempObj2[postId],
+        [auth.currentUser.uid]: auth.currentUser.uid,
+      });
     });
 
-    const querySnapshot = await firestore()
-      .collection("post") // post コレクション
-      .where("id", "==", parseInt(postId)) // id フィールドが postId と一致するものを検索
-      .get();
-    querySnapshot.forEach(async (doc) => {
-      await firestore()
-        .collection("post")
-        .doc(doc.id) // FirestoreのドキュメントID
-        .update({
-          likecount: tempObj2[postId], // likecount フィールドを更新
-        });
+    const querySnapshot = await getDocs(
+      query(collection(db, "post"), where("id", "==", parseInt(postId)))
+    );
+    querySnapshot.forEach(async (document) => {
+      await updateDoc(doc(db, "post", document.id), {
+        likecount: tempObj2[postId],
+      });
     });
 
-    const queryTagPost = await firestore()
-      .collection("tagPost")
-      .where("postId", "==", parseInt(postId))
-      .get();
+    const queryTagPost = await getDocs(
+      query(collection(db, "tagPost"), where("postId", "==", parseInt(postId)))
+    );
     if (!queryTagPost.empty) {
-      queryTagPost.forEach(async (doc) => {
-        await firestore()
-          .collection("tagPost")
-          .doc(doc.id) // FirestoreのドキュメントID
-          .update({
-            likecount: tempObj2[postId],
-          });
+      queryTagPost.forEach(async (document) => {
+        await updateDoc(doc(db, "tagPost", document.id), {
+          likecount: tempObj2[postId],
+        });
       });
     }
   };

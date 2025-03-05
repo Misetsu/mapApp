@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
 import {
   FlatList,
@@ -13,22 +14,42 @@ import {
   ActivityIndicator,
   StatusBar,
 } from "react-native";
-import { useRouter } from "expo-router";
-import Geolocation from "@react-native-community/geolocation";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import FirebaseAuth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
+import Toast from "react-native-simple-toast";
+
+import Geolocation from "@react-native-community/geolocation";
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  getFirestore,
+  query,
+  collection,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  doc,
+} from "@react-native-firebase/firestore";
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+} from "@react-native-firebase/storage";
+
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
-import Toast from "react-native-simple-toast";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
-const auth = FirebaseAuth();
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 export default function TrackUserMapView() {
   const router = useRouter();
@@ -190,10 +211,12 @@ export default function TrackUserMapView() {
         if (auth.currentUser != null) {
           friendList.push(auth.currentUser.uid);
 
-          const queryFollow = await firestore()
-            .collection("follow")
-            .where("followerId", "==", auth.currentUser.uid)
-            .get();
+          const queryFollow = await getDocs(
+            query(
+              collection(db, "follow"),
+              where("followerId", "==", auth.currentUser.uid)
+            )
+          );
 
           if (!queryFollow.empty) {
             let cnt = 0;
@@ -208,20 +231,24 @@ export default function TrackUserMapView() {
 
         let querySnapshot;
         if (PostDatas[0] == undefined) {
-          querySnapshot = await firestore()
-            .collection("post")
-            .where("spotId", "==", spotId)
-            .orderBy(sort, sortOptions)
-            .limit(5)
-            .get();
+          querySnapshot = await getDocs(
+            query(
+              collection(db, "post"),
+              where("spotId", "==", spotId),
+              orderBy(sort, sortOptions),
+              limit(5)
+            )
+          );
         } else {
-          querySnapshot = await firestore()
-            .collection("post")
-            .where("spotId", "==", spotId)
-            .orderBy(sort, sortOptions)
-            .startAfter(tuduki)
-            .limit(5)
-            .get();
+          querySnapshot = await getDocs(
+            query(
+              collection(db, "post"),
+              where("spotId", "==", spotId),
+              orderBy(sort, sortOptions),
+              startAfter(tuduki),
+              limit(5)
+            )
+          );
         }
 
         if (!querySnapshot.empty) {
@@ -245,35 +272,41 @@ export default function TrackUserMapView() {
             let photoUri = "";
             let tempObj = {};
 
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", postData.userId)
-              .get();
+            const queryUser = await getDocs(
+              query(
+                collection(db, "users"),
+                where("uid", "==", postData.userId)
+              )
+            );
             const userSnapshot = queryUser.docs[0];
             const userData = userSnapshot.data();
 
             if (userData.publicStatus == 0) {
-              const queryPhoto = await firestore()
-                .collection("photo")
-                .where("postId", "==", postData.id) // 特定の条件を指定
-                .get();
+              const queryPhoto = await getDocs(
+                query(
+                  collection(db, "photo"),
+                  where("postId", "==", postData.id)
+                )
+              );
               if (!queryPhoto.empty) {
                 const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
                 const photoData = photoSnapshot.data();
 
                 if (photoData.imagePath) {
-                  const url = await storage()
-                    .ref()
-                    .child(photoData.imagePath)
-                    .getDownloadURL();
+                  const url = await getDownloadURL(
+                    ref(storage, photoData.imagePath)
+                  );
+
                   photoUri = url;
                 }
               }
 
-              const queryLike = await firestore()
-                .collection("like")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryLike = await getDocs(
+                query(
+                  collection(db, "like"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const likeSnapshot = queryLike.docs[0];
               const likeData = likeSnapshot.data();
@@ -286,10 +319,12 @@ export default function TrackUserMapView() {
                 }
               }
 
-              const queryReply = await firestore()
-                .collection("replies")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryReply = await getDocs(
+                query(
+                  collection(db, "replies"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const replyCount = queryReply.empty ? 0 : queryReply.size;
 
@@ -307,27 +342,31 @@ export default function TrackUserMapView() {
               postArray.push(tempObj);
               setEmptyPost(false);
             } else if (friendList.includes(userData.uid)) {
-              const queryPhoto = await firestore()
-                .collection("photo")
-                .where("postId", "==", postData.id) // 特定の条件を指定
-                .get();
+              const queryPhoto = await getDocs(
+                query(
+                  collection(db, "photo"),
+                  where("postId", "==", postData.id)
+                )
+              );
               if (!queryPhoto.empty) {
                 const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
                 const photoData = photoSnapshot.data();
 
                 if (photoData.imagePath) {
-                  const url = await storage()
-                    .ref()
-                    .child(photoData.imagePath)
-                    .getDownloadURL();
+                  const url = await getDownloadURL(
+                    ref(storage, photoData.imagePath)
+                  );
+
                   photoUri = url;
                 }
               }
 
-              const queryLike = await firestore()
-                .collection("like")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryLike = await getDocs(
+                query(
+                  collection(db, "like"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const likeSnapshot = queryLike.docs[0];
               const likeData = likeSnapshot.data();
@@ -338,10 +377,12 @@ export default function TrackUserMapView() {
                 likeFlag = false;
               }
 
-              const queryReply = await firestore()
-                .collection("replies")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryReply = await getDocs(
+                query(
+                  collection(db, "replies"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const replyCount = queryReply.empty ? 0 : queryReply.size;
 
@@ -363,17 +404,19 @@ export default function TrackUserMapView() {
             cnt = cnt + 1;
           }
           const tutorialNum = Math.floor(Math.random() * 10);
-          const tutorialQuery = await firestore()
-            .collection("tutorial")
-            .where("id", "==", "00" + tutorialNum)
-            .get();
+          const tutorialQuery = await getDocs(
+            query(
+              collection(db, "tutorial"),
+              where("id", "==", "00" + tutorialNum)
+            )
+          );
           let tempObj = {};
           let photoUri = "";
 
-          const url = await storage()
-            .ref()
-            .child(tutorialQuery.docs[0].data().imagePath)
-            .getDownloadURL();
+          const url = await getDownloadURL(
+            ref(storage, tutorialQuery.docs[0].data().imagePath)
+          );
+
           photoUri = url;
 
           tempObj[firstKey] = "ro12arSIsugfifCz5BABmvOUZVR2";
@@ -422,28 +465,31 @@ export default function TrackUserMapView() {
 
         let querySnapshot;
         if (PostDatas[0] == undefined) {
-          querySnapshot = await firestore()
-            .collection("post")
-            .where("spotId", "==", spotId)
-            .where("userId", "==", chosenUser)
-            .orderBy(sort, sortOptions)
-            .limit(5)
-            .get();
+          querySnapshot = await getDocs(
+            query(
+              collection(db, "post"),
+              where("spotId", "==", spotId),
+              where("userId", "==", chosenUser),
+              orderBy(sort, sortOptions),
+              limit(5)
+            )
+          );
         } else {
-          querySnapshot = await firestore()
-            .collection("post")
-            .where("spotId", "==", spotId)
-            .where("userId", "==", chosenUser)
-            .orderBy(sort, sortOptions)
-            .startAfter(tuduki)
-            .limit(5)
-            .get();
+          querySnapshot = await getDocs(
+            query(
+              collection(db, "post"),
+              where("spotId", "==", spotId),
+              where("userId", "==", chosenUser),
+              orderBy(sort, sortOptions),
+              startAfter(tuduki),
+              limit(5)
+            )
+          );
         }
 
-        const queryUser = await firestore()
-          .collection("users")
-          .where("uid", "==", chosenUser)
-          .get();
+        const queryUser = await getDocs(
+          query(collection(db, "users"), where("uid", "==", chosenUser))
+        );
         const userSnapshot = queryUser.docs[0];
         const userData = userSnapshot.data();
 
@@ -468,27 +514,25 @@ export default function TrackUserMapView() {
             let photoUri = "";
             let tempObj = {};
 
-            const queryPhoto = await firestore()
-              .collection("photo")
-              .where("postId", "==", postData.id) // 特定の条件を指定
-              .get();
+            const queryPhoto = await getDocs(
+              query(collection(db, "photo"), where("postId", "==", postData.id))
+            );
             if (!queryPhoto.empty) {
               const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
               const photoData = photoSnapshot.data();
 
               if (photoData.imagePath) {
-                const url = await storage()
-                  .ref()
-                  .child(photoData.imagePath)
-                  .getDownloadURL();
+                const url = await getDownloadURL(
+                  ref(storage, photoData.imagePath)
+                );
+
                 photoUri = url;
               }
             }
 
-            const queryLike = await firestore()
-              .collection("like")
-              .where("postId", "==", postData.id)
-              .get();
+            const queryLike = await getDocs(
+              query(collection(db, "like"), where("postId", "==", postData.id))
+            );
 
             const likeSnapshot = queryLike.docs[0];
             const likeData = likeSnapshot.data();
@@ -499,10 +543,12 @@ export default function TrackUserMapView() {
               likeFlag = false;
             }
 
-            const queryReply = await firestore()
-              .collection("replies")
-              .where("postId", "==", postData.id)
-              .get();
+            const queryReply = await getDocs(
+              query(
+                collection(db, "replies"),
+                where("postId", "==", postData.id)
+              )
+            );
 
             const replyCount = queryReply.empty ? 0 : queryReply.size;
 
@@ -523,17 +569,19 @@ export default function TrackUserMapView() {
             cnt = cnt + 1;
           }
           const tutorialNum = Math.floor(Math.random() * 3);
-          const tutorialQuery = await firestore()
-            .collection("tutorial")
-            .where("id", "==", "00" + tutorialNum)
-            .get();
+          const tutorialQuery = await getDocs(
+            query(
+              collection(db, "tutorial"),
+              where("id", "==", "00" + tutorialNum)
+            )
+          );
           let tempObj = {};
           let photoUri = "";
 
-          const url = await storage()
-            .ref()
-            .child(tutorialQuery.docs[0].data().imagePath)
-            .getDownloadURL();
+          const url = await getDownloadURL(
+            ref(storage, tutorialQuery.docs[0].data().imagePath)
+          );
+
           photoUri = url;
 
           tempObj[firstKey] = "ro12arSIsugfifCz5BABmvOUZVR2";
@@ -585,10 +633,12 @@ export default function TrackUserMapView() {
         if (auth.currentUser != null) {
           friendList.push(auth.currentUser.uid);
 
-          const queryFollow = await firestore()
-            .collection("follow")
-            .where("followerId", "==", auth.currentUser.uid)
-            .get();
+          const queryFollow = await getDocs(
+            query(
+              collection(db, "follow"),
+              where("followerId", "==", auth.currentUser.uid)
+            )
+          );
 
           if (!queryFollow.empty) {
             let cnt = 0;
@@ -603,22 +653,26 @@ export default function TrackUserMapView() {
 
         let postSnapshot;
         if (PostDatas[0] == undefined) {
-          postSnapshot = await firestore()
-            .collection("tagPost")
-            .where("spotId", "==", spotId)
-            .where("tagId", "==", parseInt(selectedTag))
-            .orderBy(sort, sortOptions)
-            .limit(5)
-            .get();
+          postSnapshot = await getDocs(
+            query(
+              collection(db, "tagPost"),
+              wherewhere("spotId", "==", spotId),
+              where("tagId", "==", parseInt(selectedTag)),
+              orderBy(sort, sortOptions),
+              limit(5)
+            )
+          );
         } else {
-          postSnapshot = await firestore()
-            .collection("tagPost")
-            .where("spotId", "==", spotId)
-            .where("tagId", "==", parseInt(selectedTag))
-            .orderBy(sort, sortOptions)
-            .startAfter(tuduki)
-            .limit(5)
-            .get();
+          postSnapshot = await getDocs(
+            query(
+              collection(db, "tagPost"),
+              wherewhere("spotId", "==", spotId),
+              where("tagId", "==", parseInt(selectedTag)),
+              orderBy(sort, sortOptions),
+              startAfter(tuduki),
+              limit(5)
+            )
+          );
         }
 
         const postIdList = [];
@@ -630,11 +684,13 @@ export default function TrackUserMapView() {
           });
         }
 
-        const querySnapshot = await firestore()
-          .collection("post")
-          .where("id", "in", postIdList)
-          .orderBy(sort, sortOptions)
-          .get();
+        const querySnapshot = await getDocs(
+          query(
+            collection(db, "post"),
+            where("id", "in", postIdList),
+            orderBy(sort, sortOptions)
+          )
+        );
 
         if (!querySnapshot.empty) {
           const size = querySnapshot.size;
@@ -657,35 +713,41 @@ export default function TrackUserMapView() {
             let photoUri = "";
             let tempObj = {};
 
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", postData.userId)
-              .get();
+            const queryUser = await getDocs(
+              query(
+                collection(db, "users"),
+                where("uid", "==", postData.userId)
+              )
+            );
             const userSnapshot = queryUser.docs[0];
             const userData = userSnapshot.data();
 
             if (userData.publicStatus == 0) {
-              const queryPhoto = await firestore()
-                .collection("photo")
-                .where("postId", "==", postData.id) // 特定の条件を指定
-                .get();
+              const queryPhoto = await getDocs(
+                query(
+                  collection(db, "photo"),
+                  where("postId", "==", postData.id)
+                )
+              );
               if (!queryPhoto.empty) {
                 const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
                 const photoData = photoSnapshot.data();
 
                 if (photoData.imagePath) {
-                  const url = await storage()
-                    .ref()
-                    .child(photoData.imagePath)
-                    .getDownloadURL();
+                  const url = await getDownloadURL(
+                    ref(storage, photoData.imagePath)
+                  );
+
                   photoUri = url;
                 }
               }
 
-              const queryLike = await firestore()
-                .collection("like")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryLike = await getDocs(
+                query(
+                  collection(db, "like"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const likeSnapshot = queryLike.docs[0];
               const likeData = likeSnapshot.data();
@@ -698,10 +760,12 @@ export default function TrackUserMapView() {
                 }
               }
 
-              const queryReply = await firestore()
-                .collection("replies")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryReply = await getDocs(
+                query(
+                  collection(db, "replies"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const replyCount = queryReply.empty ? 0 : queryReply.size;
 
@@ -719,27 +783,31 @@ export default function TrackUserMapView() {
               postArray.push(tempObj);
               setEmptyPost(false);
             } else if (friendList.includes(userData.uid)) {
-              const queryPhoto = await firestore()
-                .collection("photo")
-                .where("postId", "==", postData.id) // 特定の条件を指定
-                .get();
+              const queryPhoto = await getDocs(
+                query(
+                  collection(db, "photo"),
+                  where("postId", "==", postData.id)
+                )
+              );
               if (!queryPhoto.empty) {
                 const photoSnapshot = queryPhoto.docs[0]; // 最初のドキュメントを取得
                 const photoData = photoSnapshot.data();
 
                 if (photoData.imagePath) {
-                  const url = await storage()
-                    .ref()
-                    .child(photoData.imagePath)
-                    .getDownloadURL();
+                  const url = await getDownloadURL(
+                    ref(storage, photoData.imagePath)
+                  );
+
                   photoUri = url;
                 }
               }
 
-              const queryLike = await firestore()
-                .collection("like")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryLike = await getDocs(
+                query(
+                  collection(db, "like"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const likeSnapshot = queryLike.docs[0];
               const likeData = likeSnapshot.data();
@@ -750,10 +818,12 @@ export default function TrackUserMapView() {
                 likeFlag = false;
               }
 
-              const queryReply = await firestore()
-                .collection("replies")
-                .where("postId", "==", postData.id)
-                .get();
+              const queryReply = await getDocs(
+                query(
+                  collection(db, "replies"),
+                  where("postId", "==", postData.id)
+                )
+              );
 
               const replyCount = queryReply.empty ? 0 : queryReply.size;
 
@@ -775,17 +845,19 @@ export default function TrackUserMapView() {
             cnt = cnt + 1;
           }
           const tutorialNum = Math.floor(Math.random() * 3);
-          const tutorialQuery = await firestore()
-            .collection("tutorial")
-            .where("id", "==", "00" + tutorialNum)
-            .get();
+          const tutorialQuery = await getDocs(
+            query(
+              collection(db, "tutorial"),
+              where("id", "==", "00" + tutorialNum)
+            )
+          );
           let tempObj = {};
           let photoUri = "";
 
-          const url = await storage()
-            .ref()
-            .child(tutorialQuery.docs[0].data().imagePath)
-            .getDownloadURL();
+          const url = await getDownloadURL(
+            ref(storage, tutorialQuery.docs[0].data().imagePath)
+          );
+
           photoUri = url;
 
           tempObj[firstKey] = "ro12arSIsugfifCz5BABmvOUZVR2";
@@ -919,12 +991,12 @@ export default function TrackUserMapView() {
       let vivstedSpot = {};
 
       if (auth.currentUser != null) {
-        const querySnapshot = await firestore()
-          .collection("users")
-          .doc(auth.currentUser.uid)
-          .collection("spot")
-          .orderBy("spotId", "asc")
-          .get();
+        const querySnapshot = await getDocs(
+          query(
+            collection(db, "users", auth.currentUser.uid, "spot"),
+            orderBy("spot", "asc")
+          )
+        );
 
         if (!querySnapshot.empty) {
           querySnapshot.forEach((docs) => {
@@ -937,10 +1009,9 @@ export default function TrackUserMapView() {
       const fetchResult = [];
 
       try {
-        const querySnapshot = await firestore()
-          .collection("spot")
-          .orderBy("id")
-          .get();
+        const querySnapshot = await getDocs(
+          query(collection(db, "spot"), orderBy("id"))
+        );
         if (!querySnapshot.empty) {
           querySnapshot.forEach((docs) => {
             const item = docs.data();
@@ -993,20 +1064,25 @@ export default function TrackUserMapView() {
       const forthKey = "lastPostAt";
       if (status == "follow") {
         try {
-          const queryFollow = await firestore()
-            .collection("follow")
-            .where("followerId", "==", auth.currentUser.uid)
-            .get();
+          const queryFollow = await getDocs(
+            query(
+              collection(db, "follow"),
+              where("followerId", "==", auth.currentUser.uid)
+            )
+          );
           if (!queryFollow.empty) {
             let cnt = 0;
             while (cnt < queryFollow.size) {
               let tempObj = {};
               const followSnapshot = queryFollow.docs[cnt];
               const followData = followSnapshot.data();
-              const queryUser = await firestore()
-                .collection("users")
-                .where("uid", "==", followData.followeeId)
-                .get();
+
+              const queryUser = await getDocs(
+                query(
+                  collection(db, "users"),
+                  where("uid", "==", followData.followeeId)
+                )
+              );
               const userSnapshot = queryUser.docs[0];
               const userData = userSnapshot.data();
               if (
@@ -1029,10 +1105,7 @@ export default function TrackUserMapView() {
         }
       } else if (status == "star") {
         try {
-          const queryFav = await firestore()
-            .collection("star")
-            .doc(auth.currentUser.uid)
-            .get();
+          const queryFav = await getDoc(doc(db, "star", auth.currentUser.uid));
 
           const starList = [];
           for (const [key, value] of Object.entries(queryFav.data())) {
@@ -1045,10 +1118,13 @@ export default function TrackUserMapView() {
             while (cnt < starList.length) {
               let tempObj = {};
 
-              const queryUser = await firestore()
-                .collection("users")
-                .where("uid", "==", starList[cnt])
-                .get();
+              const queryUser = await getDocs(
+                query(
+                  collection(db, "users"),
+                  where("uid", "==", starList[cnt])
+                )
+              );
+
               const userSnapshot = queryUser.docs[0];
               const userData = userSnapshot.data();
 
@@ -1120,11 +1196,13 @@ export default function TrackUserMapView() {
   };
 
   const handleUserChoose = async (userId) => {
-    const queryPost = await firestore()
-      .collection("post")
-      .where("userId", "==", userId)
-      .orderBy("timeStamp", "desc")
-      .get();
+    const queryPost = await getDocs(
+      query(
+        collection(db, "post"),
+        where("userId", "=", userId),
+        orderBy("timeStamp", "desc")
+      )
+    );
 
     const tempList = [];
 
@@ -1148,10 +1226,9 @@ export default function TrackUserMapView() {
       setmapflag(true);
     } else {
       spotIdList.forEach(async (id) => {
-        const querySpot = await firestore()
-          .collection("spot")
-          .where("id", "==", id)
-          .get();
+        const querySpot = await getDocs(
+          query(collection(db, "spot"), where("id", "==", id))
+        );
 
         const item = querySpot.docs[0].data();
         fetchResult.push(item);
@@ -1166,7 +1243,7 @@ export default function TrackUserMapView() {
 
     try {
       // userId を直接使ってユーザー情報を取得
-      const userDoc = await firestore().collection("users").doc(userId).get();
+      const userDoc = await getDoc(doc(db, "users", userId));
 
       // データが存在するかチェック
       if (userDoc.exists) {
@@ -1184,10 +1261,9 @@ export default function TrackUserMapView() {
 
   const handleTagChoose = async (tagId) => {
     const tempList = [];
-    const tagSnapshot = await firestore()
-      .collection("tagPost")
-      .where("tagId", "==", parseInt(tagId))
-      .get();
+    const tagSnapshot = await getDocs(
+      query(collection(db, "tagPost"), where("tagId", "==", parseInt(tagId)))
+    );
 
     if (!tagSnapshot.empty) {
       tagSnapshot.forEach((doc) => {
@@ -1198,10 +1274,9 @@ export default function TrackUserMapView() {
       const spotIdList = [...new Set(tempList)];
 
       const fetchResult = [];
-      const querySpot = await firestore()
-        .collection("spot")
-        .where("id", "in", spotIdList)
-        .get();
+      const querySpot = await getDocs(
+        query(collection(db, "spot"), where("id", "in", spotIdList))
+      );
 
       if (!querySpot.empty) {
         querySpot.forEach((docs) => {
@@ -1222,10 +1297,9 @@ export default function TrackUserMapView() {
 
     try {
       // tagId を直接使ってユーザー情報を取得
-      const tagQuery = await firestore()
-        .collection("tag")
-        .where("tagId", "==", tagId)
-        .get();
+      const tagQuery = await getDocs(
+        query(collection(db, "tag"), where("tagId", "==", tagId))
+      );
 
       // データが存在するかチェック
       if (!tagQuery.empty) {
@@ -1268,41 +1342,29 @@ export default function TrackUserMapView() {
 
   const handleVisitState = async (spotId) => {
     if (auth.currentUser != null) {
-      const querySnapshot = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .collection("spot")
-        .where("spotId", "==", parseInt(spotId))
-        .get();
+      const querySnapshot = await getDocs(
+        query(
+          collection(db, "users", auth.currentUser.uid, "spot"),
+          where("spotId", "==", parseInt(spotId))
+        )
+      );
 
       const currentTime = new Date().toISOString();
 
       if (!querySnapshot.empty) {
         const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
-        await firestore()
-          .collection("users")
-          .doc(auth.currentUser.uid)
-          .collection("spot")
-          .doc(docId)
-          .update({
-            timeStamp: currentTime,
-          });
+        await updateDoc(doc(db, "users", auth.currentUser.uid, "spot", docId), {
+          timeStamp: currentTime,
+        });
       } else {
-        await firestore()
-          .collection("users")
-          .doc(auth.currentUser.uid)
-          .collection("spot")
-          .add({
-            spotId: parseInt(spotId),
-            timeStamp: currentTime,
-          });
-        const queryUser = await firestore()
-          .collection("users")
-          .doc(auth.currentUser.uid)
-          .get();
+        await addDoc(collection(db, "users", auth.currentUser.uid, "spot"), {
+          spotId: parseInt(spotId),
+          timeStamp: currentTime,
+        });
+        const queryUser = await getDoc(doc(db, "users", auth.currentUser.uid));
         const spotPoint = queryUser.data().spotPoint + 1;
 
-        await firestore().collection("users").doc(auth.currentUser.uid).update({
+        await updateDoc(doc(db, "users", auth.currentUser.uid), {
           spotPoint: spotPoint,
         });
       }
@@ -1317,10 +1379,7 @@ export default function TrackUserMapView() {
 
   const handlePost = async () => {
     if (auth.currentUser != null) {
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
+      const queryUser = await getDoc(doc(db, "users", auth.currentUser.uid));
 
       const userData = queryUser.data();
 
@@ -1340,10 +1399,9 @@ export default function TrackUserMapView() {
 
   const fetchAllTag = async () => {
     const fetchResult = [];
-    const tagSnapshot = await firestore()
-      .collection("tag")
-      .orderBy("tagId")
-      .get();
+    const tagSnapshot = await getDocs(
+      query(collection(db, "tag"), orderBy("tagId"))
+    );
     if (!tagSnapshot.empty) {
       tagSnapshot.forEach((doc) => {
         const item = doc.data();
@@ -1391,7 +1449,7 @@ export default function TrackUserMapView() {
         }
       },
       (err) => {
-        setError(err.message);
+        setError(`Init error:${err.message}`);
       },
       {
         enableHighAccuracy: enableHighAccuracys,
@@ -1426,25 +1484,24 @@ export default function TrackUserMapView() {
         </View>
       )}
       {initialRegion && (
-
-        
         <MapView
-        toolbarEnabled={false} // Androidのボタンを無効化
-        ref={mapRef}
-        key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-        style={[
-          StyleSheet.absoluteFillObject,
-          { marginTop: 85, marginBottom: 70 },
-        ]}
-        customMapStyle={customMapStyle}
-        initialRegion={initialRegion}
-        region={Region}
-        scrollEnabled={mapfixed}
-        zoomEnabled={mapfixed}
-        rotateEnabled={mapfixed}
-        pitchEnabled={mapfixed}
-        onRegionChangeComplete={onRegionChangeComplete}
-      >
+          // provider={PROVIDER_GOOGLE}
+          toolbarEnabled={false} // Androidのボタンを無効化
+          ref={mapRef}
+          key={`${initialRegion.latitude}-${initialRegion.longitude}`}
+          style={[
+            StyleSheet.absoluteFillObject,
+            { marginTop: 85, marginBottom: 70 },
+          ]}
+          customMapStyle={customMapStyle}
+          initialRegion={initialRegion}
+          region={Region}
+          scrollEnabled={mapfixed}
+          zoomEnabled={mapfixed}
+          rotateEnabled={mapfixed}
+          pitchEnabled={mapfixed}
+          onRegionChangeComplete={onRegionChangeComplete}
+        >
           <Marker
             coordinate={{
               latitude: position.latitude,
