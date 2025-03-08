@@ -1,3 +1,5 @@
+import * as ImagePicker from "expo-image-picker";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -8,16 +10,21 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
-import storage from "@react-native-firebase/storage";
-import firestore from "@react-native-firebase/firestore";
+
 import CheckBox from "@react-native-community/checkbox";
-import * as ImagePicker from "expo-image-picker";
+import { getAuth } from "@react-native-firebase/auth";
+import { getFirestore, setDoc, doc } from "@react-native-firebase/firestore";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "@react-native-firebase/storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
-const auth = FirebaseAuth();
-const reference = storage();
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 export default function SignupScreenGoogle() {
   const router = useRouter();
@@ -41,23 +48,20 @@ export default function SignupScreenGoogle() {
     };
     await auth.currentUser.updateProfile(update);
 
-    await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .set({
-        uid: auth.currentUser.uid,
-        displayName: userName,
-        email: auth.currentUser.email,
-        lastPostAt: "0", // TODO
-        publicStatus: 0, // TODO
-        spotCreate: 0,
-        spotPoint: 0,
-        photoURL: photouri,
-      })
+    await setDoc(doc(db, "users", auth.currentUser.uid), {
+      uid: auth.currentUser.uid,
+      displayName: userName,
+      email: auth.currentUser.email,
+      lastPostAt: "0",
+      publicStatus: 0,
+      spotCreate: 0,
+      spotPoint: 0,
+      photoURL: photouri,
+    })
       .then()
       .catch((error) => console.log(error));
 
-    await firestore().collection("star").doc(auth.currentUser.uid).set({});
+    await setDoc(doc(db, "users", auth.currentUser.uid), {});
 
     router.replace({ pathname: "/" });
   };
@@ -84,9 +88,9 @@ export default function SignupScreenGoogle() {
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath =
       "profile/photo" + new Date().getTime().toString() + randomNumber;
-    await reference.ref(imagePath).putFile(uploadUri);
+    await uploadBytes(ref(storage, imagePath), uploadUri);
 
-    const url = await reference.ref(imagePath).getDownloadURL();
+    const url = await getDownloadURL(ref(storage, imagePath));
 
     return url;
   };

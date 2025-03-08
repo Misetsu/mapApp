@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -10,12 +11,13 @@ import {
   Image,
   Linking,
 } from "react-native";
-import { useRouter } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
-import CheckBox from "@react-native-community/checkbox";
 
-const auth = FirebaseAuth();
+import CheckBox from "@react-native-community/checkbox";
+import { getAuth } from "@react-native-firebase/auth";
+import { getFirestore, setDoc, doc } from "@react-native-firebase/firestore";
+
+const auth = getAuth();
+const db = getFirestore();
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -68,24 +70,21 @@ export default function SignupScreen() {
 
           await auth.currentUser.updateProfile(update);
 
-          firestore()
-            .collection("users")
-            .doc(auth.currentUser.uid)
-            .set({
-              uid: auth.currentUser.uid,
-              displayName: auth.currentUser.displayName,
-              email: auth.currentUser.email,
-              lastPostAt: "0", // TODO
-              publicStatus: 0, // TODO
-              spotCreate: 0,
-              spotPoint: 0,
-              photoURL:
-                "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
-            })
+          await setDoc(doc(db, "users", auth.currentUser.uid), {
+            uid: auth.currentUser.uid,
+            displayName: auth.currentUser.displayName,
+            email: auth.currentUser.email,
+            lastPostAt: "0",
+            publicStatus: 0,
+            spotCreate: 0,
+            spotPoint: 0,
+            photoURL:
+              "https://firebasestorage.googleapis.com/v0/b/mapapp-96457.appspot.com/o/profile%2Fphoto17256005513463?alt=media&token=847894f6-3cb5-46c5-833e-91e30bc3ede8",
+          })
             .then()
             .catch((error) => console.log(error));
 
-          firestore().collection("star").doc(auth.currentUser.uid).set({});
+          await setDoc(doc(db, "users", auth.currentUser.uid), {});
 
           router.replace({ pathname: "/" });
         } catch (error) {

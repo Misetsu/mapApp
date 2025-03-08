@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -9,13 +10,20 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { useRouter } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import Toast from 'react-native-simple-toast';
+import Toast from "react-native-simple-toast";
 
-const auth = FirebaseAuth();
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  getFirestore,
+  query,
+  collection,
+  where,
+  getDocs,
+} from "@react-native-firebase/firestore";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+const auth = getAuth();
+const db = getFirestore();
 
 GoogleSignin.configure({
   webClientId:
@@ -48,11 +56,10 @@ export default function LoginScreen() {
       const credential = FirebaseAuth.GoogleAuthProvider.credential(idToken);
       await auth.signInWithCredential(credential);
 
-      const querySnapshot = await firestore()
-        .collection("users")
-        .where("uid", "==", auth.currentUser.uid) // 特定の条件を指定
-        .get();
-        Toast.show("ログインしました");
+      const querySnapshot = await getDocs(
+        query(collection(db, "users"), where("uid", "==", auth.currentUser.uid))
+      );
+      Toast.show("ログインしました");
       if (querySnapshot.empty) {
         router.push({
           pathname: "/signupFormGoogle",
@@ -95,10 +102,9 @@ export default function LoginScreen() {
   };
 
   const handleChangePassword = async () => {
-    const userSnapshot = await firestore()
-      .collection("users")
-      .where("email", "==", userEmail)
-      .get();
+    const userSnapshot = await getDocs(
+      query(collection(db, "users"), where("email", "==", userEmail))
+    );
 
     if (!userSnapshot.empty) {
       auth
