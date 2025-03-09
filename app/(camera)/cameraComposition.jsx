@@ -1,3 +1,9 @@
+import {
+  Stack,
+  useFocusEffect,
+  router,
+  useLocalSearchParams,
+} from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
@@ -8,19 +14,13 @@ import {
   Modal,
   Text,
   FlatList,
+  TouchableOpacity,
 } from "react-native";
 import {
-  Stack,
-  useFocusEffect,
-  router,
-  useLocalSearchParams,
-} from "expo-router";
-import {
-  useCameraPermission,
-  useCameraDevice,
-  Camera,
-  useCameraFormat,
-} from "react-native-vision-camera";
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 import Reanimated, {
   useAnimatedProps,
   useSharedValue,
@@ -30,12 +30,13 @@ import Reanimated, {
   useDerivedValue,
 } from "react-native-reanimated";
 import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+  useCameraPermission,
+  useCameraDevice,
+  Camera,
+  useCameraFormat,
+} from "react-native-vision-camera";
+
 import Slider from "@react-native-community/slider";
-import { TouchableOpacity } from "react-native";
 
 const width = Dimensions.get("window").width;
 const wholeHeight = Dimensions.get("window").height;

@@ -1,3 +1,4 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -17,18 +18,30 @@ import {
   Modal,
   ScrollView,
 } from "react-native";
+import Toast from "react-native-simple-toast";
 import ViewShot from "react-native-view-shot";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import storage from "@react-native-firebase/storage";
-import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from 'react-native-simple-toast';
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  getFirestore,
+  orderBy,
+  query,
+  updateDoc,
+} from "@react-native-firebase/firestore";
+import { getStorage, ref, uploadBytes } from "@react-native-firebase/storage";
 
 const { width, height } = Dimensions.get("window");
 const imageWidth = width * 0.5;
 const imageHeight = (imageWidth * 4) / 3;
-const auth = FirebaseAuth();
+
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 export default function edit() {
   const [showAlert, setShowAlert] = useState(false);
@@ -86,7 +99,6 @@ export default function edit() {
   const [selectedTag, setSelectedTag] = useState([]);
   const [isTagModalVisible, setIsTagModalVisible] = useState(false);
 
-  const reference = storage();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { imageUri, latitude, longitude, spotId, point, spotNo } = params;
@@ -103,17 +115,16 @@ export default function edit() {
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath = "photo/" + new Date().getTime().toString() + randomNumber;
 
-    await reference.ref(imagePath).putFile(Imageuri);
+    await uploadBytes(ref(storage, imagePath), Imageuri);
 
     if (spotId == 0) {
-      const querySnapshot = await firestore()
-        .collection("spot")
-        .orderBy("id", "desc")
-        .get();
+      const querySnapshot = await getDocs(
+        query(collection(db, "spot"), orderBy("id", "desc"))
+      );
 
       const maxId = querySnapshot.docs[0].data().id + 1;
 
-      await firestore().collection("spot").add({
+      await addDoc(collection(db, "spot"), {
         id: maxId,
         mapLatitude: latitude,
         mapLongitude: longitude,
@@ -122,129 +133,101 @@ export default function edit() {
         lastUpdateAt: currentTime,
       });
 
-      const queryPost = await firestore()
-        .collection("post")
-        .orderBy("id", "desc")
-        .get();
+      const queryPost = await getDocs(
+        query(collection(db, "post"), orderBy("id", "desc"))
+      );
 
       const maxPostId = queryPost.docs[0].data().id + 1;
 
-      await firestore()
-        .collection("photo")
-        .add({
-          imagePath: imagePath,
-          postId: maxPostId,
-          spotId: maxId,
-          userId: auth.currentUser.uid,
-          timeStamp: currentTime,
-        })
-        .catch((error) => console.log(error));
+      await addDoc(collection(db, "photo"), {
+        imagePath: imagePath,
+        postId: maxPostId,
+        spotId: maxId,
+        userId: auth.currentUser.uid,
+        timeStamp: currentTime,
+      }).catch((error) => console.log(error));
 
-      await firestore()
-        .collection("post")
-        .add({
-          id: maxPostId,
-          imagePath: imagePath,
-          postTxt: post,
-          spotId: maxId,
-          userId: auth.currentUser.uid,
-          timeStamp: currentTime,
-          likecount: 0
-        })
-        .catch((error) => console.log(error));
+      await addDoc(collection(db, "post"), {
+        id: maxPostId,
+        imagePath: imagePath,
+        postTxt: post,
+        spotId: maxId,
+        userId: auth.currentUser.uid,
+        timeStamp: currentTime,
+        likecount: 0,
+      }).catch((error) => console.log(error));
 
-      await firestore()
-        .collection("like")
-        .add({
-          count: 0,
-          postId: maxPostId,
-        })
-        .catch((error) => console.log(error));
+      await addDoc(collection(db, "like"), {
+        count: 0,
+        postId: maxPostId,
+      }).catch((error) => console.log(error));
 
       for (const tag of selectedTag) {
-        await firestore()
-          .collection("tagPost")
-          .add({
-            tagId: parseInt(tag),
-            postId: maxPostId,
-            spotId: maxId,
-            timeStamp: currentTime,
-          });
+        await addDoc(collection(db, "tagPost"), {
+          tagId: parseInt(tag),
+          postId: maxPostId,
+          spotId: maxId,
+          timeStamp: currentTime,
+        });
       }
 
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({
-          spotCreate: parseInt(spotNo),
-          spotPoint: parseInt(point),
-          lastPostAt: currentTime,
-        });
+      await updateDoc(doc(db, "users", auth.currentUser.uid), {
+        spotCreate: parseInt(spotNo),
+        spotPoint: parseInt(point),
+        lastPostAt: currentTime,
+      });
 
       handleVisitState(maxId);
     } else {
-      const querySpot = await firestore()
-        .collection("spot")
-        .where("id", "==", parseInt(spotId))
-        .get();
+      const querySpot = await getDocs(
+        query(collection(db, "spot"), where("id", "==", parseInt(spotId)))
+      );
 
       const spotDocId = querySpot.docs[0].ref._documentPath._parts[1];
 
-      await firestore().collection("spot").doc(spotDocId).update({
+      await updateDoc(doc(db, "spot", spotDocId), {
         lastUpdateAt: currentTime,
       });
 
-      const queryPost = await firestore()
-        .collection("post")
-        .orderBy("id", "desc")
-        .get();
+      const queryPost = await getDocs(
+        query(collection(db, "post"), orderBy("id", "desc"))
+      );
 
       const maxPostId = queryPost.docs[0].data().id + 1;
 
-      await firestore()
-        .collection("photo")
-        .add({
-          imagePath: imagePath,
-          postId: maxPostId,
-          spotId: parseInt(spotId),
-          userId: auth.currentUser.uid,
-          timeStamp: currentTime,
-        })
-        .catch((error) => console.log(error));
+      await addDoc(collection(db, "photo"), {
+        imagePath: imagePath,
+        postId: maxPostId,
+        spotId: parseInt(spotId),
+        userId: auth.currentUser.uid,
+        timeStamp: currentTime,
+      }).catch((error) => console.log(error));
 
-      await firestore()
-        .collection("post")
-        .add({
-          id: maxPostId,
-          imagePath: imagePath,
-          postTxt: post,
-          spotId: parseInt(spotId),
-          userId: auth.currentUser.uid,
-          timeStamp: currentTime,
-          likecount: 0
-        })
-        .catch((error) => console.log(error));
+      await addDoc(collection(db, "post"), {
+        id: maxPostId,
+        imagePath: imagePath,
+        postTxt: post,
+        spotId: parseInt(spotId),
+        userId: auth.currentUser.uid,
+        timeStamp: currentTime,
+        likecount: 0,
+      }).catch((error) => console.log(error));
 
-      await firestore()
-        .collection("like")
-        .add({
-          count: 0,
-          postId: maxPostId,
-        })
-        .catch((error) => console.log(error));
+      await addDoc(collection(db, "like"), {
+        count: 0,
+        postId: maxPostId,
+      }).catch((error) => console.log(error));
 
       for (const tag of selectedTag) {
-        await firestore()
-          .collection("tagPost")
-          .add({
-            tagId: parseInt(tag),
-            postId: maxPostId,
-            spotId: parseInt(spotId),
-            timeStamp: currentTime,
-          });
+        await addDoc(collection(db, "tagPost"), {
+          tagId: parseInt(tag),
+          postId: maxPostId,
+          spotId: parseInt(spotId),
+          timeStamp: currentTime,
+        });
       }
 
-      await firestore().collection("users").doc(auth.currentUser.uid).update({
+      await updateDoc(doc(db, "users", auth.currentUser.uid), {
         lastPostAt: currentTime,
       });
 
@@ -272,51 +255,38 @@ export default function edit() {
   }, [Imageuri]);
 
   const handleVisitState = async (spotId) => {
-    const querySnapshot = await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .collection("spot")
-      .where("spotId", "==", spotId)
-      .get();
+    const querySnapshot = await getDocs(
+      query(
+        collection(db, "users", auth.currentUser.uid, "spot"),
+        where("spotId", "==", spotId)
+      )
+    );
 
     const currentTime = new Date().toISOString();
 
     if (!querySnapshot.empty) {
       const docId = querySnapshot.docs[0].ref._documentPath._parts[3];
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .collection("spot")
-        .doc(docId)
-        .update({
-          timeStamp: currentTime,
-        });
+      await updateDoc(doc(db, "users", auth.currentUser.uid, "spot", docId), {
+        timeStamp: currentTime,
+      });
     } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .collection("spot")
-        .add({
-          spotId: spotId,
-          timeStamp: currentTime,
-        });
-      const queryUser = await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .get();
+      await addDoc(collection(db, "users", auth.currentUser.uid, "spot"), {
+        spotId: spotId,
+        timeStamp: currentTime,
+      });
+      const queryUser = await getDoc(doc(db, "users", auth.currentUser.uid));
       const spotPoint = queryUser.data().spotPoint + 1;
 
-      await firestore().collection("users").doc(auth.currentUser.uid).update({
+      await updateDoc(doc(db, "users", auth.currentUser.uid), {
         spotPoint: spotPoint,
       });
     }
   };
 
   const fetchAllTag = async () => {
-    const tagSnapshot = await firestore()
-      .collection("tag")
-      .orderBy("tagId")
-      .get();
+    const tagSnapshot = await getDocs(
+      query(collection(db, "tag"), orderBy("tagId"))
+    );
     const fetchResult = [];
     tagSnapshot.forEach((doc) => {
       const item = doc.data();
@@ -463,10 +433,11 @@ export default function edit() {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => {
                   return (
-                    <TouchableOpacity style={styles.tagView}><Image
-                      source={require("./../image/Tag.png")}
-                      style={styles.TagButton}
-                    />
+                    <TouchableOpacity style={styles.tagView}>
+                      <Image
+                        source={require("./../image/Tag.png")}
+                        style={styles.TagButton}
+                      />
                       <Text>{allTag.find((o) => o.tagId == item).tagName}</Text>
                     </TouchableOpacity>
                   );
@@ -511,13 +482,15 @@ export default function edit() {
                           onPress={() => {
                             deleteTag(item);
                           }}
-                        ><Image
+                        >
+                          <Image
                             source={require("./../image/Tag.png")}
                             style={styles.TagButton}
                           />
                           <Text>
                             {allTag.find((o) => o.tagId == item).tagName}
-                          </Text><Image
+                          </Text>
+                          <Image
                             source={require("./../image/Close.png")}
                             style={styles.TagButton}
                           />
@@ -546,7 +519,8 @@ export default function edit() {
                       <TouchableOpacity
                         style={styles.tagView}
                         onPress={() => addTag(item.tagId)}
-                      ><Image
+                      >
+                        <Image
                           source={require("./../image/Tag.png")}
                           style={styles.TagButton}
                         />

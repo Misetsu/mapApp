@@ -1,23 +1,33 @@
-import React, { useState, useEffect } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  SafeAreaView,
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  Dimensions,
-  StyleSheet,
-  FlatList,
   ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  SafeAreaView,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import FirebaseAuth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  orderBy,
+} from "@react-native-firebase/firestore";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
-const auth = FirebaseAuth();
+
+const auth = getAuth();
+const db = getFirestore();
 
 export default function SelectSpot() {
   const router = useRouter();
@@ -31,7 +41,9 @@ export default function SelectSpot() {
   };
 
   const fetchSpotList = async () => {
-    const querySpot = await firestore().collection("spot").orderBy("id").get();
+    const querySpot = await getDocs(
+      quer(collection(db, "spot"), orderBy("id"))
+    );
 
     const tempArray = [];
     if (!querySpot.empty) {
@@ -76,9 +88,9 @@ export default function SelectSpot() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c * 1000; // 距離をメートルに変換するために1000を掛ける
       return distance;
@@ -94,10 +106,7 @@ export default function SelectSpot() {
   }
 
   const handleAddNewPin = async () => {
-    const queryUser = await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .get();
+    const queryUser = await getDoc(doc(db, "users", auth.currentUser.uid));
 
     const userData = queryUser.data();
 

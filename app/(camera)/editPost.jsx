@@ -1,3 +1,4 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -8,15 +9,28 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  FlatList, // ScrollViewからFlatListに変更
+  FlatList,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import storage from "@react-native-firebase/storage";
 import Toast from "react-native-simple-toast";
 
+import {
+  addDoc,
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "@react-native-firebase/firestore";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+} from "@react-native-firebase/storage";
+
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
+
+const db = getFirestore();
+const storage = getStorage();
 
 const EditPostScreen = () => {
   const router = useRouter();
@@ -39,31 +53,28 @@ const EditPostScreen = () => {
 
   const fetchData = async () => {
     try {
-      const photoQuerySnapshot = await firestore()
-        .collection("photo")
-        .where("postId", "==", parseInt(postId))
-        .get();
+      const photoQuerySnapshot = await getDocs(
+        query(collection(db, "photo"), where("postId", "==", parseInt(postId)))
+      );
 
       if (!photoQuerySnapshot.empty) {
         const photoDoc = photoQuerySnapshot.docs[0].data();
         if (photoDoc.imagePath) {
-          const url = await storage().ref(photoDoc.imagePath).getDownloadURL();
+          const url = await getDownloadURL(ref(storage, photoDoc.imagePath));
           setPhotoUri(url);
 
-          const postSnapshot = await firestore()
-            .collection("post")
-            .where("id", "==", photoDoc.postId)
-            .get();
+          const postSnapshot = await getDocs(
+            query(collection("post"), where("id", "==", photoDoc.postId))
+          );
 
           let postDetails = null;
           if (!postSnapshot.empty) {
             postDetails = postSnapshot.docs[0].data();
           }
 
-          const spotSnapshot = await firestore()
-            .collection("spot")
-            .where("id", "==", photoDoc.spotId)
-            .get();
+          const spotSnapshot = await getDocs(
+            query(collection("spot"), where("id", "==", photoDoc.spotId))
+          );
 
           let spotName = null;
           if (!spotSnapshot.empty) {
@@ -88,10 +99,9 @@ const EditPostScreen = () => {
 
   const fetchAllTag = async () => {
     try {
-      const tagSnapshot = await firestore()
-        .collection("tag")
-        .orderBy("tagId", "asc")
-        .get();
+      const tagSnapshot = await getDocs(
+        query(collection("tag"), orderBy("tagId", "asc"))
+      );
       const fetchResult = [];
       if (!tagSnapshot.empty) {
         tagSnapshot.forEach((docs) => {
@@ -108,10 +118,9 @@ const EditPostScreen = () => {
   const fetchSelectedTag = async () => {
     const fetchResult = [];
     try {
-      const tagSnapshot = await firestore()
-        .collection("tagPost")
-        .where("postId", "==", parseInt(postId))
-        .get();
+      const tagSnapshot = await getDocs(
+        query(collection("tagPost"), where("postId", "==", parseInt(postId)))
+      );
       if (!tagSnapshot.empty) {
         tagSnapshot.forEach(async (docs) => {
           const item = docs.data();
@@ -144,28 +153,24 @@ const EditPostScreen = () => {
   };
 
   const handleSave = async () => {
-    let batch = firestore().batch();
+    let batch = db.batch();
 
-    await firestore()
-      .collection("tagPost")
-      .where("postId", "==", parseInt(postId))
-      .get()
-      .then((snapshot) => {
-        snapshot.docs.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
-        return batch.commit();
+    await getDocs(
+      query(collection("tagPost"), where("postId", "==", parseInt(postId)))
+    ).then((snapshot) => {
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
       });
+      return batch.commit();
+    });
 
     for (const tag of selectedTag) {
-      await firestore()
-        .collection("tagPost")
-        .add({
-          tagId: parseInt(tag),
-          postId: parseInt(postId),
-          spotId: parseInt(selectedPost.postDetails.spotId),
-          timeStamp: selectedPost.postDetails.timeStamp,
-        });
+      await addDoc(collection(db, "tagPost"), {
+        tagId: parseInt(tag),
+        postId: parseInt(postId),
+        spotId: parseInt(selectedPost.postDetails.spotId),
+        timeStamp: selectedPost.postDetails.timeStamp,
+      });
     }
     router.back();
     Toast.show("編集内容を保存しました");
