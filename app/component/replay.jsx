@@ -23,7 +23,6 @@ import Toast from "react-native-simple-toast";
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { getAuth } from "@react-native-firebase/auth";
 import {
-  FieldValue,
   getFirestore,
   query,
   collection,
@@ -32,8 +31,8 @@ import {
   getDocs,
   addDoc,
   updateDoc,
-  addDoc,
   doc,
+  deleteField,
 } from "@react-native-firebase/firestore";
 import {
   getStorage,
@@ -377,7 +376,7 @@ const ReplyScreen = () => {
       querylike.forEach(async (document) => {
         await updateDoc(doc(db, "like", document.id), {
           count: parseInt(selectedPost.likeCount) - 1,
-          [auth.currentUser.uid]: FieldValue.delete(),
+          [auth.currentUser.uid]: deleteField(),
         });
       });
 
@@ -454,7 +453,7 @@ const ReplyScreen = () => {
     querylike.forEach(async (document) => {
       await updateDoc(doc(db, "like", document.id), {
         count: parseInt(selectedPost.likeCount),
-        [auth.currentUser.uid]: FieldValue.delete(),
+        [auth.currentUser.uid]: deleteField(),
       });
     });
 

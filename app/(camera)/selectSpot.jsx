@@ -21,6 +21,7 @@ import {
   getDocs,
   getFirestore,
   orderBy,
+  query,
 } from "@react-native-firebase/firestore";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
@@ -42,7 +43,7 @@ export default function SelectSpot() {
 
   const fetchSpotList = async () => {
     const querySpot = await getDocs(
-      quer(collection(db, "spot"), orderBy("id"))
+      query(collection(db, "spot"), orderBy("id"))
     );
 
     const tempArray = [];

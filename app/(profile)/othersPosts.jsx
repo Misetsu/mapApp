@@ -1,19 +1,33 @@
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
-  ActivityIndicator,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import storage from "@react-native-firebase/storage";
 import ImageResizer from "react-native-image-resizer";
 
-const auth = FirebaseAuth();
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  orderBy,
+  query,
+  where,
+} from "@react-native-firebase/firestore";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+} from "@react-native-firebase/storage";
+
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 export default function UserPosts(uid) {
   const router = useRouter();
@@ -30,12 +44,12 @@ export default function UserPosts(uid) {
         let vivstedSpot = {};
 
         if (auth.currentUser != null) {
-          const querySnapshot = await firestore()
-            .collection("users")
-            .doc(auth.currentUser.uid)
-            .collection("spot")
-            .orderBy("spotId", "asc")
-            .get();
+          const querySnapshot = await getDocs(
+            query(
+              collection(db, "users", auth.currentUser.uid, "spot"),
+              orderBy("spotId", "asc")
+            )
+          );
 
           if (!querySnapshot.empty) {
             querySnapshot.forEach((docs) => {
@@ -46,11 +60,13 @@ export default function UserPosts(uid) {
         }
 
         // photo コレクションからデータを取得
-        const photoSnapshot = await firestore()
-          .collection("photo")
-          .where("userId", "==", uid.uid)
-          .orderBy("postId", "desc")
-          .get();
+        const photoSnapshot = await getDocs(
+          query(
+            collection(db, "photo"),
+            where("userId", "==", uid.uid),
+            orderBy("postId", "desc")
+          )
+        );
         if (photoSnapshot.empty) {
           return;
         }
@@ -66,9 +82,9 @@ export default function UserPosts(uid) {
 
             // 画像パスが存在する場合、URL を取得
             if (photoData.imagePath) {
-              originalUri = await storage()
-                .ref(photoData.imagePath)
-                .getDownloadURL();
+              originalUri = await getDownloadURL(
+                ref(storage, photoData.imagePath)
+              );
             }
 
             if (photoData.spotId in vivstedSpot) {

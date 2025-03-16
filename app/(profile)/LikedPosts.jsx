@@ -1,20 +1,33 @@
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
-  ActivityIndicator,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import storage from "@react-native-firebase/storage";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import ImageResizer from "react-native-image-resizer";
 
-const auth = FirebaseAuth();
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "@react-native-firebase/firestore";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+} from "@react-native-firebase/storage";
+
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 export default function UserLikedPosts() {
   const router = useRouter();
@@ -31,10 +44,9 @@ export default function UserLikedPosts() {
       AsyncStorage.clear();
       try {
         // like コレクションからユーザーがいいねしたデータを取得
-        const likeSnapshot = await firestore()
-          .collection("like")
-          .where(userId, "==", userId) // 自分の userId に基づいたいいねを取得
-          .get();
+        const likeSnapshot = await getDocs(
+          query(collection(db, "like"), where("userId", "==", userId))
+        );
 
         if (likeSnapshot.empty) {
           return;
@@ -48,10 +60,9 @@ export default function UserLikedPosts() {
             const postId = likeData.postId;
 
             // postId を使って photo コレクションからデータを取得
-            const photoSnapshot = await firestore()
-              .collection("photo")
-              .where("postId", "==", postId) // postId に基づいて photo データを取得
-              .get();
+            const photoSnapshot = await getDocs(
+              query(collection(db, "photo"), where("postId", "==", postId))
+            );
 
             if (!photoSnapshot.empty) {
               const photoData = photoSnapshot.docs[0].data(); // 1つ目の一致したデータを取得
@@ -59,9 +70,9 @@ export default function UserLikedPosts() {
 
               // 画像パスが存在する場合、URL を取得
               if (photoData.imagePath) {
-                originalUri = await storage()
-                  .ref(photoData.imagePath)
-                  .getDownloadURL();
+                originalUri = await getDownloadURL(
+                  ref(storage, photoData.imagePath)
+                );
               }
 
               const resizedImage = await ImageResizer.createResizedImage(

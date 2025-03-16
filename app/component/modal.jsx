@@ -16,7 +16,6 @@ import Share from "react-native-share";
 
 import { getAuth } from "@react-native-firebase/auth";
 import {
-  FieldValue,
   getFirestore,
   query,
   collection,
@@ -24,6 +23,7 @@ import {
   getDocs,
   updateDoc,
   doc,
+  deleteField,
 } from "@react-native-firebase/firestore";
 import { Picker } from "@react-native-picker/picker";
 
@@ -117,7 +117,7 @@ export default function MyModal({
       querylike.forEach(async (document) => {
         await updateDoc(doc(db, "like", document.id), {
           count: tempObj2[postId],
-          [auth.currentUser.uid]: FieldValue.delete(),
+          [auth.currentUser.uid]: deleteField(),
         });
       });
 
@@ -154,7 +154,7 @@ export default function MyModal({
     querylike.forEach(async (document) => {
       await updateDoc(doc(db, "like", document.id), {
         count: tempObj2[postId],
-        [auth.currentUser.uid]: FieldValue.delete(),
+        [auth.currentUser.uid]: deleteField(),
       });
     });
 

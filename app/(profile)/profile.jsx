@@ -1,22 +1,38 @@
-import React, { useState, useEffect } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Image,
+  Modal,
   ScrollView,
-  View,
+  StyleSheet,
   Text,
   TextInput,
-  Modal,
-  Image,
-  StyleSheet,
   TouchableOpacity,
-  Alert,
+  View,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import firestore, { FieldValue } from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import UserPosts from "./othersPosts";
-import Toast from 'react-native-simple-toast';
+import Toast from "react-native-simple-toast";
 
-const auth = FirebaseAuth();
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  deleteField,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from "@react-native-firebase/firestore";
+
+import UserPosts from "./othersPosts";
+
+const auth = getAuth();
+const db = getFirestore();
 
 export default function profile() {
   const router = useRouter();
@@ -39,10 +55,9 @@ export default function profile() {
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
       try {
-        const queryProfile = await firestore()
-          .collection("users")
-          .where("uid", "==", uid)
-          .get();
+        const queryProfile = await getDocs(
+          query(collection(db, "users"), where("uid", "==", uid))
+        );
         const profileData = queryProfile.docs[0].data();
         setDisplayName(profileData.displayName);
         setPhotoUri(profileData.photoURL);
@@ -56,10 +71,9 @@ export default function profile() {
         }
 
         // フォロー中取得
-        const queryFollow = await firestore()
-          .collection("follow")
-          .where("followerId", "==", uid)
-          .get();
+        const queryFollow = await getDocs(
+          query(collection(db, "follow"), where("followerId", "==", uid))
+        );
 
         if (!queryFollow.empty) {
           let cnt = 0;
@@ -70,10 +84,12 @@ export default function profile() {
           while (cnt < queryFollow.size) {
             let tempObj = {};
             const followData = queryFollow.docs[cnt].data();
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", followData.followeeId)
-              .get();
+            const queryUser = await getDocs(
+              query(
+                collection(db, "users"),
+                where("uid", "==", followData.followeeId)
+              )
+            );
             const userData = queryUser.docs[0].data();
 
             tempObj[firstKey] = userData.uid;
@@ -88,10 +104,9 @@ export default function profile() {
         }
 
         // フォローワー取得
-        const queryFollower = await firestore()
-          .collection("follow")
-          .where("followeeId", "==", uid)
-          .get();
+        const queryFollower = await getDocs(
+          query(collection(db, "follow"), where("followeeId", "==", uid))
+        );
 
         if (!queryFollower.empty) {
           let cnt = 0;
@@ -102,10 +117,12 @@ export default function profile() {
           while (cnt < queryFollower.size) {
             let tempObj = {};
             const followerData = queryFollower.docs[cnt].data();
-            const queryUser = await firestore()
-              .collection("users")
-              .where("uid", "==", followerData.followerId)
-              .get();
+            const queryUser = await getDocs(
+              query(
+                collection(db, "users"),
+                where("uid", "==", followerData.followerId)
+              )
+            );
             const userData = queryUser.docs[0].data();
 
             if (userData.uid == auth.currentUser.uid) {
@@ -133,11 +150,13 @@ export default function profile() {
       if (auth.currentUser == null) {
         setIsFollowing(false);
       } else {
-        const queryStatus = await firestore()
-          .collection("follow")
-          .where("followeeId", "==", uid)
-          .where("followerId", "==", auth.currentUser.uid)
-          .get();
+        const queryStatus = await getDocs(
+          query(
+            collection(db, "follow"),
+            where("followeeId", "==", uid),
+            where("followerId", "==", auth.currentUser.uid)
+          )
+        );
         if (!queryStatus.empty) {
           setIsFollowing(true);
         } else {
@@ -150,10 +169,7 @@ export default function profile() {
       if (auth.currentUser == null) {
         setIsFav(false);
       } else {
-        const queryFav = await firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .get();
+        const queryFav = await getDoc(doc(db, "star", auth.currentUser.uid));
         const favData = queryFav.get(uid);
         if (favData === undefined || !queryFav.exists) {
           setIsFav(false);
@@ -186,22 +202,21 @@ export default function profile() {
               text: "フォロー解除", // 確認ボタン
               onPress: async () => {
                 // フォロー解除の処理
-                const queryStatus = await firestore()
-                  .collection("follow")
-                  .where("followeeId", "==", uid)
-                  .where("followerId", "==", auth.currentUser.uid)
-                  .get();
+                const queryStatus = await getDocs(
+                  query(
+                    collection(db, "follow"),
+                    where("followeeId", "==", uid),
+                    where("followerId", "==", auth.currentUser.uid)
+                  )
+                );
                 const docId = queryStatus.docs[0].id;
-                await firestore().collection("follow").doc(docId).delete();
+                await deleteDoc(doc(db, "follow", docId));
                 setIsFollowing(false);
                 Toast.show("フォロー解除しました");
                 if (isFav) {
-                  await firestore()
-                    .collection("star")
-                    .doc(auth.currentUser.uid)
-                    .update({
-                      [uid]: FieldValue.delete(),
-                    });
+                  await updateDoc(doc(db, "star", auth.currentUser.uid), {
+                    [uid]: deleteField(),
+                  });
                   setIsFav(false);
                 }
               },
@@ -211,12 +226,11 @@ export default function profile() {
       } else {
         // フォローする処理
         // フォローする処理
-        const queryFollow = await firestore()
-          .collection("follow")
-          .orderBy("id", "desc")
-          .get();
+        const queryFollow = await getDocs(
+          query(collection(db, "follow"), orderBy("id", "desc"))
+        );
         const maxId = queryFollow.docs[0].data().id + 1;
-        await firestore().collection("follow").add({
+        await addDoc(collection(db, "follow"), {
           id: maxId,
           followerId: auth.currentUser.uid,
           followeeId: uid,
@@ -231,21 +245,13 @@ export default function profile() {
       router.push("/loginForm");
     } else {
       if (isFav) {
-        firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .update({
-            [uid]: FieldValue.delete(),
-          });
+        updateDoc(doc(db, "star", auth.currentUser.uid), {
+          [uid]: deleteField(),
+        });
         setIsFav(false);
         Toast.show("お気に入り解除しました");
       } else {
-        firestore()
-          .collection("star")
-          .doc(auth.currentUser.uid)
-          .update({
-            [uid]: uid,
-          });
+        updateDoc(doc(db, "star", auth.currentUser.uid), { [uid]: uid });
         setIsFav(true);
         Toast.show("お気に入りしました");
       }
@@ -326,16 +332,18 @@ export default function profile() {
             </TouchableOpacity>
           )}
           {isFav ? (
-            <TouchableOpacity onPress={handleFav}><Image
-              source={require("./../image/Star.png")}
-              style={styles.Star}
-            />
+            <TouchableOpacity onPress={handleFav}>
+              <Image
+                source={require("./../image/Star.png")}
+                style={styles.Star}
+              />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={handleFav}><Image
-              source={require("./../image/BorderStar.png")}
-              style={styles.Star}
-            />
+            <TouchableOpacity onPress={handleFav}>
+              <Image
+                source={require("./../image/BorderStar.png")}
+                style={styles.Star}
+              />
             </TouchableOpacity>
           )}
         </View>

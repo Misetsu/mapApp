@@ -1,19 +1,27 @@
-import React, { useState, useEffect } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  Image,
+  Modal,
   ScrollView,
-  View,
+  StyleSheet,
   Text,
   TextInput,
-  Modal,
-  Image,
-  StyleSheet,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
 
-const auth = FirebaseAuth();
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "@react-native-firebase/firestore";
+
+const auth = getAuth();
+const db = getFirestore();
 
 export default function profile() {
   const router = useRouter();
@@ -30,19 +38,17 @@ export default function profile() {
 
     // ユーザーデータを取得するための非同期関数
     const fetchUserData = async () => {
-      const queryProfile = await firestore()
-        .collection("users")
-        .where("uid", "==", uid)
-        .get();
+      const queryProfile = await getDocs(
+        query(collection(db, "users"), where("uid", "==", uid))
+      );
       const profileData = queryProfile.docs[0].data();
       setDisplayName(profileData.displayName);
       setPhotoUri(profileData.photoURL);
 
       // フォロー中取得
-      const queryFollow = await firestore()
-        .collection("follow")
-        .where("followerId", "==", uid)
-        .get();
+      const queryFollow = await getDocs(
+        query(collection(db, "follow"), where("followerId", "==", uid))
+      );
 
       if (!queryFollow.empty) {
         let cnt = 0;
@@ -53,10 +59,12 @@ export default function profile() {
         while (cnt < queryFollow.size) {
           let tempObj = {};
           const followData = queryFollow.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followData.followeeId)
-            .get();
+          const queryUser = await getDocs(
+            query(
+              collection(db, "users"),
+              where("uid", "==", followData.followeeId)
+            )
+          );
           const userData = queryUser.docs[0].data();
 
           tempObj[firstKey] = userData.uid;
@@ -71,10 +79,9 @@ export default function profile() {
       }
 
       // フォローワー取得
-      const queryFollower = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", uid)
-        .get();
+      const queryFollower = await getDocs(
+        query(collection(db, "follow"), where("followeeId", "==", uid))
+      );
 
       if (!queryFollower.empty) {
         let cnt = 0;
@@ -85,10 +92,12 @@ export default function profile() {
         while (cnt < queryFollower.size) {
           let tempObj = {};
           const followerData = queryFollower.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followerData.followerId)
-            .get();
+          const queryUser = await getDocs(
+            query(
+              collection(db, "users"),
+              where("uid", "==", followerData.followerId)
+            )
+          );
           const userData = queryUser.docs[0].data();
 
           tempObj[firstKey] = userData.uid;

@@ -1,13 +1,13 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import {
-  ScrollView,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
 
 export default function myPage() {
   const router = useRouter();

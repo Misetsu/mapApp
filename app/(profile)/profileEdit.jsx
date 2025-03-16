@@ -1,22 +1,29 @@
+import { useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState, useEffect } from "react";
 import {
+  Image,
   ScrollView,
-  View,
+  StyleSheet,
   Text,
   TextInput,
-  Image,
-  StyleSheet,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
-import FirebaseAuth from "@react-native-firebase/auth";
-import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-simple-toast";
 
-const auth = FirebaseAuth();
-const reference = storage();
+import { getAuth } from "@react-native-firebase/auth";
+import { doc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes,
+} from "@react-native-firebase/storage";
+
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 export default function myPage() {
   const router = useRouter();
@@ -53,7 +60,7 @@ export default function myPage() {
       await uploadPhoto(photoUri); // 画像をアップロードし、URLを取得
     }
     if (user) {
-      await firestore().collection("users").doc(user.uid).update({
+      await updateDoc(doc(db, "users", user.uid), {
         displayName: displayName,
       });
       await auth.currentUser.updateProfile({ displayName: displayName });
@@ -83,14 +90,11 @@ export default function myPage() {
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const imagePath =
       "profile/photo" + new Date().getTime().toString() + randomNumber;
-    await reference.ref(imagePath).putFile(uploadUri);
+    await uploadBytes(ref(storage, imagePath), uploadUri);
 
-    const url = await reference.ref(imagePath).getDownloadURL();
+    const url = await getDownloadURL(ref(storage, imagePath));
 
-    await firestore()
-      .collection("users")
-      .doc(auth.currentUser.uid)
-      .update({ photoURL: url });
+    await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: url });
 
     const update = {
       photoURL: url,

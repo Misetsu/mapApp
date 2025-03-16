@@ -1,22 +1,31 @@
-import React, { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  Alert,
+  Dimensions,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  Dimensions,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import Toast from 'react-native-simple-toast';
+import Toast from "react-native-simple-toast";
 
-// Firebaseの認証とルーターを初期化
-const auth = FirebaseAuth();
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "@react-native-firebase/firestore";
+
+const auth = getAuth();
+const db = getFirestore();
+
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 
 export default function SearchScreen() {
@@ -26,7 +35,6 @@ export default function SearchScreen() {
   const [following, setFollowing] = useState({}); // フォローしているユーザーの状態
   const [recommendedUsers, setRecommendedUsers] = useState([]); // おすすめユーザーリスト
   const [officialUsers, setOfficialUsers] = useState([]); // 公式ユーザー
-  const [currentUserId, setCurrentUserId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [followingMe, setFollowingMe] = useState(false);
 
@@ -40,9 +48,6 @@ export default function SearchScreen() {
     fetchFollowingData();
     fetchRecommendedUsers();
     fetchOfficialUsers();
-    if (auth.currentUser) {
-      setCurrentUserId(auth.currentUser.uid); // 現在のユーザーIDを状態に保存
-    }
   }, []);
 
   // 公式ユーザーを取得
@@ -52,10 +57,9 @@ export default function SearchScreen() {
 
       const userDetails = await Promise.all(
         officialUids.map(async (uid) => {
-          const userSnapshot = await firestore()
-            .collection("users")
-            .where("uid", "==", uid)
-            .get();
+          const userSnapshot = await getDocs(
+            query(collection(db, "users"), where("uid", "==", uid))
+          );
           return userSnapshot.docs[0]?.data();
         })
       );
@@ -68,10 +72,12 @@ export default function SearchScreen() {
   // 現在のユーザーがフォローしているユーザーを取得
   const fetchFollowingData = async () => {
     try {
-      const followSnapshot = await firestore()
-        .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
-        .get();
+      const followSnapshot = await getDocs(
+        query(
+          collection(db, "follow"),
+          where("followerId", "==", auth.currentUser.uid)
+        )
+      );
 
       const followData = {};
       for (const doc of followSnapshot.docs) {
@@ -80,10 +86,12 @@ export default function SearchScreen() {
       setFollowing(followData);
 
       // 自分をフォローしているユーザーを取得
-      const followingMeSnapshot = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", auth.currentUser.uid)
-        .get();
+      const followingMeSnapshot = await getDocs(
+        query(
+          collection(db, "follow"),
+          where("followeeId", "==", auth.currentUser.uid)
+        )
+      );
 
       const followingMeData = {};
       for (const doc of followingMeSnapshot.docs) {
@@ -99,10 +107,12 @@ export default function SearchScreen() {
   const fetchRecommendedUsers = async () => {
     try {
       // 現在フォロー中のユーザーを取得
-      const followSnapshot = await firestore()
-        .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
-        .get();
+      const followSnapshot = await getDocs(
+        query(
+          collection(db, "follow"),
+          where("followerId", "==", auth.currentUser.uid)
+        )
+      );
 
       const followingList = followSnapshot.docs.map(
         (doc) => doc.data().followeeId
@@ -123,25 +133,31 @@ export default function SearchScreen() {
             followingList[Math.floor(Math.random() * followingList.length)];
 
           // 選択されたフォロー中ユーザーのフォローユーザーを取得
-          const followeeFollowSnapshot = await firestore()
-            .collection("follow")
-            .where("followerId", "==", randomFolloweeId)
-            .get();
+          const followeeFollowSnapshot = await getDocs(
+            query(
+              collection(db, "follow"),
+              where("followerId", "==", randomFolloweeId)
+            )
+          );
 
           for (const followeeDoc of followeeFollowSnapshot.docs) {
             const recommendedUserId = followeeDoc.data().followeeId;
 
             // フォロワーがいるかを確認
-            const followeeFollowersSnapshot = await firestore()
-              .collection("follow")
-              .where("followerId", "==", recommendedUserId)
-              .get();
+            const followeeFollowersSnapshot = await getDocs(
+              query(
+                collection(db, "follow"),
+                where("followerId", "==", recommendedUserId)
+              )
+            );
 
             // フォロー中のユーザーを取得
-            const followeeFollowingSnapshot = await firestore()
-              .collection("follow")
-              .where("followerId", "==", recommendedUserId)
-              .get();
+            const followeeFollowingSnapshot = await getDocs(
+              query(
+                collection(db, "follow"),
+                where("followerId", "==", recommendedUserId)
+              )
+            );
 
             // フォロワーがいるかつ、現在のユーザーがフォローしていないことを確認
             if (
@@ -193,10 +209,9 @@ export default function SearchScreen() {
     try {
       const userDetails = await Promise.all(
         userIds.map(async (uid) => {
-          const userSnapshot = await firestore()
-            .collection("users")
-            .where("uid", "==", uid)
-            .get();
+          const userSnapshot = await getDocs(
+            query(collection(db, "users"), where("uid", "==", uid))
+          );
 
           return userSnapshot.docs[0]?.data(); // ユーザーのデータを取得
         })
@@ -212,11 +227,13 @@ export default function SearchScreen() {
   const handleSearch = (text) => {
     setSearchText(text); // 検索テキストを更新
     if (text !== "") {
-      firestore()
-        .collection("users")
-        .where("displayName", ">=", text)
-        .where("displayName", "<=", text + "\uf8ff") // 検索条件を設定
-        .get()
+      getDocs(
+        query(
+          collection(db, "users"),
+          where("displayName", ">=", text),
+          where("displayName", "<=", text + "\uf8ff")
+        )
+      )
         .then((result) => {
           if (result.docs[0].data().email != undefined) {
             setSearchResult(result.docs); // 検索結果をステートに設定
@@ -256,11 +273,13 @@ export default function SearchScreen() {
               text: "フォローを解除",
               onPress: async () => {
                 try {
-                  const followDoc = await firestore()
-                    .collection("follow")
-                    .where("followerId", "==", auth.currentUser.uid)
-                    .where("followeeId", "==", uid)
-                    .get();
+                  const followDoc = await getDocs(
+                    query(
+                      collection(db, "follow"),
+                      where("followerId", "==", auth.currentUser.uid),
+                      where("followeeId", "==", uid)
+                    )
+                  );
 
                   if (!followDoc.empty) {
                     await followDoc.docs[0].ref.delete();
@@ -279,14 +298,16 @@ export default function SearchScreen() {
         );
       } else {
         // フォロー処理
-        const followSnapshot = await firestore()
-          .collection("follow")
-          .where("followerId", "==", auth.currentUser.uid)
-          .where("followeeId", "==", uid)
-          .get();
+        const followSnapshot = await getDocs(
+          query(
+            collection(db, "follow"),
+            where("followerId", "==", auth.currentUser.uid),
+            where("followeeId", "==", uid)
+          )
+        );
 
         if (followSnapshot.empty) {
-          await firestore().collection("follow").add({
+          await addDoc(collection(db, "follow"), {
             followerId: auth.currentUser.uid,
             followeeId: uid,
           });
@@ -579,7 +600,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-  }, searchIcon: {
+  },
+  searchIcon: {
     width: 25,
     height: 25,
     marginRight: 5,

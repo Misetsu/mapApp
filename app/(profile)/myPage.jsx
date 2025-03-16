@@ -1,25 +1,38 @@
-import React, { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Image,
+  Modal,
   ScrollView,
-  View,
+  StyleSheet,
   Text,
   TextInput,
-  Modal,
-  Image,
-  StyleSheet,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import firestore, { FieldValue } from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import UserPosts from "./UserPosts";
-import LikedPosts from "./LikedPosts";
+import Toast from "react-native-simple-toast";
 import SwitchWithIcons from "react-native-switch-with-icons";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { Alert } from "react-native";
-import Toast from 'react-native-simple-toast';
 
-const auth = FirebaseAuth();
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  collection,
+  deleteField,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  query,
+  updateDoc,
+  where,
+} from "@react-native-firebase/firestore";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+import LikedPosts from "./LikedPosts";
+import UserPosts from "./UserPosts";
+
+const auth = getAuth();
+const db = getFirestore();
 
 export default function myPage() {
   const [photoUri, setPhotoUri] = useState(""); // プロフィール画像のURL
@@ -46,10 +59,12 @@ export default function myPage() {
       setPhotoUri(auth.currentUser.photoURL);
 
       // フォロー取得
-      const queryFollow = await firestore()
-        .collection("follow")
-        .where("followerId", "==", auth.currentUser.uid)
-        .get();
+      const queryFollow = await getDocs(
+        query(
+          collection(db, "follow"),
+          where("followerId", "==", auth.currentUser.uid)
+        )
+      );
 
       if (!queryFollow.empty) {
         let cnt = 0;
@@ -60,10 +75,12 @@ export default function myPage() {
         while (cnt < queryFollow.size) {
           let tempObj = {};
           const followData = queryFollow.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followData.followeeId)
-            .get();
+          const queryUser = await getDocs(
+            query(
+              collection(db, "users"),
+              where("uid", "==", followData.followeeId)
+            )
+          );
           const userData = queryUser.docs[0].data();
 
           tempObj[firstKey] = userData.uid;
@@ -78,10 +95,9 @@ export default function myPage() {
 
         // ユーザーデータを取得するための非同期関数
         const fetchUserData = async () => {
-          const queryUser = await firestore()
-            .collection("users")
-            .doc(auth.currentUser.uid)
-            .get();
+          const queryUser = await getDoc(
+            doc(db, "users", auth.currentUser.uid)
+          );
           const userData = queryUser.data();
           setUserStatus(userData.publicStatus);
         };
@@ -90,10 +106,12 @@ export default function myPage() {
       }
 
       // フォロワー取得
-      const queryFollower = await firestore()
-        .collection("follow")
-        .where("followeeId", "==", auth.currentUser.uid)
-        .get();
+      const queryFollower = await getDocs(
+        query(
+          collection(db, "follow"),
+          where("followeeId", "==", auth.currentUser.uid)
+        )
+      );
 
       if (!queryFollower.empty) {
         let cnt = 0;
@@ -104,10 +122,12 @@ export default function myPage() {
         while (cnt < queryFollower.size) {
           let tempObj = {};
           const followerData = queryFollower.docs[cnt].data();
-          const queryUser = await firestore()
-            .collection("users")
-            .where("uid", "==", followerData.followerId)
-            .get();
+          const queryUser = await getDocs(
+            query(
+              collection(db, "users"),
+              where("uid", "==", followerData.followerId)
+            )
+          );
           const userData = queryUser.docs[0].data();
 
           tempObj[firstKey] = userData.uid;
@@ -127,17 +147,15 @@ export default function myPage() {
 
   const handleStatus = async () => {
     if (userStatus == 1) {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 0 });
+      await updateDoc(doc(db, "users", auth.currentUser.uid), {
+        publicStatus: 0,
+      });
       setUserStatus(0); // 公開状態に設定
       Toast.show("投稿を公開に設定しました");
     } else {
-      await firestore()
-        .collection("users")
-        .doc(auth.currentUser.uid)
-        .update({ publicStatus: 1 });
+      await updateDoc(doc(db, "users", auth.currentUser.uid), {
+        publicStatus: 1,
+      });
       setUserStatus(1); // 非公開状態に設定
       Toast.show("投稿を非公開に設定しました");
     }
@@ -202,12 +220,12 @@ export default function myPage() {
   const handleDelete = async () => {
     await deleteSubcollection(auth.currentUser.uid, "spot");
 
-    await firestore().collection("users").doc(auth.currentUser.uid).update({
-      email: FieldValue.delete(),
-      lastPostAt: FieldValue.delete(),
-      publicStatus: FieldValue.delete(),
-      spotCreate: FieldValue.delete(),
-      spotPoint: FieldValue.delete(),
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      email: deleteField(),
+      lastPostAt: deleteField(),
+      publicStatus: deleteField(),
+      spotCreate: deleteField(),
+      spotPoint: deleteField(),
     });
 
     await auth.currentUser.delete().then(() => {
@@ -220,14 +238,11 @@ export default function myPage() {
 
   const deleteSubcollection = async (parentDocId, subcollectionName) => {
     try {
-      const subcollectionRef = firestore()
-        .collection("users")
-        .doc(parentDocId)
-        .collection(subcollectionName);
+      const snapshot = await getDocs(
+        query(collection(db, "users", parentDocId, subcollectionName))
+      );
 
-      const snapshot = await subcollectionRef.get();
-
-      const batch = firestore().batch();
+      const batch = db.batch();
       snapshot.forEach((doc) => {
         batch.delete(doc.ref);
       });

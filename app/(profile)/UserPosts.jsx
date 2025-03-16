@@ -1,20 +1,34 @@
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
-  ActivityIndicator,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
-import FirebaseAuth from "@react-native-firebase/auth";
-import storage from "@react-native-firebase/storage";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import ImageResizer from "react-native-image-resizer";
 
-const auth = FirebaseAuth();
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  orderBy,
+  query,
+  where,
+} from "@react-native-firebase/firestore";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+} from "@react-native-firebase/storage";
+
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
 
 export default function UserPosts() {
   const router = useRouter();
@@ -31,11 +45,13 @@ export default function UserPosts() {
       setLoading(true);
       try {
         // photo コレクションからデータを取得
-        const photoSnapshot = await firestore()
-          .collection("photo")
-          .where("userId", "==", userId)
-          .orderBy("postId", "desc")
-          .get();
+        const photoSnapshot = await getDocs(
+          query(
+            collection(db, "photo"),
+            where("userId", "==", userId),
+            orderBy("postId", "desc")
+          )
+        );
         if (photoSnapshot.empty) {
           return;
         }
@@ -50,9 +66,9 @@ export default function UserPosts() {
 
             // 画像パスが存在する場合、URL を取得
             if (photoData.imagePath) {
-              originalUri = await storage()
-                .ref(photoData.imagePath)
-                .getDownloadURL();
+              originalUri = await getDownloadURL(
+                ref(storage, photoData.imagePath)
+              );
             }
 
             const resizedImage = await ImageResizer.createResizedImage(
@@ -153,7 +169,8 @@ export default function UserPosts() {
           <TouchableOpacity
             style={styles.arrowright}
             onPress={() => paging("right")}
-          ><Image
+          >
+            <Image
               source={require("./../image/Right_arrow.png")}
               style={styles.actionButton}
             />
