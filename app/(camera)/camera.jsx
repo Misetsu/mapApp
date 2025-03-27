@@ -1,5 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions, Text, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+  Text,
+  Image,
+} from "react-native";
 import { useFocusEffect, router, useLocalSearchParams } from "expo-router";
 import {
   useCameraPermission,
@@ -7,7 +14,6 @@ import {
   Camera,
   useCameraFormat,
 } from "react-native-vision-camera";
-import * as ImagePicker from "expo-image-picker";
 import Reanimated, {
   useAnimatedProps,
   useSharedValue,
@@ -223,7 +229,11 @@ export default function CameraScreen() {
         {/* 十字線切り替えボタン */}
         <TouchableOpacity style={styles.switchButton} onPress={toggleGrid}>
           <Image
-            source={isCrosshair ? require("./../image/Grigline3.png") : require("./../image/Grigline2.png")}
+            source={
+              isCrosshair
+                ? require("./../image/Grigline3.png")
+                : require("./../image/Grigline2.png")
+            }
             style={styles.CameraButton}
           />
         </TouchableOpacity>
@@ -231,7 +241,8 @@ export default function CameraScreen() {
         <TouchableOpacity
           style={styles.switchCameraButton}
           onPress={toggleCamera}
-        ><Image
+        >
+          <Image
             source={require("./../image/Camerachange.png")}
             style={styles.CameraButton}
           />
@@ -241,7 +252,8 @@ export default function CameraScreen() {
           // ボタンを押したときにスライダーの表示/非表示を切り替え
           onPress={() => setShowSlider(!showSlider)}
           style={styles.exposureButton}
-        ><Image
+        >
+          <Image
             source={require("./../image/Brightness.png")}
             style={styles.Brightness}
           />
@@ -390,8 +402,8 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
   },
-  Brightness:{
+  Brightness: {
     width: 40,
     height: 40,
-  }
+  },
 });
