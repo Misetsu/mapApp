@@ -22,6 +22,8 @@ import storage from "@react-native-firebase/storage";
 import MyModal from "../component/modal";
 import { customMapStyle, styles } from "../component/styles";
 import Toast from "react-native-simple-toast";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 const { width, height } = Dimensions.get("window"); //デバイスの幅と高さを取得する
 const ASPECT_RATIO = width / height;
@@ -70,6 +72,9 @@ export default function TrackUserMapView() {
   const [enableHighAccuracys, setenableHighAccuracy] = useState(false);
   const [markers, setmarkers] = useState([]);
   const [regionflag, setregionflag] = useState(0);
+  const [eventVisible, setEventVisible] = useState(true);
+  const [eventBannerUrl, setEventBannerUrl] = useState(null);
+  const [eventURL, setEventURL] = useState("");
   const mapRef = useRef(null);
 
   const now = new Date();
@@ -1087,6 +1092,20 @@ export default function TrackUserMapView() {
     setIndexLoading(false);
   };
 
+  const fetchEvent = async () => {
+    const image = await storage()
+      .ref()
+      .child("event/PortTower.png")
+      .getDownloadURL();
+
+    setEventBannerUrl(image);
+
+    const eventSnapshot = await firestore().collection("event").get();
+    const url = eventSnapshot.docs[0].data();
+
+    setEventURL(url.url);
+  };
+
   // アイコンマップを定義
   const handleicons = {
     users: require("./../image/Users.png"),
@@ -1408,6 +1427,7 @@ export default function TrackUserMapView() {
     setUser(auth.currentUser);
     fetchIndexBar(indexStatus);
     fetchAllTag();
+    fetchEvent();
   }, []);
 
   useEffect(() => {
@@ -1471,11 +1491,19 @@ export default function TrackUserMapView() {
               title={marker.name}
               onPress={() => setmodal(marker)}
             >
-              <Image
-                source={getPinColor(marker)}
-                style={styles.markerImage} //ピンの色
-                visible={true}
-              />
+              {marker.id == 2 ? (
+                <Image
+                  source={require("../image/PortTower.png")}
+                  style={{ width: 80, height: 80 }}
+                  visible={true}
+                />
+              ) : (
+                <Image
+                  source={getPinColor(marker)}
+                  style={styles.markerImage}
+                  visible={true}
+                />
+              )}
             </Marker>
           ))}
         </MapView>
@@ -1558,6 +1586,37 @@ export default function TrackUserMapView() {
           </TouchableOpacity>
         )}
       </SafeAreaView>
+
+      {eventBannerUrl && (
+        <SafeAreaView style={styles.eventContainer}>
+          <TouchableOpacity
+            style={styles.mapbutton}
+            onPress={() => {
+              setEventVisible(!eventVisible);
+            }}
+          >
+            <Icon name="party-popper" size={30} color="#239D60" />
+          </TouchableOpacity>
+          {eventVisible && (
+            <Animated.View
+              entering={FadeIn.duration(300)}
+              exiting={FadeOut.duration(300)}
+              style={{ width: width * 0.6, height: (width * 0.6) / 4 }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  Linking.openURL(eventURL);
+                }}
+              >
+                <Image
+                  source={{ uri: eventBannerUrl }}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+        </SafeAreaView>
+      )}
 
       <MyModal
         visible={modalVisible}
