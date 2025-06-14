@@ -1450,7 +1450,7 @@ export default function TrackUserMapView() {
           toolbarEnabled={false} // Androidのボタンを無効化
           ref={mapRef}
           key={`${initialRegion.latitude}-${initialRegion.longitude}`}
-          provider={PROVIDER_GOOGLE}
+          //provider={PROVIDER_GOOGLE}
           style={[
             StyleSheet.absoluteFillObject,
             { marginTop: 85, marginBottom: 70 },
